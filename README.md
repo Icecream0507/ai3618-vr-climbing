@@ -100,6 +100,10 @@ RouteBuilder ──spawns wall + holds + summit from primitives (v1, no art need
    Press **Play** with the **XR Device Simulator** — the wall, holds and summit build automatically;
    grab, climb, balance, and top out.
 
+> **Shortcut:** the editor menu **`VRClimb ▸ Set Up Test Scene`** auto-creates the `Hold` layer plus a
+> `GameManager` and `RouteBuilder`, and attaches `PlayerClimberSetup` to an XR Origin if present.
+> Pick a route with `RouteBuilder.routeIndex` (0 = Warm-up, 1 = Balance Test, 2 = The Arete).
+
 Full step-by-step (including a Quest build) is in [`docs/SETUP.md`](docs/SETUP.md).
 
 ## 5. Controls
@@ -119,8 +123,10 @@ Full step-by-step (including a Quest build) is in [`docs/SETUP.md`](docs/SETUP.m
 - **By 7/2 (submission):** 2–3 hand-authored routes, tuned balance + stamina + fragile holds,
   audio/haptics, HUD, report + demo video, GitHub link.
 
-Team split and schedule: [`docs/TASKS.md`](docs/TASKS.md). Design + report outline:
-[`docs/DESIGN.md`](docs/DESIGN.md). Research survey: [`docs/RESEARCH.md`](docs/RESEARCH.md).
+Docs: [`docs/SETUP.md`](docs/SETUP.md) (build the scene) · [`docs/DESIGN.md`](docs/DESIGN.md) (design) ·
+[`docs/RESEARCH.md`](docs/RESEARCH.md) (survey) · [`docs/REPORT.md`](docs/REPORT.md) (draft course report) ·
+[`docs/DEMO.md`](docs/DEMO.md) (video checklist) · [`docs/TASKS.md`](docs/TASKS.md) (5-person split) ·
+[`CONTRIBUTING.md`](CONTRIBUTING.md) (team git workflow).
 
 ## 7. Tech stack
 

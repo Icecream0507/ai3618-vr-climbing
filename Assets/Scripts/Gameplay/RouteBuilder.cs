@@ -16,6 +16,8 @@ namespace VRClimb.Gameplay
     public class RouteBuilder : MonoBehaviour
     {
         public RouteDefinition route;
+        [Tooltip("Which baked route to build when no RouteDefinition is assigned (0=Warm-up, 1=Balance Test, 2=The Arete).")]
+        public int routeIndex = 0;
         [Tooltip("Layer name climb holds are placed on. Create it in Tags & Layers.")]
         public string holdLayerName = "Hold";
         public bool buildOnAwake = true;
@@ -43,7 +45,7 @@ namespace VRClimb.Gameplay
             wallGo.transform.localPosition = new Vector3(0f, wall.y * 0.5f, -thick * 0.5f);
             Paint(wallGo, new Color(0.45f, 0.42f, 0.40f));
 
-            var holds = (route != null && route.holds.Count > 0) ? route.holds : DefaultRoute(wall);
+            var holds = (route != null && route.holds.Count > 0) ? route.holds : RouteCatalog.Get(routeIndex, wall);
             int holdLayer = LayerMask.NameToLayer(holdLayerName);
             if (holdLayer < 0)
                 Debug.LogWarning($"[VRClimb] Layer '{holdLayerName}' not found — holds left on Default. " +
@@ -84,38 +86,6 @@ namespace VRClimb.Gameplay
             if (existing == null) return;
             if (Application.isPlaying) Destroy(existing.gameObject);
             else DestroyImmediate(existing.gameObject);
-        }
-
-        // Short beginner route. Hand holds zig-zag up; a same-side stretch on the right forces a
-        // left foot (or flag) to stay balanced; foot holds are threaded below the hands.
-        static List<RouteDefinition.HoldSpec> DefaultRoute(Vector2 wall)
-        {
-            const float z = 0.12f;
-            var list = new List<RouteDefinition.HoldSpec>();
-
-            void Add(float x, float y, ClimbHold.HoldRole role, ClimbHold.HoldType type, float size)
-                => list.Add(new RouteDefinition.HoldSpec
-                {
-                    localPos = new Vector3(x, y, z), role = role, type = type, size = size
-                });
-
-            void Hand(float x, float y)   => Add(x, y, ClimbHold.HoldRole.Hand,   ClimbHold.HoldType.Normal, 0.16f);
-            void Foot(float x, float y)   => Add(x, y, ClimbHold.HoldRole.Foot,   ClimbHold.HoldType.Normal, 0.13f);
-            void Either(float x, float y) => Add(x, y, ClimbHold.HoldRole.Either, ClimbHold.HoldType.Normal, 0.16f);
-
-            // Hand holds, bottom -> top.
-            Hand(-0.5f, 1.3f); Hand(0.5f, 1.7f);
-            Hand(-0.4f, 2.2f); Hand(0.5f, 2.7f);
-            Hand(0.6f, 3.2f);  Hand(0.7f, 3.7f);   // <- same-side (right) stretch
-            Either(-0.2f, 4.2f); Hand(0.3f, 4.7f);
-
-            // Foot holds threaded below.
-            Foot(-0.5f, 0.7f); Foot(0.5f, 1.1f); Foot(-0.4f, 1.6f); Foot(0.4f, 2.1f);
-            Foot(0.5f, 2.6f);  Foot(-0.3f, 3.1f); Foot(0.5f, 3.6f);
-
-            // Finish hold near the top.
-            Add(0f, wall.y - 0.4f, ClimbHold.HoldRole.Either, ClimbHold.HoldType.Finish, 0.2f);
-            return list;
         }
 
         static Color ColorFor(ClimbHold.HoldRole role, ClimbHold.HoldType type)
