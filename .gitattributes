@@ -1,0 +1,45 @@
+# Normalize line endings; let git auto-detect text vs binary.
+* text=auto
+
+# C# source
+*.cs    text diff=csharp
+*.shader text
+*.cginc text
+*.hlsl  text
+
+# Unity YAML assets — merged with Unity's SmartMerge (UnityYAMLMerge).
+# Each developer configures the merge driver locally once — see CONTRIBUTING.md §5.
+*.unity      merge=unityyamlmerge eol=lf
+*.prefab     merge=unityyamlmerge eol=lf
+*.asset      merge=unityyamlmerge eol=lf
+*.mat        merge=unityyamlmerge eol=lf
+*.anim       merge=unityyamlmerge eol=lf
+*.controller merge=unityyamlmerge eol=lf
+*.physicMaterial merge=unityyamlmerge eol=lf
+*.meta       merge=unityyamlmerge eol=lf
+
+# Binary assets — no line-ending munging, no text diff.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.psd  binary
+*.tga  binary
+*.fbx  binary
+*.blend binary
+*.obj  binary
+*.wav  binary
+*.mp3  binary
+*.ogg  binary
+*.mp4  binary
+*.unitypackage binary
+*.dll  binary
+
+# --- Optional Git LFS for large binaries ---
+# Uncomment AND have the WHOLE team run `git lfs install` first (see CONTRIBUTING.md §6),
+# otherwise leave these off so everyone stores the same way.
+# *.fbx  filter=lfs diff=lfs merge=lfs -text
+# *.psd  filter=lfs diff=lfs merge=lfs -text
+# *.wav  filter=lfs diff=lfs merge=lfs -text
+# *.mp3  filter=lfs diff=lfs merge=lfs -text
+# *.mp4  filter=lfs diff=lfs merge=lfs -text
