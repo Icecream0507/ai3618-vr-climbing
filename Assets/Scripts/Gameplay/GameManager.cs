@@ -9,6 +9,9 @@ namespace VRClimb.Gameplay
     /// Lightweight game flow: tracks state, the climb timer and fall count, and raises events the
     /// UI / audio layers subscribe to. A simple singleton so triggers, holds and the HUD can reach
     /// it without wiring every reference in the Inspector.
+    ///
+    /// The run starts (timer begins) on the first hand grab — <see cref="ClimbController"/> calls
+    /// <see cref="StartClimb"/> when it sees the first grip while still in <see cref="GameState.Ready"/>.
     /// </summary>
     public class GameManager : MonoBehaviour
     {
@@ -21,7 +24,8 @@ namespace VRClimb.Gameplay
         public int FallCount { get; private set; }
 
         public event Action<GameState> StateChanged;
-        public event Action<float> Finished;   // final time, fired once on summit
+        public event Action PlayerFell;     // transient: fired once per fall (for HUD/audio feedback)
+        public event Action<float> Finished; // final time, fired once on summit
 
         void Awake()
         {
@@ -36,6 +40,7 @@ namespace VRClimb.Gameplay
 
         public void StartClimb()
         {
+            if (_state == GameState.Climbing || _state == GameState.Summit) return;
             ElapsedTime = 0f;
             FallCount = 0;
             SetState(GameState.Climbing);
@@ -43,9 +48,10 @@ namespace VRClimb.Gameplay
 
         public void OnPlayerFell()
         {
+            if (_state == GameState.Summit) return;   // a stray fall after topping out must not undo the win
             FallCount++;
-            SetState(GameState.Fell);
-            SetState(GameState.Climbing);   // auto-resume after respawn
+            PlayerFell?.Invoke();                     // transient feedback; state stays Climbing
+            if (_state != GameState.Climbing) SetState(GameState.Climbing);
         }
 
         public void OnSummitReached()

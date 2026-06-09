@@ -85,3 +85,37 @@ with either locomotion backend.
 | Player falls through the wall | XR Origin needs a **CharacterController**; wall needs a collider. |
 | Teleport-to-spawn jitter | Respawn disables/re-enables the CharacterController by design — keep that order. |
 | Nothing renders in headset | XR Plug-in Management → OpenXR not enabled on the relevant (PC/Android) tab. |
+
+## 6. Fast path to the playable v1 (balance + footwork + procedural route)
+
+This is the quickest way to a running game — no manual hold placement, no art.
+
+1. **Create the Hold layer.** Edit → Project Settings → Tags and Layers → add a layer named **`Hold`**.
+2. **Player rig.** New scene → drag in the **XR Origin (XR Rig)** prefab. Add **`PlayerClimberSetup`**
+   to the XR Origin; assign `head` (the Main Camera), `leftController`, `rightController`. Right-click
+   the component → **Set Up Climber**. It adds + wires `CharacterController`, `ClimbController`,
+   `ClimbingHand` ×2, `FootPlacementSystem`, `BalanceSystem`.
+3. **Two manual fields it can't guess:**
+   - On each **`ClimbingHand`**, set `gripAction` → *XRI LeftHand/RightHand Interaction → Select Value*.
+   - Set the **Hold** layer on both `ClimbingHand.holdLayer` and `FootPlacementSystem.holdLayer`.
+   (The summit and checkpoints detect the player via its `ClimbController`, so no "Player" tag is needed.)
+4. **Build the route.** Empty GameObject → add **`RouteBuilder`** (leave `route` empty for the baked
+   default; `holdLayerName` = `Hold`). Add another empty GameObject with **`GameManager`**.
+5. **(Optional) HUD.** World-space Canvas with two TMP labels + two `Image` bars; add **`GameHUD`** and
+   wire `balance` (the BalanceSystem on the rig) + `balanceBar`, `stamina` + `staminaBar`.
+6. **(Optional) foot markers.** Two small disc/quad transforms assigned to
+   `FootPlacementSystem.leftFootMarker / rightFootMarker` to visualise where feet land.
+7. **Play** with the **XR Device Simulator**: the wall, colour-coded holds and summit build on Awake.
+   Grab yellow/purple holds to climb; the balance bar drains (red) if you reach out unsupported —
+   place a foot on an orange hold below you to recover; top out to win.
+
+**Balance/foot tuning** lives on the `BalanceSystem` and `FootPlacementSystem` components
+(`supportMargin`, `maxOvershoot`, drain/regen, `graceTime`, `footReach`, `stanceHalfWidth`, …). All
+are tune-by-feel — see `docs/DESIGN.md` §7.
+
+| Symptom | Fix |
+|---|---|
+| Holds spawn but can't be grabbed | `Hold` layer not created, or hands'/builder's layer mismatch. |
+| Balance bar never drains | `BalanceSystem.head`/`rig` not set, or `feet` not assigned (re-run Set Up Climber). |
+| Falls instantly at start | No contacts yet — that's expected until you grab; check `fallResetY` isn't above the floor. |
+| Feet never plant | No orange/purple holds in reach, or `FootPlacementSystem.holdLayer` unset / `footReach` too small. |

@@ -65,3 +65,43 @@
 7. **Results & Discussion** — numbers + plots, what worked, comfort trade-offs, limitations.
 8. **Conclusion & Future Work**.
 9. **References** · **Contributions** (who did what) · **Demo video link**.
+
+---
+
+## 7. v1 bouldering pivot — balance + footwork (implemented)
+
+The v1 reframes the game from generic hand-climbing to **bouldering whose core skill is balance and
+footwork**, on the honest constraint that Quest tracks only head + 2 controllers. Full survey and
+citations: [`RESEARCH.md`](RESEARCH.md).
+
+**What's implemented**
+
+- **Balance** (`BalanceSystem`): the HMD is a centre-of-mass proxy; contacts = gripped hand-holds +
+  auto-placed virtual feet. Stability = whether the CoM's lateral position sits within the contacts'
+  lateral span (a 1-D support interval / simplified barn-door). Leaning out drains a balance meter
+  (with hysteresis + grace time to absorb head jitter); at zero you **peel off** and fall. Grounded
+  in Mitsuda & Kimura (Frontiers in VR 2026) head-as-CoM and the climbing barn-door concept.
+- **Footwork** (`FootPlacementSystem`): 1–2 virtual feet auto-snap to the nearest **foot/either**
+  holds in a stance zone below the body and stay glued until you climb past them. Feet are an
+  abstracted *state* (not IK legs / not Generative Legs, which fail in climbing poses) — they exist
+  to widen your support base, so footwork is what gets you through hard moves.
+- **Hold roles + colour legend:** `ClimbHold.role` ∈ {Hand, Foot, Either}; legend **yellow=hand,
+  orange=foot, purple=either, green=finish, red=fragile, blue=rest** (chosen to avoid clashing with
+  the research's green=hand on our existing green=finish).
+- **v1 route** (`RouteBuilder`): builds a wall + colour-coded holds + summit from primitives so the
+  game runs with no art. The baked route deliberately includes a **same-side stretch** (two right-hand
+  holds in a row) that forces a left foot/flag — so balance + footwork are provably load-bearing, not
+  decorative.
+
+**Tuning knobs** (all empirical, expect to tweak): `BalanceSystem.supportMargin / maxOvershoot /
+drain / regen / graceTime`; `FootPlacementSystem.bodyDrop / stanceHalfWidth / footReach`.
+
+**Deferred stretch goals:** torso-lean "flag" input (STRIDE shows it's comfortable), hips-to-wall
+penalty, ZMP/momentum so dynos destabilise, capture-point "save-yourself" hold highlight, cosmetic IK
+legs, procedural route generation, hand-tracking-vs-controller comparison study.
+
+**Report angle this enables:** "adding an HMD-CoM balance + abstracted footwork layer onto
+counter-motion VR climbing increases perceived realism/challenge (cite Kosmalla 2020 for feet-matter,
+Mitsuda & Kimura 2026 for the model) without raising sickness" — a defensible, citable contribution,
+since no shipped commercial VR climber does CoM-based balance. Instrument: time-to-summit, falls split
+by **cause** (let-go vs balance-slip vs stamina), grab success rate, balance-margin over time.

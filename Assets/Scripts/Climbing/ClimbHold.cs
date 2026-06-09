@@ -5,16 +5,23 @@ namespace VRClimb.Climbing
     /// <summary>
     /// Marks a GameObject as a climbable hold. A hold needs a Collider; grabbing is resolved by
     /// <see cref="ClimbingHand"/> via an overlap query on the Hold layer, so the collider does not
-    /// have to be a trigger. Optional metadata drives gameplay: a Finish hold ends the run, a
-    /// Fragile hold breaks after being held too long, a Rest hold pauses stamina drain.
+    /// have to be a trigger. Metadata drives gameplay: <see cref="role"/> says whether hands, feet,
+    /// or either may use it; <see cref="type"/> gives a Finish/Fragile/Rest behaviour.
+    ///
+    /// Colour legend (see docs/DESIGN.md): yellow = hand, orange = foot, purple = either,
+    /// green = finish, red = fragile, blue = rest.
     /// </summary>
     [DisallowMultipleComponent]
     public class ClimbHold : MonoBehaviour
     {
         public enum HoldType { Normal, Finish, Fragile, Rest }
+        public enum HoldRole { Hand, Foot, Either }
 
         [Tooltip("Gameplay category for this hold.")]
         public HoldType type = HoldType.Normal;
+
+        [Tooltip("Whether this hold can be used by hands, feet, or either.")]
+        public HoldRole role = HoldRole.Hand;
 
         [Tooltip("Stamina drained per second while this hold is gripped (ignored for Rest holds).")]
         public float staminaCostPerSecond = 5f;
@@ -22,7 +29,7 @@ namespace VRClimb.Climbing
         [Tooltip("For Fragile holds: seconds it can be held before it breaks.")]
         public float breakAfterSeconds = 1.5f;
 
-        [Tooltip("World point a hand anchors to. Defaults to this object's transform.")]
+        [Tooltip("World point a hand/foot anchors to. Defaults to this object's transform.")]
         public Transform gripAnchor;
 
         public Vector3 GripPoint => gripAnchor != null ? gripAnchor.position : transform.position;
@@ -33,6 +40,7 @@ namespace VRClimb.Climbing
         public event System.Action<ClimbingHand> Released;
 
         float _heldTime;
+        int _gripperCount;
 
         public void NotifyGrabbed(ClimbingHand hand)
         {
@@ -42,24 +50,19 @@ namespace VRClimb.Climbing
 
         public void NotifyReleased(ClimbingHand hand) => Released?.Invoke(hand);
 
+        public void IncrementGrippers() => _gripperCount++;
+        public void DecrementGrippers() => _gripperCount = Mathf.Max(0, _gripperCount - 1);
+
         void Update()
         {
             // Fragile holds crumble if you hang on them too long.
             if (type != HoldType.Fragile || IsBroken) return;
-            // _heldTime only advances while a hand reports this as its current hold.
-            if (HasGripper()) { _heldTime += Time.deltaTime; if (_heldTime >= breakAfterSeconds) Break(); }
+            if (_gripperCount > 0)
+            {
+                _heldTime += Time.deltaTime;
+                if (_heldTime >= breakAfterSeconds) Break();
+            }
         }
-
-        bool HasGripper()
-        {
-            // Cheap check: the hands set themselves as listeners only while gripping.
-            // Kept simple here; a production version would track grippers in a list.
-            return Grabbed != null && _heldTime >= 0f && _gripperCount > 0;
-        }
-
-        int _gripperCount;
-        public void IncrementGrippers() => _gripperCount++;
-        public void DecrementGrippers() => _gripperCount = Mathf.Max(0, _gripperCount - 1);
 
         public void Break()
         {
@@ -71,13 +74,13 @@ namespace VRClimb.Climbing
 
         void OnDrawGizmos()
         {
-            Gizmos.color = type switch
-            {
-                HoldType.Finish  => Color.green,
-                HoldType.Fragile => Color.red,
-                HoldType.Rest    => Color.cyan,
-                _                => Color.yellow
-            };
+            Gizmos.color =
+                type == HoldType.Finish  ? Color.green :
+                type == HoldType.Fragile ? Color.red :
+                type == HoldType.Rest    ? Color.cyan :
+                role == HoldRole.Foot    ? new Color(1f, 0.55f, 0f)    :   // orange
+                role == HoldRole.Either  ? new Color(0.7f, 0.3f, 0.9f) :   // purple
+                                           new Color(0.95f, 0.85f, 0.2f);  // yellow
             Gizmos.DrawWireSphere(GripPoint, 0.05f);
         }
     }

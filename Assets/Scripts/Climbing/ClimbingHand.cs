@@ -69,6 +69,7 @@ namespace VRClimb.Climbing
             {
                 var hold = s_Overlap[i].GetComponentInParent<ClimbHold>();
                 if (hold == null || hold.IsBroken) continue;
+                if (hold.role == ClimbHold.HoldRole.Foot) continue;   // feet-only holds can't be hand-grabbed
                 float d = (hold.GripPoint - p).sqrMagnitude;
                 if (d < bestDist) { bestDist = d; best = hold; }
             }

@@ -7,13 +7,15 @@ namespace VRClimb.Climbing
     /// Drives the XR Origin (player rig).
     ///
     /// While a hand grips a hold, the rig is moved <b>counter</b> to that hand's tracked motion so
-    /// the gripped point stays fixed in the world — the player feels like they are pulling their
-    /// body along the wall. This is the same principle as Unity XRI's built-in Climb Provider
-    /// ("translate the XR Origin counter to movement of the selecting interactor"); we implement it
-    /// directly so the maths is visible and version-independent.
+    /// the gripped point stays fixed in the world — the player pulls their body along the wall (same
+    /// principle as Unity XRI's Climb Provider). With no contact at all, gravity pulls the rig down
+    /// through a <see cref="CharacterController"/>; falling below <see cref="fallResetY"/> respawns
+    /// at the last checkpoint.
     ///
-    /// With no hand gripping, gravity pulls the rig down through a <see cref="CharacterController"/>.
-    /// Falling below <see cref="fallResetY"/> respawns the player at the last checkpoint.
+    /// Balance &amp; feet are additive layers (kept optional so the hands-only baseline always works):
+    /// <see cref="FootPlacementSystem"/> supplies auto-placed virtual-foot contacts, and
+    /// <see cref="BalanceSystem"/> fires <c>PeelOff</c> when the climber loses balance — we then let
+    /// go of everything and the normal fall/respawn loop takes over.
     ///
     /// Two-hand rule: the most recently grabbed hand drives movement; when it releases, control
     /// passes back to the other hand if it is still holding on.
@@ -30,12 +32,21 @@ namespace VRClimb.Climbing
         public ClimbingHand leftHand;
         public ClimbingHand rightHand;
 
+        [Header("Balance & Feet (optional)")]
+        public FootPlacementSystem footPlacement;
+        public BalanceSystem balanceSystem;
+
         [Header("Gravity & Falling")]
         public float gravity = -9.81f;
         [Tooltip("World Y below which the player is considered fallen and is respawned.")]
         public float fallResetY = -10f;
 
         public bool IsClimbing => _activeHand != null && _activeHand.IsGripping;
+
+        bool HasContact =>
+            (leftHand != null && leftHand.IsGripping) ||
+            (rightHand != null && rightHand.IsGripping) ||
+            (footPlacement != null && footPlacement.PlantedCount > 0);
 
         ClimbingHand _activeHand;   // hand currently driving movement
         Vector3 _anchorWorld;       // world position the active hand is pinned to
@@ -55,8 +66,17 @@ namespace VRClimb.Climbing
             _spawnPoint = rig.position;
         }
 
-        void OnEnable()  { Subscribe(leftHand, true);  Subscribe(rightHand, true); }
-        void OnDisable() { Subscribe(leftHand, false); Subscribe(rightHand, false); }
+        void OnEnable()
+        {
+            Subscribe(leftHand, true);  Subscribe(rightHand, true);
+            if (balanceSystem != null) balanceSystem.PeelOff += OnPeelOff;
+        }
+
+        void OnDisable()
+        {
+            Subscribe(leftHand, false); Subscribe(rightHand, false);
+            if (balanceSystem != null) balanceSystem.PeelOff -= OnPeelOff;
+        }
 
         void Subscribe(ClimbingHand hand, bool add)
         {
@@ -70,6 +90,10 @@ namespace VRClimb.Climbing
             _activeHand = hand;             // most recent grab wins
             _anchorWorld = hand.HandPosition;
             _velocity = Vector3.zero;       // cancel any fall the moment you catch a hold
+
+            // Start the run (and the timer) on the first grab.
+            if (GameManager.Instance != null && GameManager.Instance.State == GameState.Ready)
+                GameManager.Instance.StartClimb();
         }
 
         void OnHandReleased(ClimbingHand hand)
@@ -87,9 +111,19 @@ namespace VRClimb.Climbing
         void Update()
         {
             if (IsClimbing) ClimbStep();
-            else GravityStep();
+            else if (!HasContact) GravityStep();
+            // else: supported by feet only — hang in place (no movement, no fall).
 
             if (rig.position.y < fallResetY) Respawn();
+        }
+
+        void OnPeelOff()
+        {
+            // Balance ran out: let go of everything so gravity takes over and you fall to checkpoint.
+            _velocity = Vector3.zero;
+            if (leftHand != null) leftHand.ForceRelease();
+            if (rightHand != null) rightHand.ForceRelease();
+            if (footPlacement != null) footPlacement.DropAll();
         }
 
         void ClimbStep()
@@ -119,6 +153,7 @@ namespace VRClimb.Climbing
             characterController.enabled = false;
             rig.position = _spawnPoint;
             characterController.enabled = true;
+            if (balanceSystem != null) balanceSystem.ResetBalance();
             GameManager.Instance?.OnPlayerFell();
         }
     }
