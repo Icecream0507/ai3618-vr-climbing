@@ -126,6 +126,7 @@ Full step-by-step (including a Quest build) is in [`docs/SETUP.md`](docs/SETUP.m
 Docs: [`docs/SETUP.md`](docs/SETUP.md) (build the scene) · [`docs/DESIGN.md`](docs/DESIGN.md) (design) ·
 [`docs/RESEARCH.md`](docs/RESEARCH.md) (survey) · [`docs/REPORT.md`](docs/REPORT.md) (draft course report) ·
 [`docs/DEMO.md`](docs/DEMO.md) (video checklist) · [`docs/TASKS.md`](docs/TASKS.md) (5-person split) ·
+[`docs/REMAINING.md`](docs/REMAINING.md) (remaining tasks + presentation plan) ·
 [`CONTRIBUTING.md`](CONTRIBUTING.md) (team git workflow).
 
 ## 7. Tech stack
