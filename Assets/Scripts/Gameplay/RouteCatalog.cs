@@ -12,10 +12,10 @@ namespace VRClimb.Gameplay
     /// </summary>
     public static class RouteCatalog
     {
-        public const int Count = 3;
+        public const int Count = 4;
         const float Z = 0.12f;
 
-        public static readonly string[] Names = { "Warm-up", "Balance Test", "The Arete" };
+        public static readonly string[] Names = { "Warm-up", "Balance Test", "The Arete", "Endurance" };
 
         public static List<RouteDefinition.HoldSpec> Get(int index, Vector2 wall)
         {
@@ -23,6 +23,7 @@ namespace VRClimb.Gameplay
             {
                 case 1:  return BalanceTest(wall);
                 case 2:  return TheArete(wall);
+                case 3:  return Endurance(wall);
                 default: return WarmUp(wall);
             }
         }
@@ -82,6 +83,34 @@ namespace VRClimb.Gameplay
             Foot(l, 0.4f, 0.7f); Foot(l, -0.4f, 1.1f); Foot(l, 0.4f, 1.6f);
             Foot(l, 0.5f, 2.1f); Foot(l, -0.5f, 2.6f); Foot(l, -0.5f, 3.2f); Foot(l, 0.2f, 3.8f);
             Finish(l, 0f, wall.y - 0.4f);
+            return l;
+        }
+
+        // Route 3 — Endurance. Headline challenge is *stamina management*, not a single hard move:
+        // a long, hold-dense zig-zag that keeps draining you, with two Rest holds (blue) you must use
+        // to recover, and a Fragile decoy near the top that looks like a third rest but crumbles —
+        // so you have to read the wall and commit your breathers to the real rest points. Feet are
+        // threaded throughout for support (they also keep you balanced through the longer reaches).
+        static List<RouteDefinition.HoldSpec> Endurance(Vector2 wall)
+        {
+            var l = new List<RouteDefinition.HoldSpec>();
+
+            // Lower section: dense hand holds to start the drain.
+            Hand(l, -0.5f, 1.3f); Hand(l, 0.5f, 1.6f); Hand(l, -0.5f, 1.9f); Hand(l, 0.4f, 2.2f);
+            Rest(l, -0.1f, 2.5f);                                   // first breather — recover before the middle
+            // Middle section: keep moving, no easy rest.
+            Hand(l, 0.5f, 2.9f); Hand(l, -0.4f, 3.2f);
+            Fragile(l, 0.5f, 3.5f);                                 // decoy "rest": looks restful, but it breaks
+            Hand(l, -0.5f, 3.8f);
+            Rest(l, 0.1f, 4.1f);                                    // last real breather before the top push
+            // Top push: commit to the finish.
+            Hand(l, 0.5f, 4.5f); Hand(l, -0.3f, 4.9f); Either(l, 0.2f, 5.2f);
+            Finish(l, 0f, wall.y - 0.4f);
+
+            // Feet threaded below the hands the whole way up (support + balance through the reaches).
+            Foot(l, -0.5f, 0.8f); Foot(l, 0.5f, 1.1f); Foot(l, -0.4f, 1.5f); Foot(l, 0.4f, 1.9f);
+            Foot(l, -0.3f, 2.4f); Foot(l, 0.5f, 2.8f); Foot(l, -0.4f, 3.3f); Foot(l, 0.4f, 3.7f);
+            Foot(l, -0.3f, 4.2f); Foot(l, 0.4f, 4.6f);
             return l;
         }
     }

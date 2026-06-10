@@ -16,7 +16,7 @@ namespace VRClimb.Gameplay
     public class RouteBuilder : MonoBehaviour
     {
         public RouteDefinition route;
-        [Tooltip("Which baked route to build when no RouteDefinition is assigned (0=Warm-up, 1=Balance Test, 2=The Arete).")]
+        [Tooltip("Which baked route to build when no RouteDefinition is assigned (0=Warm-up, 1=Balance Test, 2=The Arete, 3=Endurance).")]
         public int routeIndex = 0;
         [Tooltip("Layer name climb holds are placed on. Create it in Tags & Layers.")]
         public string holdLayerName = "Hold";
