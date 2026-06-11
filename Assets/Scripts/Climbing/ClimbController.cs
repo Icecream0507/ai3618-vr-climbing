@@ -130,7 +130,7 @@ namespace VRClimb.Climbing
         {
             // Counter the hand's motion: move the rig so the active hand returns to its anchor.
             Vector3 handNow = _activeHand.HandPosition;
-            Vector3 delta = _anchorWorld - handNow;
+            Vector3 delta = ClimbMath.ClimbDelta(_anchorWorld, handNow);
             characterController.Move(delta);
             // The hand is a child of the rig, so it moved with the rig; re-pin the anchor.
             _anchorWorld = _activeHand.HandPosition;

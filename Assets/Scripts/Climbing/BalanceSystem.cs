@@ -116,33 +116,9 @@ namespace VRClimb.Climbing
                 s_Contacts.Add(rightHand.CurrentHold.GripPoint);
             if (feet != null) feet.CollectContacts(s_Contacts);
 
-            int n = s_Contacts.Count;
-            if (n == 0) return 1f;                                   // not on the wall: treat as neutral/stable
-
-            Vector3 axis = (rig != null ? rig.right : Vector3.right).normalized;
+            Vector3 axis = rig != null ? rig.right : Vector3.right;
             Vector3 origin = head != null ? head.position : transform.position;
-            // CoM lateral coordinate is 0 by construction (measured relative to the head/origin).
-
-            float minX = float.MaxValue, maxX = float.MinValue;
-            for (int i = 0; i < n; i++)
-            {
-                float x = Vector3.Dot(s_Contacts[i] - origin, axis);
-                if (x < minX) minX = x;
-                if (x > maxX) maxX = x;
-            }
-
-            float low = minX - supportMargin;
-            float high = maxX + supportMargin;
-
-            if (0f >= low && 0f <= high)
-            {
-                float margin = Mathf.Min(0f - low, high - 0f);
-                float halfSpan = Mathf.Max(0.0001f, (high - low) * 0.5f);
-                return Mathf.Clamp01(margin / halfSpan);             // inside the span -> stable
-            }
-
-            float overshoot = (0f < low) ? (low - 0f) : (0f - high);
-            return -Mathf.Clamp01(overshoot / maxOvershoot);         // outside the span -> unstable
+            return ClimbMath.StabilityScore(origin, axis, s_Contacts, supportMargin, maxOvershoot);
         }
     }
 }
