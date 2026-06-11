@@ -52,6 +52,7 @@ namespace VRClimb.Climbing
         Vector3 _anchorWorld;       // world position the active hand is pinned to
         Vector3 _velocity;          // gravity accumulation
         Vector3 _spawnPoint;
+        bool _fellFromWall;         // set on peel-off; landing afterwards counts as a fall
 
         void Reset()
         {
@@ -63,6 +64,11 @@ namespace VRClimb.Climbing
         {
             if (rig == null) rig = transform;
             if (characterController == null) characterController = GetComponent<CharacterController>();
+            // Climbing moves the rig by per-frame hand deltas. A slow pull at headset framerates is
+            // well under CharacterController.minMoveDistance (default 0.001 m) and Move() silently
+            // swallows such motion — and because ClimbStep re-pins the anchor each frame, the lost
+            // remainder never comes back (the climb does nothing). Zero it so every delta applies.
+            if (characterController != null) characterController.minMoveDistance = 0f;
             _spawnPoint = rig.position;
         }
 
@@ -90,6 +96,7 @@ namespace VRClimb.Climbing
             _activeHand = hand;             // most recent grab wins
             _anchorWorld = hand.HandPosition;
             _velocity = Vector3.zero;       // cancel any fall the moment you catch a hold
+            _fellFromWall = false;          // caught yourself — no longer falling
 
             // Start the run (and the timer) on the first grab.
             if (GameManager.Instance != null && GameManager.Instance.State == GameState.Ready)
@@ -121,6 +128,7 @@ namespace VRClimb.Climbing
         {
             // Balance ran out: let go of everything so gravity takes over and you fall to checkpoint.
             _velocity = Vector3.zero;
+            _fellFromWall = true;
             if (leftHand != null) leftHand.ForceRelease();
             if (rightHand != null) rightHand.ForceRelease();
             if (footPlacement != null) footPlacement.DropAll();
@@ -140,7 +148,13 @@ namespace VRClimb.Climbing
         {
             _velocity.y += gravity * Time.deltaTime;
             characterController.Move(_velocity * Time.deltaTime);
-            if (characterController.isGrounded && _velocity.y < 0f) _velocity.y = -1f;
+            if (characterController.isGrounded && _velocity.y < 0f)
+            {
+                _velocity.y = -1f;
+                // Peeling off and hitting the mat counts as a fall — reset to the checkpoint.
+                // (fallResetY below stays as the safety net for scenes without a floor.)
+                if (_fellFromWall) Respawn();
+            }
         }
 
         public void SetCheckpoint(Vector3 worldPos) => _spawnPoint = worldPos;
@@ -149,6 +163,7 @@ namespace VRClimb.Climbing
         {
             _velocity = Vector3.zero;
             _activeHand = null;
+            _fellFromWall = false;
             // CharacterController must be disabled to teleport reliably.
             characterController.enabled = false;
             rig.position = _spawnPoint;

@@ -87,7 +87,8 @@ RouteBuilder ──spawns wall + holds + summit from primitives (v1, no art need
 
 ## 4. Quick start (playable v1)
 
-1. Install **Unity 2022.3 LTS** (Unity 6 also fine). Unity Hub → *Add project from disk* → open this
+1. Install **Unity 2022.3 LTS** (Unity 6 also fine; the repo state is verified compiling on
+   Tuanjie 2022.3.62t7 / XRI 3.2.1). Unity Hub → *Add project from disk* → open this
    `VRClimb/` folder; let Package Manager resolve the manifest.
 2. *Project Settings → XR Plug-in Management* → enable **OpenXR**; import XRI **Starter Assets** +
    **XR Device Simulator**.
@@ -103,6 +104,24 @@ RouteBuilder ──spawns wall + holds + summit from primitives (v1, no art need
 > **Shortcut:** the editor menu **`VRClimb ▸ Set Up Test Scene`** auto-creates the `Hold` layer plus a
 > `GameManager` and `RouteBuilder`, and attaches `PlayerClimberSetup` to an XR Origin if present.
 > Pick a route with `RouteBuilder.routeIndex` (0 = Warm-up, 1 = Balance Test, 2 = The Arete).
+
+### Automated end-to-end check (no headset needed)
+
+The repo ships a CI-style test that opens a generated scene and lets a **scripted robot climber**
+drive the real gameplay stack: it grabs an isolated hold, leans out of support until the balance
+meter peels it off the wall, falls, respawns, then climbs Route 0 hand-over-hand to the summit.
+
+- In-editor: menu **`VRClimb ▸ Run Headless Check`** (or open `Assets/Scenes/SimTest.unity` and press
+  Play to *watch* the robot climb).
+- Command line (what CI / teammates without a headset run):
+
+  ```
+  Tuanjie.exe -projectPath . -batchmode -nographics ^
+      -executeMethod VRClimb.EditorTools.HeadlessCheck.Run -logFile Logs/e2e.log
+  ```
+
+  Exit code 0 = pass; the human-readable report lands in `Logs/headless-check.txt`.
+  Current status: **ClimbMath 9/9 + end-to-end sim 10/10 PASS** (summit in ~6 s, 1 scripted fall).
 
 Full step-by-step (including a Quest build) is in [`docs/SETUP.md`](docs/SETUP.md).
 

@@ -16,6 +16,10 @@ namespace VRClimb.Util
     {
         public bool runOnStart = false;
 
+        /// <summary>Results of the last <see cref="Run"/>, for callers (e.g. the headless check).</summary>
+        public int LastPass { get; private set; }
+        public int LastFail { get; private set; }
+
         void Start() { if (runOnStart) Run(); }
 
         [ContextMenu("Run Self-Test")]
@@ -69,6 +73,7 @@ namespace VRClimb.Util
             Vector3 d = ClimbMath.ClimbDelta(new Vector3(0f, 1f, 0f), new Vector3(0f, 1.1f, 0f));
             Check("climb delta cancels hand motion", Mathf.Approximately(d.y, -0.1f));
 
+            LastPass = pass; LastFail = fail;
             Debug.Log($"[ClimbMath self-test] {pass}/{pass + fail} passed" + (fail == 0 ? " ✅" : $" — {fail} FAILED"), this);
         }
     }
