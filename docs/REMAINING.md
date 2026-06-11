@@ -29,11 +29,15 @@
 
 > 角色沿用 `TASKS.md`：P1 攀爬系统 / P2 玩法规则 / P3 场景美术 / P4 XR集成与构建 / P5 UX·音频·报告·视频。名字自己认领。
 
-### P1 — 攀爬系统（____）
-- [ ] 进 Unity 跑通后，调反向位移手感（`ClimbController`）
-- [ ] 调平衡模型常量：`supportMargin / maxOvershoot / drain / regen / graceTime`（`BalanceSystem`）
-- [ ] 调脚法：`footReach / stanceHalfWidth / bodyDrop`（`FootPlacementSystem`）
-- [ ] 报告里写 Method / Implementation 的「攀爬 + 平衡」段
+### P1 — 攀爬系统（认领：Claude · 代码部分已完成，引擎内手感调参待 P4 跑通后进行）
+- [x] 核心数学抽成纯函数 `ClimbMath`（`StabilityScore` / `ClimbDelta`）；`BalanceSystem`、`ClimbController` 改为调用，逻辑更清晰可测
+- [x] 逻辑自测 `ClimbMathSelfTest`（组件加上去点 **Run Self-Test**，控制台出 `9/9 passed`）—— 平衡判定 + 反向位移数学已验证正确
+- [~] 反向位移手感（`ClimbController`）—— 默认值已设；**最终手感需进 Unity 实跑再微调**
+- [~] 平衡常量 `supportMargin/maxOvershoot/drain/regen/graceTime`（`BalanceSystem`）—— 默认合理，进引擎后按手感调
+- [~] 脚法常量 `footReach/stanceHalfWidth/bodyDrop`（`FootPlacementSystem`）—— 同上
+- [~] 报告「攀爬 + 平衡」段 —— 初稿已在 `REPORT.md §3–4`，P1 复核润色即可
+
+> 说明：`[x]` 已完成；`[~]` 代码就绪、等进 Unity 实跑后做最终调参（这一步需要 P4 先打开引擎）。
 
 ### P2 — 玩法规则（____）
 - [ ] 验证 登顶 / 跌落重生 / 计时 / 跌落计数 闭环正确
