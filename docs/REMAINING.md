@@ -7,12 +7,13 @@
 - ✅ **代码 v1 全部写完并已推送**：手抓攀爬（反向位移）+ 平衡系统（头显当质心）+ 脚法（虚拟脚自动吸附）+ 3 条程序化线路 + 音效事件钩子 + HUD + 编辑器一键建场景。
 - ✅ **文档齐全**：`README` · `SETUP`（§6 最快跑通）· `DESIGN` · `RESEARCH`（调研）· `REPORT`（报告初稿）· `DEMO`（录制清单）· `CONTRIBUTING`（git 协作）· `TASKS`（角色分工）。
 - ✅ 仓库 + 协作者已配置。
-- ⚠️ **头号缺口：还没有人在 Unity 里真正打开 / 编译 / 跑过。** 真正的编译错、手感、抖动只有进引擎才暴露——这是现在最该先做的事。
+- ✅ **项目已在引擎里编译 + 跑通**（Tuanjie 2022.3.62t7 无头模式）：`ProjectSettings`/`packages-lock`/`Hold` 层/URP 管线资产已生成并提交；**自动化端到端测试通过** —— 机器人爬手依次完成「抓→失衡→脱落→坠落→重生→爬完 Route 0 登顶计时」，`ClimbMath 9/9 + 端到端 10/10 PASS`。复现：菜单 `VRClimb ▸ Run Headless Check`，或打开 `Assets/Scenes/SimTest.unity` 直接 Play 围观机器人爬墙。
+- ⚠️ 仍待真人验证：**XR 真机/Device Simulator 的手感**（仿真机器人 ≠ 真手柄输入），这是 P0-2 调参的前提。
 
 ## 二、剩余任务总览（P0 = 6/18 前必须，P1 = 7/2 前）
 
 **P0 — 冲一个能演示的版本**
-1. 在 Unity 打开项目、编译通过、跑通最小闭环（抓 → 爬 → 失衡 → 坠落重生 → 登顶计时）。
+1. ~~在 Unity 打开项目、编译通过、跑通最小闭环（抓 → 爬 → 失衡 → 坠落重生 → 登顶计时）~~ ✅ 已由无头端到端测试完成并提交（见上）。剩：用 **XR Device Simulator / 真机**人工跑一遍。
 2. 调平衡 / 脚法参数到手感正常（`BalanceSystem`、`FootPlacementSystem` 上的常量）。
 3. 录 60–90s demo 视频（照 `DEMO.md`）。
 4. 做 pre 的 PPT（见第四节「项目汇报」）。
@@ -29,15 +30,15 @@
 
 > 角色沿用 `TASKS.md`：P1 攀爬系统 / P2 玩法规则 / P3 场景美术 / P4 XR集成与构建 / P5 UX·音频·报告·视频。名字自己认领。
 
-### P1 — 攀爬系统（认领：Claude · 代码部分已完成，引擎内手感调参待 P4 跑通后进行）
+### P1 — 攀爬系统（认领：Claude · 代码 + 引擎内自动化验证已完成）
 - [x] 核心数学抽成纯函数 `ClimbMath`（`StabilityScore` / `ClimbDelta`）；`BalanceSystem`、`ClimbController` 改为调用，逻辑更清晰可测
 - [x] 逻辑自测 `ClimbMathSelfTest`（组件加上去点 **Run Self-Test**，控制台出 `9/9 passed`）—— 平衡判定 + 反向位移数学已验证正确
-- [~] 反向位移手感（`ClimbController`）—— 默认值已设；**最终手感需进 Unity 实跑再微调**
-- [~] 平衡常量 `supportMargin/maxOvershoot/drain/regen/graceTime`（`BalanceSystem`）—— 默认合理，进引擎后按手感调
-- [~] 脚法常量 `footReach/stanceHalfWidth/bodyDrop`（`FootPlacementSystem`）—— 同上
+- [x] **引擎内端到端验证**：`SimulatedClimber` 机器人驱动真实 gameplay 栈跑通 失衡脱落→坠落重生→登顶计时 全闭环（`VRClimb ▸ Run Headless Check`，10/10 PASS）
+- [x] 修复实跑暴露的真 bug：`CharacterController.minMoveDistance` 默认 0.001 会**吞掉慢速攀爬位移**（锚点每帧重置导致丢失不可恢复）→ 置 0；脱落后落地即重生（原先要掉到 y<-10 才触发）
+- [~] 反向位移 / 平衡 / 脚法常量的**真人手感**微调 —— 机器人验证了机制正确，手感要等 XR Device Simulator / 真机实玩（P4）
 - [~] 报告「攀爬 + 平衡」段 —— 初稿已在 `REPORT.md §3–4`，P1 复核润色即可
 
-> 说明：`[x]` 已完成；`[~]` 代码就绪、等进 Unity 实跑后做最终调参（这一步需要 P4 先打开引擎）。
+> 说明：`[x]` 已完成；`[~]` 代码就绪、等真人进 XR 实玩后做最终调参。
 
 ### P2 — 玩法规则（____）
 - [ ] 验证 登顶 / 跌落重生 / 计时 / 跌落计数 闭环正确
@@ -52,7 +53,7 @@
 - [ ] 截图 / 出镜素材给 P5 做视频和 PPT
 
 ### P4 — XR 集成与构建（____）
-- [ ] 启用 OpenXR、导入 XRI Starter Assets、建 `Hold` 层（`SETUP §1–2`）
+- [ ] 启用 OpenXR、导入 XRI Starter Assets（`SETUP §1–2`）。注：`Hold` 层、URP 管线资产、`ProjectSettings`（Input System 后端）已生成并提交，不用重做；XRI 实际解析版本为 3.2.1
 - [ ] 用 `PlayerClimberSetup` 接好 XR 装备，绑 grip action（`SETUP §6`）
 - [ ] 决定真机 or 仿真；要真机就出 Quest 构建
 - [ ] 测帧率 / 舒适度（晕动），必要时加 vignette

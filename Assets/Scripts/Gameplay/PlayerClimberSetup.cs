@@ -26,6 +26,7 @@ namespace VRClimb.Gameplay
             var cc = GetComponent<CharacterController>();
             if (cc == null) cc = gameObject.AddComponent<CharacterController>();
             cc.height = 1.6f; cc.radius = 0.25f; cc.center = new Vector3(0f, 0.8f, 0f);
+            cc.minMoveDistance = 0f;   // don't swallow slow per-frame climb deltas (see ClimbController)
 
             var leftHand  = EnsureHand(leftController,  UnityEngine.XR.XRNode.LeftHand);
             var rightHand = EnsureHand(rightController, UnityEngine.XR.XRNode.RightHand);

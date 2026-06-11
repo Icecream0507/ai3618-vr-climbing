@@ -56,7 +56,7 @@ namespace VRClimb.EditorTools
         }
 
         // Adds a named layer to the first free user slot (8..31) if it doesn't already exist.
-        static void EnsureLayer(string layerName)
+        public static void EnsureLayer(string layerName)
         {
             var assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset");
             if (assets == null || assets.Length == 0)

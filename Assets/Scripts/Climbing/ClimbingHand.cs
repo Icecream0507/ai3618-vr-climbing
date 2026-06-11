@@ -35,6 +35,10 @@ namespace VRClimb.Climbing
         public bool IsGripping { get; private set; }
         public ClimbHold CurrentHold { get; private set; }
 
+        /// <summary>Test/sim hook: while true, grip counts as held regardless of controller input
+        /// (used by the headless end-to-end simulation; never set from gameplay).</summary>
+        [System.NonSerialized] public bool overrideGrip;
+
         /// <summary>World position of the hand this frame.</summary>
         public Vector3 HandPosition => handTransform != null ? handTransform.position : transform.position;
 
@@ -49,7 +53,7 @@ namespace VRClimb.Climbing
         void Update()
         {
             float grip = gripAction.action?.ReadValue<float>() ?? 0f;
-            bool pressed = grip >= gripThreshold;
+            bool pressed = overrideGrip || grip >= gripThreshold;
 
             if (pressed && !IsGripping) TryGrab();
             else if (!pressed && IsGripping) ReleaseInternal();
