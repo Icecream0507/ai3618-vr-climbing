@@ -2,7 +2,7 @@
 
 **Course:** AI3618
 
-**Author:** Group N — \<names\>
+**Author:** Group N — \<names\> *(see Contribution Statement)*
 
 ## Abstract
 
@@ -480,6 +480,20 @@ The immediate next step is obvious and is the project's main open item: **run th
 - **Content and haptics.** Grow the route library beyond the single default wall, add fragile/rest-hold-driven route puzzles that exploit the existing hold types, and explore richer haptic feedback for the moment of a balance slip.
 
 In short, *Summit VR* contributes a runnable existence proof that footwork and balance can be brought to controller-only VR climbing cheaply and additively, together with the instrumentation and protocol needed to find out whether doing so actually makes the experience feel more like real bouldering. The system is ready; the measurement is the work that remains.
+
+## Contribution Statement
+
+This was a five-person course project; roles follow the division in `docs/TASKS.md`. Each author wrote the Method / Implementation passages for the systems they owned; P5 consolidated the draft and edited for consistency.
+
+| Member | Role | Primary contributions |
+|---|---|---|
+| ____ | P1 — Climbing systems | Counter-motion locomotion (`ClimbController`), grab/reach (`ClimbingHand`), two-hand handling; §3.2, §4.3 |
+| ____ | P2 — Gameplay & rules | Win/lose flow (`GameManager`, `SummitTrigger`, `Checkpoint`), stamina (`StaminaSystem`), hold behaviour (`ClimbHold`); §4.6, §4.8 |
+| ____ | P3 — Scene & art | Wall/route layout, materials, lighting, colour legend; route authoring support for §3.5 |
+| ____ | P4 — XR integration & build | OpenXR/XRI rig, input bindings, haptics, Quest/Android build, comfort & frame-rate checks; §4.1, §4.10 |
+| ____ | P5 — UX · audio · report · video | HUD (`GameHUD`), audio (`ClimbAudio`), report consolidation, demo video and slides; §4.8 (HUD/audio) |
+
+The balance model (§3.3, §4.4) and footwork abstraction (§3.4, §4.5) — the project's headline contribution — were designed jointly. *(Fill in names before submission.)*
 
 ## References
 
