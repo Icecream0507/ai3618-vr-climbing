@@ -12,11 +12,13 @@
 
 ## 二、剩余任务总览（P0 = 6/18 前必须，P1 = 7/2 前）
 
+> **范围调整（按老师口径"仿真验证即可，不必接真机"）**：**不做 XR 真机/手柄接入**。演示 = 仿真机器人自动跑通 + 录屏成片。原 P4 的"接 XR Origin / 绑 grip / Quest 构建"**整体降级为可选**，关键路径上不再依赖它。
+
 **P0 — 冲一个能演示的版本**
-1. ~~在 Unity 打开项目、编译通过、跑通最小闭环（抓 → 爬 → 失衡 → 坠落重生 → 登顶计时）~~ ✅ 已由无头端到端测试完成并提交（见上）。剩：用 **XR Device Simulator / 真机**人工跑一遍。
-2. 调平衡 / 脚法参数到手感正常（`BalanceSystem`、`FootPlacementSystem` 上的常量）。
-3. 录 60–90s demo 视频（照 `DEMO.md`）。
-4. 做 pre 的 PPT（见第四节「项目汇报」）。
+1. ~~在 Unity 打开项目、编译通过、跑通最小闭环（抓 → 爬 → 失衡 → 坠落重生 → 登顶计时）~~ ✅ 已由无头端到端测试完成并提交（见上）。
+2. ~~调平衡 / 脚法参数手感~~ → 机制已验证；演示用机器人节奏已调好（`SimulatedClimber.demoMode`）。真人手感调参降级为可选。
+3. ~~录 demo 视频~~ ✅ **可自动出片**：`VRClimb ▸ Record Demo` 渲染帧 + ffmpeg 合成 `Demo/SummitVR_demo.mp4`（流程见 `TESTING.md §4`）。剩：定稿剪辑 / 配字幕（可选）。
+4. 做 pre 的 PPT（见第四节「项目汇报」）。**答辩问答已备**：见 `docs/DEFENSE_QA.md`。
 
 **P1 — 提交前**
 5. 2–3 条线路打磨 + 难度曲线（`RouteBuilder.routeIndex` 已能切 3 条）。
@@ -41,29 +43,29 @@
 > 说明：`[x]` 已完成；`[~]` 代码就绪、等真人进 XR 实玩后做最终调参。
 
 ### P2 — 玩法规则（____）
-- [ ] 验证 登顶 / 跌落重生 / 计时 / 跌落计数 闭环正确
-- [ ] 体力 / 易碎点 / 休息点 参数调校（`StaminaSystem`、`ClimbHold`）
-- [ ] 设计第 4 条线路（参考 `RouteCatalog` 写法）
-- [ ] 报告里写「玩法与线路设计」段
+- [x] 验证 登顶 / 跌落重生 / 计时 / 跌落计数 闭环正确 —— 已被无头端到端测试覆盖（10/10 PASS）
+- [x] 设计第 4 条线路 —— Endurance 已合并（`RouteCatalog` index 3）
+- [ ] 体力 / 易碎点 / 休息点 参数调校（`StaminaSystem`、`ClimbHold`）—— 可在 `Demo.unity` 里切 `routeIndex` 跑着看
+- [ ] 报告里写「玩法与线路设计」段（4 条线路各自意图）
 
 ### P3 — 场景 / 美术（____）
-- [ ] 用 `VRClimb ▸ Set Up Test Scene` 建场景并保存为 `Assets/Scenes/ClimbGym.unity`
-- [ ] 握点造型 / 材质 / 墙面 / 天空盒（替换原始几何体）
-- [ ] 灯光 + 一点环境氛围
+- [ ] 把 `Demo.unity` 当基础升级观感：天空盒 / 更好的墙面 + 握点材质 / 灯光（当前是程序化几何体，能看但朴素）
+- [ ] （可选）正式场景另存为 `Assets/Scenes/ClimbGym.unity`
 - [ ] 截图 / 出镜素材给 P5 做视频和 PPT
+> 注：演示**不卡美术**——程序化方块墙 + 可见化身已经能录出能看的 demo，美术属加分项。
 
-### P4 — XR 集成与构建（____）
-- [ ] 启用 OpenXR、导入 XRI Starter Assets（`SETUP §1–2`）。注：`Hold` 层、URP 管线资产、`ProjectSettings`（Input System 后端）已生成并提交，不用重做；XRI 实际解析版本为 3.2.1
-- [ ] 用 `PlayerClimberSetup` 接好 XR 装备，绑 grip action（`SETUP §6`）
-- [ ] 决定真机 or 仿真；要真机就出 Quest 构建
-- [ ] 测帧率 / 舒适度（晕动），必要时加 vignette
+### P4 — XR 集成与构建（整体可选，按"仿真即可"已降级）
+- [x] `Hold` 层 / URP 管线资产 / `ProjectSettings`（Input System 后端）/ packages-lock 已生成并提交
+- [ ] （可选）启用 OpenXR、导入 XRI Starter Assets、`PlayerClimberSetup` 接 XR Origin 真机玩（`SETUP §1–2、§6`）
+- [ ] （可选）Quest 构建 / 帧率 / 舒适度 vignette
+> 关键路径不再依赖本节；仿真演示与录制已覆盖"能演示"的目标。
 
-### P5 — UX · 音频 · 报告 · 视频（____）
-- [ ] HUD 摆放（计时 + 平衡条）、世界空间 Canvas
-- [ ] 找 / 录音效，接 `ClimbAudio`
-- [ ] 统筹报告：合各人段落、补实验数据、润色（基于 `REPORT.md`）
-- [ ] 录最终 demo 视频（照 `DEMO.md`）
-- [ ] 做 pre PPT（见下）
+### P5 — UX · 音频 · 报告 · 视频（部分认领：syh886）
+- [x] HUD（计时 + 平衡条 + 状态）`GameHUD` + 一键接线 `VRClimb ▸ Set Up HUD + Audio`
+- [x] 占位音效 + `ClimbAudio` 接线（抓握/失衡/坠落/登顶）
+- [x] demo 视频可自动产出（`Record Demo` + ffmpeg，见 `TESTING.md`）—— 剩：替占位音效、定稿剪辑（可选）
+- [ ] 统筹报告：合各人段落、补**评测真实数据**、润色（基于 `REPORT.md`）
+- [ ] 做 pre PPT（`SLIDES.md` 已有大纲；答辩问答见 `DEFENSE_QA.md`）
 
 ## 四、项目汇报（6/18 pre）
 

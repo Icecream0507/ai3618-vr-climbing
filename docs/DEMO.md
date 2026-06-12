@@ -1,5 +1,11 @@
 # Demo Video Checklist (for the 6/18 pre and 7/2 submission)
 
+> **Fastest path (no headset, no manual recording):** the project auto-produces a demo clip — a
+> third-person robot playthrough showing peel-off → fall → respawn → climb → summit, with a live
+> balance meter and captions. Run `VRClimb ▸ Record Demo` (or the `-executeMethod` form) and ffmpeg,
+> output lands at `Demo/SummitVR_demo.mp4` (~21 s). Steps in [`TESTING.md §4`](TESTING.md). A copy is
+> committed in `Demo/`. Use that as-is, or follow the manual shot list below for a hand-played version.
+
 Goal: a tight **60–90 second** clip that shows the core loop **and** our differentiator — balance +
 footwork — clearly enough that a viewer who's never climbed gets it.
 

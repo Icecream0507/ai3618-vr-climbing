@@ -26,6 +26,17 @@ namespace VRClimb.Util
         public static readonly List<string> Failures = new List<string>();
         public static string Summary = "";
 
+        [Header("Demo mode (visual playthrough)")]
+        [Tooltip("Slower, paced motion + on-screen captions for the recorded demo. Off = fast test.")]
+        public bool demoMode = false;
+        [Tooltip("Demo-mode pull speed (m/s); slower than the test so the climb reads on video.")]
+        public float demoPullSpeed = 0.45f;
+        [Tooltip("Demo-mode pause after each hand match, so each move is legible.")]
+        public float demoGrabPause = 0.35f;
+
+        /// <summary>Human-readable caption for the current beat, shown by DemoOverlay.</summary>
+        public string Caption { get; private set; } = "";
+
         [Header("Wired by HeadlessCheck")]
         public ClimbController controller;
         public BalanceSystem balance;
@@ -48,6 +59,7 @@ namespace VRClimb.Util
         int _maxFeet;
         readonly List<string> _log = new List<string>();
         int _passCount;
+        float _pause;   // demo-mode pause timer between moves
 
         const float MaxReach = 1.6f;   // a hold is reachable when within this height above the rig
         const float PullSpeed = 1.2f;  // m/s of simulated hand pull
@@ -70,12 +82,14 @@ namespace VRClimb.Util
             rightHand.overrideGrip = true;
             _freeHand = leftHand;
             _phase = Phase.PeelOff;
+            Caption = "Reaching a lone hold — leaning out past the support base";
             Debug.Log("[Sim] phase A: gripping isolated hold, leaning out — expecting peel-off.");
         }
 
         void OnPeel()
         {
             _peelCount++;
+            Caption = "Lost balance — peeled off the wall!";
             // Do not instantly re-grab the hold we just peeled off.
             leftHand.overrideGrip = rightHand.overrideGrip = false;
         }
@@ -86,6 +100,14 @@ namespace VRClimb.Util
             _phaseTime += Time.deltaTime;
             _totalTime += Time.deltaTime;
             if (_totalTime > 120f) { Fail("overall sim timeout (120 s)"); return; }
+
+            // Demo-mode beat pause between moves (phase B only): hold the pose so the move reads.
+            if (_pause > 0f)
+            {
+                _pause -= Time.deltaTime;
+                LeanTowardSupport();
+                return;
+            }
 
             switch (_phase)
             {
@@ -101,6 +123,9 @@ namespace VRClimb.Util
         void StepPeelOff()
         {
             var gm = GameManager.Instance;
+            if (_peelCount < 1 && balance.IsSlipping)
+                Caption = "Centre of mass outside support — balance draining…";
+
             if (_peelCount >= 1 && gm != null && gm.FallCount >= 1)
             {
                 Check("balance drained while leaning out -> PeelOff fired", true);
@@ -112,6 +137,7 @@ namespace VRClimb.Util
                 SetHeadLocalX(0f);
                 BuildRouteList();
                 Check("route has hand-path holds", _route.Count >= 5);
+                Caption = "Re-centred at the start — now climbing, feet keep balance";
                 _phase = Phase.ClimbReach; _phaseTime = 0f;
                 Debug.Log($"[Sim] phase B: climbing {_route.Count} holds to the summit.");
             }
@@ -148,6 +174,12 @@ namespace VRClimb.Util
                 _gripHand = _freeHand;
                 _freeHand = old != null ? old : (_gripHand == leftHand ? rightHand : leftHand);
                 _next++;
+                if (demoMode)
+                {
+                    _pause = demoGrabPause;
+                    if (feet.PlantedCount > 0) Caption = "Matched a foot below — support base widened";
+                    else if (rig.position.y > 3.2f) Caption = "Committing to the top section";
+                }
                 _phase = Phase.ClimbPull; _phaseTime = 0f;
             }
             else if (_phaseTime > 5f)
@@ -163,7 +195,8 @@ namespace VRClimb.Util
 
             // Pull the gripping hand down -> counter-motion raises the rig up the wall.
             var ht = _gripHand.handTransform;
-            ht.position += Vector3.down * Mathf.Min(PullSpeed * Time.deltaTime, 0.04f);
+            float pull = demoMode ? demoPullSpeed : PullSpeed;
+            ht.position += Vector3.down * Mathf.Min(pull * Time.deltaTime, 0.04f);
 
             bool nextReachable = _next < _route.Count &&
                                  _route[_next].GripPoint.y - rig.position.y <= MaxReach;
@@ -184,6 +217,7 @@ namespace VRClimb.Util
             var gm = GameManager.Instance;
             if (gm == null || gm.State != GameState.Summit) return false;
 
+            Caption = $"SUMMIT! Topped out in {gm.ElapsedTime:0.0}s — 1 fall, footwork held the rest";
             Check("summit reached", true);
             Check("climb timer ran (ElapsedTime > 1 s)", gm.ElapsedTime > 1f);
             Check("exactly one fall — the scripted peel-off", gm.FallCount == 1);
