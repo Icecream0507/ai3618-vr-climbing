@@ -173,9 +173,9 @@ namespace VRClimb.Util
             Vector3 lSh = shC - shR * BodyMetrics.ShoulderHalf, rSh = shC + shR * BodyMetrics.ShoulderHalf;
             Vector3 lHp = hpC - hipR * BodyMetrics.HipHalf,      rHp = hpC + hipR * BodyMetrics.HipHalf;
 
-            PlaceCapsule(_torsoLo, hpC, mid, 0.24f);
-            PlaceCapsule(_torsoHi, mid, shC, 0.30f);                         // chest broader (athletic build)
-            PlaceCapsule(_pelvis, lHp, rHp, 0.23f);
+            PlaceCapsule(_torsoLo, hpC, mid, 0.22f);                         // narrower waist
+            PlaceCapsule(_torsoHi, mid, shC, 0.32f);                         // broader chest (athletic V-taper)
+            PlaceCapsule(_pelvis, lHp, rHp, 0.24f);
 
             // --- head: rides the spine and looks up the wall toward the next reach (never bolt upright) ---
             Vector3 headC = shC + spineDir * NeckLen;
