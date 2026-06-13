@@ -207,8 +207,9 @@ namespace VRClimb.EditorTools
             var t = new GameObject(name).transform;
             t.SetParent(parent, false);
             t.localPosition = localPos;
-            // Tiny skin nub — the HumanoidRig draws the actual gripping fist over this wrist point.
-            AddMarker(t, 0.05f, new Color(0.95f, 0.78f, 0.60f), name + "View");
+            // No visible marker: the HumanoidRig draws the real gripping fist at the IK end-effector. A
+            // marker here would sit on the RAW (possibly out-of-reach) controller target and float off
+            // the arm at a topout/long reach.
             return t;
         }
 

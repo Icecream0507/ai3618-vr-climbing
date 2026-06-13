@@ -45,7 +45,7 @@ namespace VRClimb.Util
         [Range(0f, 1f)] public float standLean = 0.30f;  // torso lean when standing on feet (more upright)
         public float spineCurve = 0.14f;                 // chest leads the head a touch (curved back, not a pole)
         public float headTrack = 8f;                     // how fast the head turns to look toward the next reach
-        [Range(0f, 0.8f)] public float headLean = 0.36f; // how far the neck bends off the spine toward the gaze (visible head tip)
+        [Range(0f, 0.8f)] public float headLean = 0.30f; // how far the neck bends off the spine toward the gaze (kept modest so the head tucks onto the spine, never strands off-axis)
         public float legSwing = 0.06f;                   // dangling legs trail the hip swing (pendulum secondary motion)
         public float hipTwist = 16f;                     // deg of spinal torsion: reaching-side hip turns into the wall
         public float swingImpulse = 0.7f;                // m/s sideways kick when a hand releases (body swings under the other)
@@ -214,19 +214,23 @@ namespace VRClimb.Util
             Quaternion targetRot = Quaternion.LookRotation(gaze, neckDir);
             _headRot = _init ? Quaternion.Slerp(_headRot, targetRot, Mathf.Clamp01(headTrack * dt)) : targetRot;
             _headPivot.SetPositionAndRotation(headC, _headRot);
-            // neck capsule actually connecting the chest to the head bottom (no more floating/jammed head)
-            PlaceCapsule(_neck, shC, headC - neckDir * 0.075f, 0.072f);
+            // Neck: a substantial column running the FULL distance shoulders→skull (overlapping into the
+            // head base) so the head is always visibly seated on the body — never a blob on a thin stalk,
+            // even at a full topout reach seen from below.
+            PlaceCapsule(_neck, shC - spineDir * 0.03f, headC, 0.095f);
 
             // Arms: elbows bend down/out/away-from-wall; IK to wherever the sim put each hand.
             Vector3 armPoleL = (-right * 0.5f - up * 0.7f + fwd * 0.4f).normalized;
             Vector3 armPoleR = ( right * 0.5f - up * 0.7f + fwd * 0.4f).normalized;
-            Vector3 lEl = SolveLimb(lSh, leftHand.position,  BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleL, _luA, _lfA, 0.088f);
-            Vector3 rEl = SolveLimb(rSh, rightHand.position, BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleR, _ruA, _rfA, 0.088f);
+            Vector3 lHandP, rHandP;
+            Vector3 lEl = SolveLimb(lSh, leftHand.position,  BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleL, _luA, _lfA, 0.088f, out lHandP);
+            Vector3 rEl = SolveLimb(rSh, rightHand.position, BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleR, _ruA, _rfA, 0.088f, out rHandP);
 
-            // Fists: a compact flattened hand at each wrist, elongated along the forearm so it reads as a
-            // hand wrapping a hold rather than a ball. (Demo-only — the sim drives the wrist positions.)
-            PlaceFist(_lHand, leftHand.position,  leftHand.position - lEl, up);
-            PlaceFist(_rHand, rightHand.position, rightHand.position - rEl, up);
+            // Fists: a compact flattened hand at each wrist, elongated along the forearm. Placed at the IK
+            // end-effector (the clamped forearm tip), so the fist stays attached even when the hold is out
+            // of reach — the climber visibly stretches short instead of the hand floating off.
+            PlaceFist(_lHand, lHandP, lHandP - lEl, up);
+            PlaceFist(_rHand, rHandP, rHandP - rEl, up);
 
             // Legs: knees bend out/away-from-wall (stem/frog). A dangling foot keeps a slight bend (target
             // pulled up & forward of straight-down) so it never reads as a stiff stick under gravity.
@@ -238,14 +242,15 @@ namespace VRClimb.Util
                 ? leftFoot.position : lHp + (-right * 0.16f - up * (BodyMetrics.LegReach * 0.72f) + fwd * 0.20f) + swing;
             Vector3 rFootT = (rightFoot != null && rightFoot.gameObject.activeInHierarchy)
                 ? rightFoot.position : rHp + ( right * 0.16f - up * (BodyMetrics.LegReach * 0.72f) + fwd * 0.20f) + swing;
-            Vector3 lKn = SolveLimb(lHp, lFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleL, _luL, _llL, 0.11f);
-            Vector3 rKn = SolveLimb(rHp, rFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleR, _ruL, _rlL, 0.11f);
+            Vector3 lFootP, rFootP;
+            Vector3 lKn = SolveLimb(lHp, lFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleL, _luL, _llL, 0.11f, out lFootP);
+            Vector3 rKn = SolveLimb(rHp, rFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleR, _ruL, _rlL, 0.11f, out rFootP);
 
-            // Shoes: an elongated climbing shoe at each foot, toe pointing into the wall (and a touch down)
-            // so the foot reads as a shoe edging a hold rather than a bare stick-end.
+            // Shoes: an elongated climbing shoe at each foot, toe pointing into the wall (and a touch down).
+            // Placed at the IK end-effector so the shoe never detaches from the shin.
             Vector3 toe = (wallInto - up * 0.18f).normalized;
-            PlaceShoe(_lShoe, lFootT, toe, up);
-            PlaceShoe(_rShoe, rFootT, toe, up);
+            PlaceShoe(_lShoe, lFootP, toe, up);
+            PlaceShoe(_rShoe, rFootP, toe, up);
 
             // Drop the joint balls onto the computed joints so the body reads as one connected figure.
             _lShB.position = lSh; _rShB.position = rSh;
@@ -268,12 +273,14 @@ namespace VRClimb.Util
         // Analytic 2-bone IK with joint limits: clamp the target into reach so the joint is always real
         // (no hyperextension), then place the joint on the pole side so the bend is anatomical.
         Vector3 SolveLimb(Vector3 root, Vector3 target, float l1, float l2, Vector3 pole,
-                          Transform seg1, Transform seg2, float thick)
+                          Transform seg1, Transform seg2, float thick, out Vector3 endEffector)
         {
             Vector3 toT = target - root;
             float d = Mathf.Clamp(toT.magnitude, Mathf.Abs(l1 - l2) + 1e-3f, (l1 + l2) - 1e-3f);
             Vector3 dir = toT.sqrMagnitude > 1e-6f ? toT.normalized : Vector3.down;
             target = root + dir * d;   // taut limb if the hold was beyond reach -> visibly can't reach
+            endEffector = target;      // the REAL hand/foot tip (clamped) — fist/shoe must sit here, not on
+                                       // the unreachable raw target, or it detaches and floats off the limb
 
             float a = (l1 * l1 - l2 * l2 + d * d) / (2f * d);
             float h = Mathf.Sqrt(Mathf.Max(0f, l1 * l1 - a * a));
