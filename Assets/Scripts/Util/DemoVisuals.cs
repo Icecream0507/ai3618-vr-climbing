@@ -19,7 +19,7 @@ namespace VRClimb.Util
         public Transform lookTargetRoot; // rig root (x stays at wall centre)
 
         [Header("Camera framing")]
-        public Vector3 camOffset = new Vector3(2.15f, 0.45f, 2.3f);  // ~45° front-right 3/4, pulled in so the climber fills the frame
+        public Vector3 camOffset = new Vector3(2.15f, 0.45f, 2.3f);  // ~45° front-right 3/4, pulled in so the climber fills the frame (looking-up framing tested worse for topout clarity)
         public float camLag = 2.5f;
         public float bodyCenterDrop = 0.7f;  // track the body centre (below the head), not the head
         public float pelvisDrop = 1.0f;      // (unused when body is null)
