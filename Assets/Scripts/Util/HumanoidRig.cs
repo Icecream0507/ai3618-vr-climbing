@@ -45,7 +45,7 @@ namespace VRClimb.Util
         [Range(0f, 1f)] public float standLean = 0.30f;  // torso lean when standing on feet (more upright)
         public float spineCurve = 0.14f;                 // chest leads the head a touch (curved back, not a pole)
         public float headTrack = 8f;                     // how fast the head turns to look toward the next reach
-        [Range(0f, 0.8f)] public float headLean = 0.5f;  // how far the neck bends off the spine toward the gaze (visible head tip)
+        [Range(0f, 0.8f)] public float headLean = 0.36f; // how far the neck bends off the spine toward the gaze (visible head tip)
         public float legSwing = 0.06f;                   // dangling legs trail the hip swing (pendulum secondary motion)
         public float hipTwist = 16f;                     // deg of spinal torsion: reaching-side hip turns into the wall
         public float swingImpulse = 0.7f;                // m/s sideways kick when a hand releases (body swings under the other)
@@ -54,7 +54,7 @@ namespace VRClimb.Util
         const float TorsoLen = BodyMetrics.HipDrop - BodyMetrics.ShoulderDrop; // pelvis -> shoulders (~0.58)
         const float NeckLen  = 0.21f;                                          // shoulders -> head centre along spine
 
-        Transform _torsoLo, _torsoHi, _pelvis;     // two spine segments + pelvis block
+        Transform _torsoLo, _torsoHi, _pelvis, _neck;   // two spine segments + pelvis block + neck
         Transform _headPivot, _headBall, _nose, _hair;  // oriented head (skull + hair crown so the tilt reads)
         Transform _luA, _lfA, _ruA, _rfA;          // arm capsules
         Transform _luL, _llL, _ruL, _rlL;          // leg capsules
@@ -74,7 +74,7 @@ namespace VRClimb.Util
             _jacket = Mat(new Color(0.12f, 0.55f, 0.62f));
             _pants  = Mat(new Color(0.18f, 0.22f, 0.32f));
 
-            _torsoLo = Limb(_jacket); _torsoHi = Limb(_jacket); _pelvis = Limb(_pants);
+            _torsoLo = Limb(_jacket); _torsoHi = Limb(_jacket); _pelvis = Limb(_pants); _neck = Limb(_skin);
             _luA = Limb(_jacket); _lfA = Limb(_skin); _ruA = Limb(_jacket); _rfA = Limb(_skin);
             _luL = Limb(_pants);  _llL = Limb(_pants);  _ruL = Limb(_pants);  _rlL = Limb(_pants);
 
@@ -88,14 +88,15 @@ namespace VRClimb.Util
             // any camera angle (a near-sphere hides rotation — that's why the head *looked* upright).
             var hairMat = Mat(new Color(0.20f, 0.14f, 0.10f));
             _headPivot = new GameObject("HeadPivot").transform; _headPivot.SetParent(transform, true);
-            _headBall = Ball(_skin, 0.16f); _headBall.SetParent(_headPivot, false);
-            _headBall.localScale = new Vector3(0.16f, 0.205f, 0.17f);       // taller skull -> the long axis tipping reads
+            _headBall = Ball(_skin, 0.15f); _headBall.SetParent(_headPivot, false);
+            _headBall.localScale = new Vector3(0.15f, 0.175f, 0.16f);       // skull, slight egg (not so tall it reads as a helmet)
+            // hair: a flat cap on the CROWN/back only, raised and pushed back so it never bands across the face
             _hair = Ball(hairMat, 0.1f); _hair.SetParent(_headPivot, false);
-            _hair.localPosition = new Vector3(0f, 0.055f, -0.03f);          // crown, slightly back of top
-            _hair.localScale = new Vector3(0.182f, 0.135f, 0.195f);
+            _hair.localPosition = new Vector3(0f, 0.072f, -0.028f);
+            _hair.localScale = new Vector3(0.158f, 0.085f, 0.17f);
             _nose = Ball(_skin, 0.05f); _nose.SetParent(_headPivot, false);
-            _nose.localPosition = new Vector3(0f, -0.01f, 0.09f);           // points along +z of the pivot (look dir)
-            _nose.localScale = new Vector3(0.05f, 0.055f, 0.085f);
+            _nose.localPosition = new Vector3(0f, -0.012f, 0.082f);         // points along +z of the pivot (look dir)
+            _nose.localScale = new Vector3(0.045f, 0.05f, 0.075f);
         }
 
         void LateUpdate()
@@ -195,6 +196,8 @@ namespace VRClimb.Util
             Quaternion targetRot = Quaternion.LookRotation(gaze, neckDir);
             _headRot = _init ? Quaternion.Slerp(_headRot, targetRot, Mathf.Clamp01(headTrack * dt)) : targetRot;
             _headPivot.SetPositionAndRotation(headC, _headRot);
+            // neck capsule actually connecting the chest to the head bottom (no more floating/jammed head)
+            PlaceCapsule(_neck, shC, headC - neckDir * 0.075f, 0.072f);
 
             // Arms: elbows bend down/out/away-from-wall; IK to wherever the sim put each hand.
             Vector3 armPoleL = (-right * 0.5f - up * 0.7f + fwd * 0.4f).normalized;
