@@ -110,6 +110,13 @@ namespace VRClimb.Util
             _nose = Ball(_skin, 0.05f); _nose.SetParent(_headPivot, false);
             _nose.localPosition = new Vector3(0f, -0.012f, 0.082f);         // points along +z of the pivot (look dir)
             _nose.localScale = new Vector3(0.045f, 0.05f, 0.075f);
+            // Eyes: two dark ovals on the face (+z), above and flanking the nose. They give the head an
+            // unmistakable front, so it reads as a face looking toward the next hold instead of a blank egg.
+            var eyeMat = Mat(new Color(0.09f, 0.08f, 0.11f));
+            var le = Ball(eyeMat, 0.04f); le.SetParent(_headPivot, false);
+            le.localPosition = new Vector3(-0.045f, 0.024f, 0.067f); le.localScale = new Vector3(0.038f, 0.05f, 0.03f);
+            var re = Ball(eyeMat, 0.04f); re.SetParent(_headPivot, false);
+            re.localPosition = new Vector3( 0.045f, 0.024f, 0.067f); re.localScale = new Vector3(0.038f, 0.05f, 0.03f);
         }
 
         void LateUpdate()
