@@ -207,7 +207,8 @@ namespace VRClimb.EditorTools
             var t = new GameObject(name).transform;
             t.SetParent(parent, false);
             t.localPosition = localPos;
-            AddMarker(t, 0.1f, new Color(0.9f, 0.5f, 0.3f), name + "View");
+            // Tiny skin nub — the HumanoidRig draws the actual gripping fist over this wrist point.
+            AddMarker(t, 0.05f, new Color(0.95f, 0.78f, 0.60f), name + "View");
             return t;
         }
 
@@ -226,8 +227,9 @@ namespace VRClimb.EditorTools
             var s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             s.name = name;
             Object.DestroyImmediate(s.GetComponent<Collider>());
-            s.transform.localScale = new Vector3(0.17f, 0.10f, 0.18f);
-            Paint(s, new Color(1f, 0.62f, 0.05f));
+            // Small dark ankle nub — the HumanoidRig draws the actual climbing shoe over this point.
+            s.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
+            Paint(s, new Color(0.11f, 0.11f, 0.13f));
             s.SetActive(false);
             return s.transform;
         }

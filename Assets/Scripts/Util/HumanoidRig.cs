@@ -60,6 +60,7 @@ namespace VRClimb.Util
         Transform _luL, _llL, _ruL, _rlL;          // leg capsules
         Transform _lShB, _rShB, _lElB, _rElB;      // shoulder + elbow joint balls
         Transform _lHipB, _rHipB, _lKnB, _rKnB;    // hip + knee joint balls
+        Transform _lHand, _rHand, _lShoe, _rShoe;  // gripping fists + climbing-shoe feet (so hands/feet aren't bare balls)
         Material _skin, _jacket, _pants;
 
         Vector3 _hip, _hipVel;
@@ -87,6 +88,14 @@ namespace VRClimb.Util
             // Belly: a soft ellipsoid at the midriff that bridges the chest→waist width step, so the
             // trunk reads as one continuous body rather than a wide block stacked on a narrow one.
             _belly = Ball(_jacket, 0.27f); _belly.SetParent(transform, true);
+
+            // Hands & feet: gripping fists (skin) and climbing shoes (dark rubber) so the contact points
+            // read as a person's hands/feet, not bare marker balls. Oriented each frame in LateUpdate.
+            var rubber = Mat(new Color(0.11f, 0.11f, 0.13f));
+            _lHand = Ball(_skin, 0.12f); _lHand.SetParent(transform, true);
+            _rHand = Ball(_skin, 0.12f); _rHand.SetParent(transform, true);
+            _lShoe = Ball(rubber, 0.12f); _lShoe.SetParent(transform, true);
+            _rShoe = Ball(rubber, 0.12f); _rShoe.SetParent(transform, true);
 
             // Head: a tall skull + a dark hair crown + a nose, so the head's tilt is unmistakable from
             // any camera angle (a near-sphere hides rotation — that's why the head *looked* upright).
@@ -214,6 +223,11 @@ namespace VRClimb.Util
             Vector3 lEl = SolveLimb(lSh, leftHand.position,  BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleL, _luA, _lfA, 0.088f);
             Vector3 rEl = SolveLimb(rSh, rightHand.position, BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleR, _ruA, _rfA, 0.088f);
 
+            // Fists: a compact flattened hand at each wrist, elongated along the forearm so it reads as a
+            // hand wrapping a hold rather than a ball. (Demo-only — the sim drives the wrist positions.)
+            PlaceFist(_lHand, leftHand.position,  leftHand.position - lEl, up);
+            PlaceFist(_rHand, rightHand.position, rightHand.position - rEl, up);
+
             // Legs: knees bend out/away-from-wall (stem/frog). A dangling foot keeps a slight bend (target
             // pulled up & forward of straight-down) so it never reads as a stiff stick under gravity.
             Vector3 legPoleL = (-right * 0.55f + fwd * 0.8f - up * 0.05f).normalized;
@@ -226,6 +240,12 @@ namespace VRClimb.Util
                 ? rightFoot.position : rHp + ( right * 0.16f - up * (BodyMetrics.LegReach * 0.72f) + fwd * 0.20f) + swing;
             Vector3 lKn = SolveLimb(lHp, lFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleL, _luL, _llL, 0.11f);
             Vector3 rKn = SolveLimb(rHp, rFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleR, _ruL, _rlL, 0.11f);
+
+            // Shoes: an elongated climbing shoe at each foot, toe pointing into the wall (and a touch down)
+            // so the foot reads as a shoe edging a hold rather than a bare stick-end.
+            Vector3 toe = (wallInto - up * 0.18f).normalized;
+            PlaceShoe(_lShoe, lFootT, toe, up);
+            PlaceShoe(_rShoe, rFootT, toe, up);
 
             // Drop the joint balls onto the computed joints so the body reads as one connected figure.
             _lShB.position = lSh; _rShB.position = rSh;
@@ -265,6 +285,27 @@ namespace VRClimb.Util
             PlaceCapsule(seg1, root, joint, thick);
             PlaceCapsule(seg2, joint, target, thick * 0.9f);
             return joint;   // elbow / knee, so a joint ball can sit there
+        }
+
+        // A fist at the wrist, elongated along the forearm and slightly flattened (knuckles read).
+        static void PlaceFist(Transform t, Vector3 wrist, Vector3 foreArmDir, Vector3 up)
+        {
+            Quaternion rot = foreArmDir.sqrMagnitude > 1e-5f
+                ? Quaternion.LookRotation(foreArmDir.normalized, up) : Quaternion.identity;
+            // push the fist a touch past the wrist so it caps the forearm, not sinks into it
+            Vector3 c = wrist + (foreArmDir.sqrMagnitude > 1e-5f ? foreArmDir.normalized : Vector3.zero) * 0.03f;
+            t.SetPositionAndRotation(c, rot);
+            t.localScale = new Vector3(0.115f, 0.10f, 0.14f);   // across / thin / along-forearm
+        }
+
+        // A climbing shoe at the foot, long axis along the toe direction (into the wall, slightly down).
+        static void PlaceShoe(Transform t, Vector3 foot, Vector3 toeDir, Vector3 up)
+        {
+            Quaternion rot = toeDir.sqrMagnitude > 1e-5f
+                ? Quaternion.LookRotation(toeDir.normalized, up) : Quaternion.identity;
+            Vector3 c = foot + toeDir.normalized * 0.05f;       // shoe sits forward of the ankle
+            t.SetPositionAndRotation(c, rot);
+            t.localScale = new Vector3(0.105f, 0.085f, 0.205f); // width / height / length toward wall
         }
 
         static void PlaceCapsule(Transform t, Vector3 a, Vector3 b, float thick)
