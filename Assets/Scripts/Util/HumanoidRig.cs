@@ -54,7 +54,7 @@ namespace VRClimb.Util
         const float TorsoLen = BodyMetrics.HipDrop - BodyMetrics.ShoulderDrop; // pelvis -> shoulders (~0.58)
         const float NeckLen  = 0.21f;                                          // shoulders -> head centre along spine
 
-        Transform _torsoLo, _torsoHi, _pelvis, _neck;   // two spine segments + pelvis block + neck
+        Transform _torsoLo, _torsoHi, _belly, _pelvis, _neck;   // trunk: waist + chest + belly-fill + pelvis + neck
         Transform _headPivot, _headBall, _nose, _hair;  // oriented head (skull + hair crown so the tilt reads)
         Transform _luA, _lfA, _ruA, _rfA;          // arm capsules
         Transform _luL, _llL, _ruL, _rlL;          // leg capsules
@@ -83,6 +83,10 @@ namespace VRClimb.Util
             _lElB = Ball(_skin,   0.085f);_rElB = Ball(_skin,   0.085f); _lElB.SetParent(transform, true); _rElB.SetParent(transform, true);
             _lHipB= Ball(_pants,  0.13f); _rHipB= Ball(_pants,  0.13f);  _lHipB.SetParent(transform, true);_rHipB.SetParent(transform, true);
             _lKnB = Ball(_pants,  0.105f);_rKnB = Ball(_pants,  0.105f); _lKnB.SetParent(transform, true); _rKnB.SetParent(transform, true);
+
+            // Belly: a soft ellipsoid at the midriff that bridges the chest→waist width step, so the
+            // trunk reads as one continuous body rather than a wide block stacked on a narrow one.
+            _belly = Ball(_jacket, 0.27f); _belly.SetParent(transform, true);
 
             // Head: a tall skull + a dark hair crown + a nose, so the head's tilt is unmistakable from
             // any camera angle (a near-sphere hides rotation — that's why the head *looked* upright).
@@ -180,9 +184,14 @@ namespace VRClimb.Util
             Vector3 lSh = shC - shR * BodyMetrics.ShoulderHalf, rSh = shC + shR * BodyMetrics.ShoulderHalf;
             Vector3 lHp = hpC - hipR * BodyMetrics.HipHalf,      rHp = hpC + hipR * BodyMetrics.HipHalf;
 
-            PlaceCapsule(_torsoLo, hpC, mid, 0.22f);                         // narrower waist
-            PlaceCapsule(_torsoHi, mid, shC, 0.32f);                         // broader chest (athletic V-taper)
-            PlaceCapsule(_pelvis, lHp, rHp, 0.24f);
+            // Continuous trunk (the fix for the "stacked blocks" look): the waist and chest capsules
+            // OVERLAP through the midriff and a belly ellipsoid fills the width step, so the taper reads
+            // pelvis(0.255) → waist(0.245, narrowest) → belly(0.28) → chest(0.305) as one body.
+            Vector3 chestLo = Vector3.Lerp(mid, hpC, 0.22f);                 // chest capsule starts below mid (overlap)
+            PlaceCapsule(_torsoLo, hpC, Vector3.Lerp(mid, shC, 0.12f), 0.245f); // waist, runs slightly past mid
+            PlaceCapsule(_torsoHi, chestLo, shC, 0.305f);                    // broader chest (athletic V-taper)
+            _belly.position = mid; _belly.localScale = new Vector3(0.285f, 0.26f, 0.255f);
+            PlaceCapsule(_pelvis, lHp, rHp, 0.255f);
 
             // --- head: the NECK BENDS off the spine toward the gaze, so the head visibly tips (not a
             // ball balanced upright on the shoulders). It looks up the wall at the next hold. ---
