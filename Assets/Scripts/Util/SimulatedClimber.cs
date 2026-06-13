@@ -64,6 +64,7 @@ namespace VRClimb.Util
         readonly List<string> _log = new List<string>();
         int _passCount;
         float _pause;   // demo-mode pause timer between moves
+        Vector3 _reachVel;   // demo-mode: SmoothDamp velocity so a reach eases in/out (less robotic)
 
         const float MaxReach = 1.6f;   // a hold is reachable when within this height above the rig
         const float PullSpeed = 1.2f;  // m/s of simulated hand pull
@@ -183,8 +184,14 @@ namespace VRClimb.Util
 
             // Move the free hand smoothly toward the hold (a real reach), then grip on arrival —
             // instead of snapping the hand onto the hold (which looked like a rigid arm in mid-air).
+            // Demo mode eases the reach (accelerate off the body, decelerate into the hold) so the move
+            // reads as a deliberate human reach rather than a constant-velocity slide; the test path keeps
+            // the original linear MoveTowards (demoMode is false there, so timing/asserts are unchanged).
             var ht = _freeHand.handTransform;
-            ht.position = Vector3.MoveTowards(ht.position, target.GripPoint, HandMoveSpeed * Time.deltaTime);
+            if (demoMode)
+                ht.position = Vector3.SmoothDamp(ht.position, target.GripPoint, ref _reachVel, 0.20f, 3.5f, Time.deltaTime);
+            else
+                ht.position = Vector3.MoveTowards(ht.position, target.GripPoint, HandMoveSpeed * Time.deltaTime);
             if ((ht.position - target.GripPoint).sqrMagnitude < 0.05f * 0.05f)
             {
                 _freeHand.overrideGrip = true;
@@ -215,6 +222,7 @@ namespace VRClimb.Util
                 var old = _gripHand;
                 _gripHand = _freeHand;
                 _freeHand = old != null ? old : (_gripHand == leftHand ? rightHand : leftHand);
+                _reachVel = Vector3.zero;   // next reach eases in from rest
                 _next++;
                 if (demoMode)
                 {
