@@ -105,8 +105,8 @@ namespace VRClimb.Util
             _headBall.localScale = new Vector3(0.15f, 0.175f, 0.16f);       // skull, slight egg (not so tall it reads as a helmet)
             // hair: a flat cap on the CROWN/back only, raised and pushed back so it never bands across the face
             _hair = Ball(hairMat, 0.1f); _hair.SetParent(_headPivot, false);
-            _hair.localPosition = new Vector3(0f, 0.072f, -0.028f);
-            _hair.localScale = new Vector3(0.158f, 0.085f, 0.17f);
+            _hair.localPosition = new Vector3(0f, 0.058f, -0.03f);          // a fuller head of hair: a touch lower & taller, still
+            _hair.localScale = new Vector3(0.165f, 0.115f, 0.178f);         // kept high/back of centre so it never bands across the face
             _nose = Ball(_skin, 0.05f); _nose.SetParent(_headPivot, false);
             _nose.localPosition = new Vector3(0f, -0.012f, 0.082f);         // points along +z of the pivot (look dir)
             _nose.localScale = new Vector3(0.045f, 0.05f, 0.075f);
