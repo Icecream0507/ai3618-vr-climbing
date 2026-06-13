@@ -47,6 +47,7 @@ namespace VRClimb.Util
         public float headTrack = 8f;                     // how fast the head turns to look toward the next reach
         public float legSwing = 0.06f;                   // dangling legs trail the hip swing (pendulum secondary motion)
         public float hipTwist = 16f;                     // deg of spinal torsion: reaching-side hip turns into the wall
+        public float swingImpulse = 0.7f;                // m/s sideways kick when a hand releases (body swings under the other)
 
         // anatomical lengths
         const float TorsoLen = BodyMetrics.HipDrop - BodyMetrics.ShoulderDrop; // pelvis -> shoulders (~0.58)
@@ -61,6 +62,7 @@ namespace VRClimb.Util
         Vector3 _hip, _hipVel;
         Quaternion _headRot = Quaternion.identity;
         float _reach;   // smoothed reaching side: +1 right reaching, -1 left reaching
+        int _prevGrips;
         bool _init;
 
         void Start()
@@ -122,7 +124,17 @@ namespace VRClimb.Util
                 stiffness = hangStiffness; lean = hangLean;
             }
 
-            if (!_init) { _hip = hipRest; _init = true; }
+            if (!_init) { _hip = hipRest; _init = true; _prevGrips = grips; }
+
+            // Momentum: when a hand releases (grip count drops) the body swings under the remaining
+            // grip — the emergent pendulum behaviour real climbers (and Klifur) get for free.
+            if (grips > 0 && grips < _prevGrips)
+            {
+                Vector3 toGrip = gripC - _hip; toGrip.y = 0f;
+                if (toGrip.sqrMagnitude > 1e-4f) _hipVel += toGrip.normalized * swingImpulse;
+            }
+            _prevGrips = grips;
+
             Vector3 accel = (hipRest - _hip) * stiffness - _hipVel * damping + Vector3.down * gravity;
             _hipVel += accel * dt;
             _hip += _hipVel * dt;
