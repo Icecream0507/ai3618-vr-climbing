@@ -154,7 +154,8 @@ namespace VRClimb.EditorTools
             var head = new GameObject("Head").transform;
             head.SetParent(rig.transform, false);
             head.localPosition = new Vector3(0f, 1.6f, 0f);
-            AddMarker(head, 0.16f, new Color(0.95f, 0.85f, 0.55f), "HeadView");
+            // No head marker here: the HumanoidRig draws the visible (oriented, tilting) head. This
+            // 'head' transform is just the HMD proxy / CoM the sim leans.
 
             var left = MakeHand(rig.transform, "LeftHand", new Vector3(-0.25f, 1.0f, 0.15f));
             var right = MakeHand(rig.transform, "RightHand", new Vector3(0.25f, 1.0f, 0.15f));
@@ -225,8 +226,8 @@ namespace VRClimb.EditorTools
             var s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             s.name = name;
             Object.DestroyImmediate(s.GetComponent<Collider>());
-            s.transform.localScale = new Vector3(0.14f, 0.08f, 0.14f);
-            Paint(s, new Color(1f, 0.55f, 0f));
+            s.transform.localScale = new Vector3(0.17f, 0.10f, 0.18f);
+            Paint(s, new Color(1f, 0.62f, 0.05f));
             s.SetActive(false);
             return s.transform;
         }

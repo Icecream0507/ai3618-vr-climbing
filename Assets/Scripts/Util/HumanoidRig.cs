@@ -6,21 +6,26 @@ namespace VRClimb.Util
     /// <summary>
     /// Articulated climber for the recorded demo's third-person view (NOT used in real VR play — there
     /// you are first-person and only see your own hands). It is a lightweight, kinematic approximation
-    /// of climbing physics so the body looks real:
+    /// of climbing physics so the body looks like a real person on the wall rather than a stiff
+    /// mannequin.
     ///
-    ///  • anatomical limb lengths from <see cref="BodyMetrics"/>; 2-bone IK with joint limits
-    ///    (elbows/knees can't hyperextend and bend the natural way);
-    ///  • the hips are a damped gravity pendulum whose rest pose is **support-aware**: with a foot on
-    ///    the wall you stand over your feet; hanging from a hand with no feet, the body **dangles below
-    ///    the gripping hand** and sways. The spine therefore tilts (hips offset from shoulders) toward
-    ///    the loaded side — the diagonal "body tension" of real climbing — and the climber leans into
-    ///    the wall. Legs dangle under gravity when a foot is off a hold.
+    /// Model (this is the key to realism — the body hangs from the HANDS, not from a fixed upright head):
+    ///  • The <b>pelvis</b> is a damped gravity pendulum. Its rest pose is support-aware: standing over
+    ///    planted feet (more upright) or dangling below the gripping hand(s) and swinging (saggier).
+    ///  • The <b>spine</b> runs pelvis → chest → head and TILTS toward whatever is bearing load: it aims
+    ///    from the pelvis up toward the grip/feet support, so a one-arm hang leans the whole torso (and
+    ///    head) under that arm — the diagonal body tension of real climbing. The spine also curves
+    ///    slightly (chest leads, head trails), never a rigid pole.
+    ///  • The <b>head</b> rides the top of the spine and is ORIENTED (visible face/nose) to look up the
+    ///    wall toward the next hold — so it is never bolt upright; it tilts and turns with the body.
+    ///  • Arms/legs are 2-bone IK with joint limits (no hyperextension); legs dangle under gravity when a
+    ///    foot is off a hold.
     ///
     /// Purely cosmetic: it reads the head/hand/foot transforms gameplay drives and never feeds back.
     /// </summary>
     public class HumanoidRig : MonoBehaviour
     {
-        public Transform head;          // HMD proxy (carries a skin sphere)
+        public Transform head;          // HMD proxy / CoM the sim leans (reference only — NOT the visible head)
         public Transform leftHand;      // controller proxies the sim moves onto holds
         public Transform rightHand;
         public Transform leftFoot;      // foot markers FootPlacementSystem positions on planted holds
@@ -30,17 +35,30 @@ namespace VRClimb.Util
         public ClimbingHand rightHandC;
 
         [Header("Gravity feel")]
-        public float gravity = 7f;          // m/s^2 bias pulling the hips down (scaled, not real 9.8)
-        public float standStiffness = 70f;  // spring toward rest when feet support you (stiffer)
-        public float hangStiffness = 26f;   // spring when hanging from hands only (saggier, swingier)
-        public float damping = 7f;
+        public float gravity = 8f;           // m/s^2 bias pulling the hips down (scaled, not real 9.8)
+        public float standStiffness = 65f;   // spring toward rest when feet support you (stiffer)
+        public float hangStiffness = 22f;    // spring when hanging from hands only (saggier, swingier)
+        public float damping = 6.5f;
 
-        Transform _torso, _pelvis, _neck;
+        [Header("Spine tilt")]
+        [Range(0f, 1f)] public float hangLean = 0.70f;   // how hard the torso leans under the loaded arm when hanging
+        [Range(0f, 1f)] public float standLean = 0.30f;  // torso lean when standing on feet (more upright)
+        public float spineCurve = 0.14f;                 // chest leads the head a touch (curved back, not a pole)
+        public float headTrack = 8f;                     // how fast the head turns to look toward the next reach
+        public float legSwing = 0.06f;                   // dangling legs trail the hip swing (pendulum secondary motion)
+
+        // anatomical lengths
+        const float TorsoLen = BodyMetrics.HipDrop - BodyMetrics.ShoulderDrop; // pelvis -> shoulders (~0.58)
+        const float NeckLen  = 0.21f;                                          // shoulders -> head centre along spine
+
+        Transform _torsoLo, _torsoHi, _pelvis;     // two spine segments + pelvis block
+        Transform _headPivot, _headBall, _nose;    // oriented head
         Transform _luA, _lfA, _ruA, _rfA;          // arm capsules
         Transform _luL, _llL, _ruL, _rlL;          // leg capsules
         Material _skin, _jacket, _pants;
 
         Vector3 _hip, _hipVel;
+        Quaternion _headRot = Quaternion.identity;
         bool _init;
 
         void Start()
@@ -49,9 +67,17 @@ namespace VRClimb.Util
             _jacket = Mat(new Color(0.12f, 0.55f, 0.62f));
             _pants  = Mat(new Color(0.18f, 0.22f, 0.32f));
 
-            _torso  = Limb(_jacket); _pelvis = Limb(_pants); _neck = Limb(_skin);
-            _luA = Limb(_jacket); _lfA = Limb(_jacket); _ruA = Limb(_jacket); _rfA = Limb(_jacket);
+            _torsoLo = Limb(_jacket); _torsoHi = Limb(_jacket); _pelvis = Limb(_pants);
+            _luA = Limb(_jacket); _lfA = Limb(_skin); _ruA = Limb(_jacket); _rfA = Limb(_skin);
             _luL = Limb(_pants);  _llL = Limb(_pants);  _ruL = Limb(_pants);  _rlL = Limb(_pants);
+
+            // Head: a squashed skin ball + a small nose so its orientation is visible on camera.
+            _headPivot = new GameObject("HeadPivot").transform; _headPivot.SetParent(transform, true);
+            _headBall = Ball(_skin, 0.155f); _headBall.SetParent(_headPivot, false);
+            _headBall.localScale = new Vector3(0.155f, 0.175f, 0.16f);     // slight egg
+            _nose = Ball(_skin, 0.05f); _nose.SetParent(_headPivot, false);
+            _nose.localPosition = new Vector3(0f, -0.01f, 0.085f);          // points along +z of the pivot (look dir)
+            _nose.localScale = new Vector3(0.05f, 0.05f, 0.08f);
         }
 
         void LateUpdate()
@@ -67,62 +93,101 @@ namespace VRClimb.Util
             Vector3 footSum = Vector3.zero; int feetN = 0;
             if (leftFoot != null && leftFoot.gameObject.activeInHierarchy)  { footSum += leftFoot.position;  feetN++; }
             if (rightFoot != null && rightFoot.gameObject.activeInHierarchy) { footSum += rightFoot.position; feetN++; }
+            Vector3 gripC = grips > 0 ? gripSum / grips : Vector3.zero;
+            Vector3 footC = feetN > 0 ? footSum / feetN : Vector3.zero;
 
-            Vector3 shC = head.position - up * BodyMetrics.ShoulderDrop;
-
-            // --- support-aware rest pose for the hips (this is what creates the realistic hang) ---
+            // --- pelvis pendulum: support-aware rest pose (this is what creates the realistic hang) ---
             Vector3 hipRest;
-            float stiffness;
+            float stiffness, lean;
             if (feetN > 0)
             {
-                Vector3 footC = footSum / feetN;
-                float x = Mathf.Lerp(shC.x, footC.x, 0.55f);                 // sit over your feet
-                if (grips > 0) x = Mathf.Lerp(x, (gripSum / grips).x, 0.2f); // bias toward the pulling arm
-                hipRest = new Vector3(x, head.position.y - BodyMetrics.HipDrop, head.position.z + 0.03f);
-                stiffness = standStiffness;
+                float x = Mathf.Lerp(head.position.x, footC.x, 0.55f);       // sit over your feet
+                if (grips > 0) x = Mathf.Lerp(x, gripC.x, 0.25f);            // bias toward the pulling arm
+                float z = Mathf.Min(head.position.z, footC.z + 0.22f);
+                hipRest = new Vector3(x, head.position.y - BodyMetrics.HipDrop, z);
+                stiffness = standStiffness; lean = standLean;
             }
             else if (grips > 0)
             {
-                Vector3 gripC = gripSum / grips;                            // hang straight below the hand(s)
-                hipRest = new Vector3(gripC.x, gripC.y - (BodyMetrics.HipDrop + 0.18f), head.position.z + 0.07f);
-                stiffness = hangStiffness;
+                // hang below the hand(s), pulled toward the wall (hips stay close, like real climbing)
+                float z = Mathf.Min(head.position.z, gripC.z + 0.13f);
+                hipRest = new Vector3(gripC.x, gripC.y - (BodyMetrics.HipDrop + 0.10f), z);
+                stiffness = hangStiffness; lean = hangLean;
             }
             else
             {
                 hipRest = head.position - up * BodyMetrics.HipDrop;          // airborne / falling
-                stiffness = hangStiffness;
+                stiffness = hangStiffness; lean = hangLean;
             }
 
             if (!_init) { _hip = hipRest; _init = true; }
             Vector3 accel = (hipRest - _hip) * stiffness - _hipVel * damping + Vector3.down * gravity;
             _hipVel += accel * dt;
             _hip += _hipVel * dt;
-            // never let the torso stretch past a sane length
-            _hip = shC + Vector3.ClampMagnitude(_hip - shC, BodyMetrics.HipDrop + 0.10f);
+
+            // --- spine: aim from pelvis toward the support so the torso TILTS under the load ---
+            Vector3 support = grips > 0 ? gripC : (feetN > 0 ? head.position : head.position);
+            Vector3 aim = (support - _hip);
+            Vector3 spineDir = aim.sqrMagnitude > 1e-4f
+                ? Vector3.Slerp(up, aim.normalized, lean).normalized : up;
 
             Vector3 hpC = _hip;
+            Vector3 chest = hpC + spineDir * TorsoLen;                       // shoulders / chest top
+            // curve the back: the lower spine leans a touch more toward the wall than the chest
+            Vector3 wallInto = -fwd;
+            Vector3 midDir = Vector3.Slerp(spineDir, (spineDir + wallInto * spineCurve).normalized, 0.5f);
+            Vector3 mid = hpC + midDir * (TorsoLen * 0.5f);
+            Vector3 shC = chest;
+
             Vector3 lSh = shC - right * BodyMetrics.ShoulderHalf, rSh = shC + right * BodyMetrics.ShoulderHalf;
             Vector3 lHp = hpC - right * BodyMetrics.HipHalf,      rHp = hpC + right * BodyMetrics.HipHalf;
 
-            PlaceCapsule(_neck,  shC, head.position - up * 0.04f, 0.085f);
-            PlaceCapsule(_torso, shC, hpC, 0.27f);                          // tilts when hips offset from shoulders
-            PlaceCapsule(_pelvis, lHp, rHp, 0.20f);
+            PlaceCapsule(_torsoLo, hpC, mid, 0.24f);
+            PlaceCapsule(_torsoHi, mid, shC, 0.30f);                         // chest broader (athletic build)
+            PlaceCapsule(_pelvis, lHp, rHp, 0.23f);
+
+            // --- head: rides the spine and looks up the wall toward the next reach (never bolt upright) ---
+            Vector3 headC = shC + spineDir * NeckLen;
+            // look direction: up the spine, tilted to gaze up the wall and slightly into it
+            Vector3 freeHandTarget = PickFreeHand(grips, gripC);
+            Vector3 lookAt = freeHandTarget;
+            Vector3 lookDir = (lookAt - headC);
+            if (lookDir.sqrMagnitude < 1e-4f) lookDir = (spineDir + up * 0.4f + wallInto * 0.3f);
+            lookDir = Vector3.Slerp(spineDir, lookDir.normalized, 0.55f).normalized;
+            Quaternion targetRot = Quaternion.LookRotation(lookDir, spineDir);
+            _headRot = _init ? Quaternion.Slerp(_headRot, targetRot, Mathf.Clamp01(headTrack * dt)) : targetRot;
+            _headPivot.position = headC;
+            _headPivot.rotation = _headRot;
 
             // Arms: elbows bend down/out/away-from-wall; IK to wherever the sim put each hand.
             Vector3 armPoleL = (-right * 0.5f - up * 0.7f + fwd * 0.4f).normalized;
             Vector3 armPoleR = ( right * 0.5f - up * 0.7f + fwd * 0.4f).normalized;
-            SolveLimb(lSh, leftHand.position,  BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleL, _luA, _lfA, 0.085f);
-            SolveLimb(rSh, rightHand.position, BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleR, _ruA, _rfA, 0.085f);
+            SolveLimb(lSh, leftHand.position,  BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleL, _luA, _lfA, 0.088f);
+            SolveLimb(rSh, rightHand.position, BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleR, _ruA, _rfA, 0.088f);
 
-            // Legs: knees bend out/away-from-wall; dangle under gravity (below the hips) when off a hold.
-            Vector3 legPoleL = (-right * 0.4f + fwd * 0.85f - up * 0.1f).normalized;
-            Vector3 legPoleR = ( right * 0.4f + fwd * 0.85f - up * 0.1f).normalized;
+            // Legs: knees bend out/away-from-wall (stem/frog). A dangling foot keeps a slight bend (target
+            // pulled up & forward of straight-down) so it never reads as a stiff stick under gravity.
+            Vector3 legPoleL = (-right * 0.55f + fwd * 0.8f - up * 0.05f).normalized;
+            Vector3 legPoleR = ( right * 0.55f + fwd * 0.8f - up * 0.05f).normalized;
+            // dangling legs trail the hip's horizontal swing (pendulum secondary motion brings them to life)
+            Vector3 swing = right * Mathf.Clamp(_hipVel.x * legSwing, -0.22f, 0.22f);
             Vector3 lFootT = (leftFoot != null && leftFoot.gameObject.activeInHierarchy)
-                ? leftFoot.position : lHp + (-right * 0.10f - up * (BodyMetrics.LegReach - 0.05f) + fwd * 0.05f);
+                ? leftFoot.position : lHp + (-right * 0.16f - up * (BodyMetrics.LegReach * 0.72f) + fwd * 0.20f) + swing;
             Vector3 rFootT = (rightFoot != null && rightFoot.gameObject.activeInHierarchy)
-                ? rightFoot.position : rHp + ( right * 0.10f - up * (BodyMetrics.LegReach - 0.05f) + fwd * 0.05f);
-            SolveLimb(lHp, lFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleL, _luL, _llL, 0.10f);
-            SolveLimb(rHp, rFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleR, _ruL, _rlL, 0.10f);
+                ? rightFoot.position : rHp + ( right * 0.16f - up * (BodyMetrics.LegReach * 0.72f) + fwd * 0.20f) + swing;
+            SolveLimb(lHp, lFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleL, _luL, _llL, 0.11f);
+            SolveLimb(rHp, rFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleR, _ruL, _rlL, 0.11f);
+        }
+
+        // The hand most likely reaching for the next hold (the non-gripping one), so the head looks at it.
+        Vector3 PickFreeHand(int grips, Vector3 gripC)
+        {
+            bool lg = leftHandC != null && leftHandC.IsGripping;
+            bool rg = rightHandC != null && rightHandC.IsGripping;
+            if (lg && !rg) return rightHand.position;
+            if (rg && !lg) return leftHand.position;
+            // both or neither gripping: look at the higher hand
+            return leftHand.position.y > rightHand.position.y ? leftHand.position : rightHand.position;
         }
 
         // Analytic 2-bone IK with joint limits: clamp the target into reach so the joint is always real
@@ -143,7 +208,7 @@ namespace VRClimb.Util
             Vector3 joint = root + dir * a + polePerp * h;
 
             PlaceCapsule(seg1, root, joint, thick);
-            PlaceCapsule(seg2, joint, target, thick * 0.92f);
+            PlaceCapsule(seg2, joint, target, thick * 0.9f);
         }
 
         static void PlaceCapsule(Transform t, Vector3 a, Vector3 b, float thick)
@@ -162,6 +227,15 @@ namespace VRClimb.Util
             var col = go.GetComponent<Collider>(); if (col != null) Destroy(col);
             go.GetComponent<Renderer>().sharedMaterial = m;
             go.transform.SetParent(transform, true);
+            return go.transform;
+        }
+
+        Transform Ball(Material m, float d)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var col = go.GetComponent<Collider>(); if (col != null) Destroy(col);
+            go.GetComponent<Renderer>().sharedMaterial = m;
+            go.transform.localScale = Vector3.one * d;
             return go.transform;
         }
 
