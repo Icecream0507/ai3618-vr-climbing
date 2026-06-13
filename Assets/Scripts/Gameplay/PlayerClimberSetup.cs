@@ -28,8 +28,8 @@ namespace VRClimb.Gameplay
             cc.height = 1.6f; cc.radius = 0.25f; cc.center = new Vector3(0f, 0.8f, 0f);
             cc.minMoveDistance = 0f;   // don't swallow slow per-frame climb deltas (see ClimbController)
 
-            var leftHand  = EnsureHand(leftController,  UnityEngine.XR.XRNode.LeftHand);
-            var rightHand = EnsureHand(rightController, UnityEngine.XR.XRNode.RightHand);
+            var leftHand  = EnsureHand(leftController,  UnityEngine.XR.XRNode.LeftHand,  -VRClimb.Climbing.BodyMetrics.ShoulderHalf);
+            var rightHand = EnsureHand(rightController, UnityEngine.XR.XRNode.RightHand, +VRClimb.Climbing.BodyMetrics.ShoulderHalf);
 
             var feet = GetComponent<FootPlacementSystem>();
             if (feet == null) feet = gameObject.AddComponent<FootPlacementSystem>();
@@ -51,13 +51,19 @@ namespace VRClimb.Gameplay
                       "FootPlacementSystem.", this);
         }
 
-        ClimbingHand EnsureHand(Transform controller, UnityEngine.XR.XRNode node)
+        ClimbingHand EnsureHand(Transform controller, UnityEngine.XR.XRNode node, float shoulderSide)
         {
             if (controller == null) return null;
             var hand = controller.GetComponent<ClimbingHand>();
             if (hand == null) hand = controller.gameObject.AddComponent<ClimbingHand>();
             hand.handTransform = controller;
             hand.hapticNode = node;
+            // Arm-reach limit: a hold must be within arm's length of this shoulder to be grabbed.
+            // A little slack over the bare bone length for shoulder mobility / a committing lunge.
+            hand.reachHead = head; hand.reachRig = transform;
+            hand.shoulderSide = shoulderSide;
+            // Bone length + shoulder mobility and a committing lunge — the max dynamic reach.
+            hand.armReach = VRClimb.Climbing.BodyMetrics.ArmReach + 0.30f;   // ~0.88 m
             return hand;
         }
     }

@@ -11,6 +11,25 @@
 
 ## 2. Mechanics detail
 
+### Reach limit (where the difficulty comes from)
+- Hands and feet have a finite reach: a hold can only be **grabbed when it's within arm's length of
+  the shoulder** (`ClimbingHand.armReach`, ~0.88 m = bone length `BodyMetrics.ArmReach` + shoulder
+  mobility / a committing lunge). Feet only snap to foot-holds within a hip-relative `footReach`.
+- This is what makes the wall a *puzzle* rather than a free teleport: to reach a far hold you must
+  first move your body into range (shift weight, step a foot up to widen support, then extend). On a
+  real headset the player's physical arm enforces the same limit; we add it in code so the simulation
+  and the on-wall difficulty match. A held hold is dropped only on an absurd over-reach (safety net).
+
+### Gravity & "weight" (kinematic, not a rigidbody sim — deliberate)
+- We do **not** run a Rigidbody/ragdoll physics sim (high-constraint climbing poses make it jitter,
+  and it's orthogonal to the balance/footwork core — see the "keep it simple" scope). Gravity shows
+  up two honest ways: (1) off the wall → you fall and respawn; (2) on the wall → you don't float for
+  free, you *fight* gravity via **stamina** (grip fatigue) and **balance** (lean past support → peel
+  off). That's the real climbing struggle, modelled without a physics engine.
+- The demo avatar's sense of weight (sag, sway, dangling legs when a foot is off) is a damped
+  spring-pendulum on the hips + 2-bone IK with joint limits (`HumanoidRig`) — a kinematic *look* of
+  gravity for the spectator video, not used in play.
+
 ### Grab
 - A hand grabs the **nearest** `ClimbHold` within `grabRadius` when grip crosses `gripThreshold`.
 - "Nearest within reach" (overlap sphere) is more forgiving than "must intersect collider", which

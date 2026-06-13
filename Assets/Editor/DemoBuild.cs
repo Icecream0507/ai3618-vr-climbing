@@ -126,7 +126,7 @@ namespace VRClimb.EditorTools
             var cam = camGo.GetComponent<Camera>();
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.16f, 0.19f, 0.26f);
-            cam.fieldOfView = 50f;
+            cam.fieldOfView = 56f;
 
             // Rig in front of the wall (front face at z = 0).
             var rig = new GameObject("DemoRig");
@@ -155,12 +155,6 @@ namespace VRClimb.EditorTools
             feet.leftFootMarker = MakeFootMarker("LeftFoot");
             feet.rightFootMarker = MakeFootMarker("RightFoot");
 
-            // Visible torso.
-            var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            body.name = "Torso";
-            Object.DestroyImmediate(body.GetComponent<Collider>());
-            Paint(body, new Color(0.2f, 0.45f, 0.7f));
-
             var sim = rig.AddComponent<SimulatedClimber>();
             sim.controller = rig.GetComponent<ClimbController>();
             sim.balance = rig.GetComponent<BalanceSystem>();
@@ -170,7 +164,14 @@ namespace VRClimb.EditorTools
             sim.demoMode = true;
 
             var vis = rig.AddComponent<DemoVisuals>();
-            vis.head = head; vis.body = body.transform; vis.spectator = cam; vis.lookTargetRoot = rig.transform;
+            vis.head = head; vis.body = null; vis.spectator = cam; vis.lookTargetRoot = rig.transform;
+
+            // Articulated humanoid (cosmetic, demo-only) so the spectator video reads as a person.
+            var human = new GameObject("Humanoid").AddComponent<HumanoidRig>();
+            human.transform.SetParent(rig.transform, false);
+            human.head = head; human.leftHand = left; human.rightHand = right;
+            human.leftFoot = feet.leftFootMarker; human.rightFoot = feet.rightFootMarker;
+            human.rig = rig.transform;
 
             var overlay = rig.AddComponent<DemoOverlay>();
             overlay.spectator = cam; overlay.balance = sim.balance; overlay.sim = sim;

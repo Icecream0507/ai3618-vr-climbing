@@ -154,14 +154,30 @@ namespace VRClimb.Util
             if (CheckSummitDone()) return;
             if (_next >= _route.Count) { _phase = Phase.ClimbPull; return; }
 
+            // Only reach a hold that is within arm's length of the free hand's shoulder — otherwise
+            // climb (pull up / shift) until it comes into range, exactly like the real reach limit.
             var target = _route[_next];
-            if (target.GripPoint.y - rig.position.y <= MaxReach)
+            if (WithinReach(target.GripPoint, _freeHand))
             {
                 _freeHand.handTransform.position = target.GripPoint;
                 _freeHand.overrideGrip = true;
                 _phase = Phase.ClimbWaitGrab; _phaseTime = 0f;
             }
             else _phase = Phase.ClimbPull;   // not reachable yet — keep pulling on the current hold
+        }
+
+        // Shoulder of the given hand, and whether a point is within arm's reach of it (matches the
+        // ClimbingHand.armReach gate, with a hair of margin so the grab isn't borderline-rejected).
+        Vector3 ShoulderOf(ClimbingHand hand)
+        {
+            float side = (hand == leftHand ? -1f : 1f) * Climbing.BodyMetrics.ShoulderHalf;
+            return head.position - Vector3.up * Climbing.BodyMetrics.ShoulderDrop + rig.right * side;
+        }
+
+        bool WithinReach(Vector3 point, ClimbingHand hand)
+        {
+            float reach = hand.armReach > 0f ? hand.armReach - 0.04f : MaxReach;
+            return (point - ShoulderOf(hand)).sqrMagnitude <= reach * reach;
         }
 
         void StepWaitGrab()
@@ -198,8 +214,7 @@ namespace VRClimb.Util
             float pull = demoMode ? demoPullSpeed : PullSpeed;
             ht.position += Vector3.down * Mathf.Min(pull * Time.deltaTime, 0.04f);
 
-            bool nextReachable = _next < _route.Count &&
-                                 _route[_next].GripPoint.y - rig.position.y <= MaxReach;
+            bool nextReachable = _next < _route.Count && WithinReach(_route[_next].GripPoint, _freeHand);
             float armLocalY = ht.position.y - rig.position.y;
 
             if (nextReachable) { _phase = Phase.ClimbReach; return; }
@@ -242,9 +257,24 @@ namespace VRClimb.Util
             for (int i = 0; i < s_Pts.Count; i++)
             { float x = s_Pts[i].x; if (x < min) min = x; if (x > max) max = x; }
 
-            float midLocal = Mathf.Clamp((min + max) * 0.5f - rig.position.x, -0.45f, 0.45f);
+            float supportMidL = (min + max) * 0.5f - rig.position.x;
+            float desiredL = supportMidL;
+
+            // Shift the body toward the next hold so it comes into arm's reach — but stay within the
+            // support span (+small margin) so the CoM stays balanced and we don't peel off ourselves.
+            if (_phase != Phase.PeelOff && _next < _route.Count)
+            {
+                float nextL = _route[_next].GripPoint.x - rig.position.x;
+                desiredL = Mathf.Lerp(supportMidL, nextL, 0.6f);
+                // Allow the CoM to drift a little past the support edge toward the next hold (a
+                // recoverable weight-shift), so opposite-side holds can be reached before a foot plants.
+                float lo = (min - rig.position.x) - 0.12f, hi = (max - rig.position.x) + 0.12f;
+                desiredL = Mathf.Clamp(desiredL, lo, hi);
+            }
+
+            desiredL = Mathf.Clamp(desiredL, -0.45f, 0.45f);
             var lp = head.localPosition;
-            lp.x = Mathf.MoveTowards(lp.x, midLocal, LeanSpeed * Time.deltaTime);
+            lp.x = Mathf.MoveTowards(lp.x, desiredL, LeanSpeed * Time.deltaTime);
             head.localPosition = lp;
         }
 

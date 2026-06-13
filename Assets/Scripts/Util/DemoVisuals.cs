@@ -19,15 +19,16 @@ namespace VRClimb.Util
         public Transform lookTargetRoot; // rig root (x stays at wall centre)
 
         [Header("Camera framing")]
-        public Vector3 camOffset = new Vector3(2.1f, 0.2f, 2.8f);  // front-right of the wall
+        public Vector3 camOffset = new Vector3(2.0f, 0.45f, 3.4f);  // front-right, pulled back to frame the body
         public float camLag = 2.5f;
-        public float pelvisDrop = 1.0f; // torso length below the head
+        public float bodyCenterDrop = 0.7f;  // track the body centre (below the head), not the head
+        public float pelvisDrop = 1.0f;      // (unused when body is null)
 
         float _camY;
 
         void Start()
         {
-            if (head != null) _camY = head.position.y - 0.6f;
+            if (head != null) _camY = head.position.y - bodyCenterDrop;
         }
 
         void LateUpdate()
@@ -44,11 +45,11 @@ namespace VRClimb.Util
 
             if (spectator != null && head != null)
             {
-                float targetY = head.position.y - 0.4f;
+                float targetY = head.position.y - bodyCenterDrop;   // body centre
                 _camY = Mathf.Lerp(_camY, targetY, Time.deltaTime * camLag);
                 float baseX = lookTargetRoot != null ? lookTargetRoot.position.x : 0f;
                 spectator.transform.position = new Vector3(baseX + camOffset.x, _camY + camOffset.y, camOffset.z);
-                spectator.transform.LookAt(new Vector3(baseX, _camY + 0.7f, 0.15f));
+                spectator.transform.LookAt(new Vector3(baseX, _camY + 0.15f, 0.15f));
             }
         }
     }

@@ -27,6 +27,28 @@ namespace VRClimb.Climbing
         [Tooltip("Physics layer(s) climb holds live on.")]
         public LayerMask holdLayer = ~0;
 
+        [Header("Arm-reach limit (climbing difficulty)")]
+        [Tooltip("HMD/head transform. If set with armReach>0, a hold can only be grabbed when it is " +
+                 "within arm's reach of the shoulder — you must move your body into range first.")]
+        public Transform reachHead;
+        [Tooltip("XR Origin (lateral axis). Defaults to reachHead's parent if left empty.")]
+        public Transform reachRig;
+        [Tooltip("Lateral shoulder offset along the rig's right axis (-=left hand, +=right hand).")]
+        public float shoulderSide = 0f;
+        [Tooltip("Max shoulder->hold distance allowed to grab (m). 0 disables the limit (e.g. for pure VR, where your real arm already limits reach).")]
+        public float armReach = 0f;
+
+        /// <summary>World shoulder position this hand reaches from (for the arm-reach limit).</summary>
+        public Vector3 ShoulderPosition
+        {
+            get
+            {
+                if (reachHead == null) return HandPosition;
+                Transform r = reachRig != null ? reachRig : reachHead;
+                return reachHead.position - Vector3.up * BodyMetrics.ShoulderDrop + r.right * shoulderSide;
+            }
+        }
+
         [Header("Feedback")]
         [Tooltip("Optional: XR node used for a haptic pulse on grab.")]
         public UnityEngine.XR.XRNode hapticNode = UnityEngine.XR.XRNode.RightHand;
@@ -60,12 +82,24 @@ namespace VRClimb.Climbing
 
             // Drop the hold if it broke / was disabled while held.
             if (IsGripping && (CurrentHold == null || CurrentHold.IsBroken)) ReleaseInternal();
+
+            // Safety net: drop the hold only if the body has moved absurdly far from it (well beyond
+            // any reachable pose) — normal climbing never trips this; the real limit is on *grabbing*.
+            if (IsGripping && reachHead != null && armReach > 0f && CurrentHold != null)
+            {
+                float slack = armReach * 2.2f;
+                if ((CurrentHold.GripPoint - ShoulderPosition).sqrMagnitude > slack * slack) ReleaseInternal();
+            }
         }
 
         void TryGrab()
         {
             Vector3 p = HandPosition;
             int n = Physics.OverlapSphereNonAlloc(p, grabRadius, s_Overlap, holdLayer, QueryTriggerInteraction.Collide);
+
+            bool limitReach = reachHead != null && armReach > 0f;
+            Vector3 shoulder = ShoulderPosition;
+            float maxReachSqr = armReach * armReach;
 
             ClimbHold best = null;
             float bestDist = float.MaxValue;
@@ -74,6 +108,8 @@ namespace VRClimb.Climbing
                 var hold = s_Overlap[i].GetComponentInParent<ClimbHold>();
                 if (hold == null || hold.IsBroken) continue;
                 if (hold.role == ClimbHold.HoldRole.Foot) continue;   // feet-only holds can't be hand-grabbed
+                // Out of arm's reach: your body isn't close enough yet — climb into range first.
+                if (limitReach && (hold.GripPoint - shoulder).sqrMagnitude > maxReachSqr) continue;
                 float d = (hold.GripPoint - p).sqrMagnitude;
                 if (d < bestDist) { bestDist = d; best = hold; }
             }
