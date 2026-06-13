@@ -46,6 +46,7 @@ namespace VRClimb.Util
         public float spineCurve = 0.14f;                 // chest leads the head a touch (curved back, not a pole)
         public float headTrack = 8f;                     // how fast the head turns to look toward the next reach
         public float legSwing = 0.06f;                   // dangling legs trail the hip swing (pendulum secondary motion)
+        public float hipTwist = 16f;                     // deg of spinal torsion: reaching-side hip turns into the wall
 
         // anatomical lengths
         const float TorsoLen = BodyMetrics.HipDrop - BodyMetrics.ShoulderDrop; // pelvis -> shoulders (~0.58)
@@ -59,6 +60,7 @@ namespace VRClimb.Util
 
         Vector3 _hip, _hipVel;
         Quaternion _headRot = Quaternion.identity;
+        float _reach;   // smoothed reaching side: +1 right reaching, -1 left reaching
         bool _init;
 
         void Start()
@@ -139,8 +141,17 @@ namespace VRClimb.Util
             Vector3 mid = hpC + midDir * (TorsoLen * 0.5f);
             Vector3 shC = chest;
 
-            Vector3 lSh = shC - right * BodyMetrics.ShoulderHalf, rSh = shC + right * BodyMetrics.ShoulderHalf;
-            Vector3 lHp = hpC - right * BodyMetrics.HipHalf,      rHp = hpC + right * BodyMetrics.HipHalf;
+            // Spinal torsion (real climbing technique): the reaching-side hip turns into the wall and
+            // the shoulders counter-rotate, so the body blades to the wall instead of staying square.
+            bool lg2 = leftHandC != null && leftHandC.IsGripping;
+            bool rg2 = rightHandC != null && rightHandC.IsGripping;
+            float reachTarget = (lg2 && !rg2) ? 1f : (rg2 && !lg2) ? -1f
+                                : (rightHand.position.y > leftHand.position.y ? 1f : -1f);
+            _reach = Mathf.MoveTowards(_reach, reachTarget, 2.5f * dt);
+            Vector3 hipR = Quaternion.AngleAxis(hipTwist * _reach, spineDir) * right;
+            Vector3 shR  = Quaternion.AngleAxis(-hipTwist * 0.5f * _reach, spineDir) * right;
+            Vector3 lSh = shC - shR * BodyMetrics.ShoulderHalf, rSh = shC + shR * BodyMetrics.ShoulderHalf;
+            Vector3 lHp = hpC - hipR * BodyMetrics.HipHalf,      rHp = hpC + hipR * BodyMetrics.HipHalf;
 
             PlaceCapsule(_torsoLo, hpC, mid, 0.24f);
             PlaceCapsule(_torsoHi, mid, shC, 0.30f);                         // chest broader (athletic build)

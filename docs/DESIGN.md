@@ -26,9 +26,22 @@
   up two honest ways: (1) off the wall → you fall and respawn; (2) on the wall → you don't float for
   free, you *fight* gravity via **stamina** (grip fatigue) and **balance** (lean past support → peel
   off). That's the real climbing struggle, modelled without a physics engine.
-- The demo avatar's sense of weight (sag, sway, dangling legs when a foot is off) is a damped
-  spring-pendulum on the hips + 2-bone IK with joint limits (`HumanoidRig`) — a kinematic *look* of
-  gravity for the spectator video, not used in play.
+- The demo avatar's sense of weight is a damped spring-pendulum on the hips + 2-bone IK with joint
+  limits (`HumanoidRig`) — a kinematic *look* of gravity for the spectator video, not used in play.
+  It is built to read as a real climber rather than a stiff mannequin, benchmarked against the Klifur
+  reference (`Demo/climbing.gif`, a physics-based climbing game whose torso is a dynamic rigidbody
+  with hands/feet jointed to holds). Our kinematic approximation of that feel:
+  - **The body hangs from the hands, not from an upright head.** The pelvis is the pendulum; the
+    spine is *derived* from it, aiming pelvis → toward whatever bears load (grips, else feet). So a
+    one-arm hang tilts the whole torso under that arm — the diagonal body tension of real climbing.
+  - **The head rides the top of the spine and is oriented** (visible face) to watch the next hold —
+    it tilts and turns with the body instead of staying bolt upright.
+  - **Spinal torsion / hip-twist:** the reaching-side hip turns into the wall and the shoulders
+    counter-rotate, so the body blades to the wall (real technique) instead of staying square.
+  - **Support-aware pose:** standing over planted feet (upright, stiffer spring) vs. dangling below
+    the grips (saggier, swingier); dangling legs trail the hip swing as pendulum secondary motion.
+  - **Joint limits everywhere:** elbows/knees never hyperextend; a hold beyond reach leaves the limb
+    visibly taut and short of it (this is what makes the "impossible route" demo read as unclimbable).
 
 ### Grab
 - A hand grabs the **nearest** `ClimbHold` within `grabRadius` when grip crosses `gripThreshold`.
