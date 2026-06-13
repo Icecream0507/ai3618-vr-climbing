@@ -39,11 +39,30 @@ namespace VRClimb.EditorTools
             Debug.Log("[DemoBuild] Saved " + ScenePath + " — open it and press Play to watch the demo.");
         }
 
-        [MenuItem("VRClimb/Record Demo")]
+        static int _routeIndex = 0;       // which route the recorded run climbs
+        static bool _skipIntro = false;   // skip the phase-A peel-off intro (impossible-route demo)
+
+        [MenuItem("VRClimb/Record Demo (success)")]
         public static void RecordFromMenu() { Record(); }
 
-        // Entry point for -executeMethod (headless offline render).
+        [MenuItem("VRClimb/Record Demo (impossible route)")]
+        public static void RecordImpossibleFromMenu() { RecordImpossible(); }
+
+        // Entry point for -executeMethod: the completable route-0 playthrough.
         public static void Record()
+        {
+            _routeIndex = 0; _skipIntro = false;
+            RunRecording();
+        }
+
+        // Entry point for -executeMethod: the deliberately unclimbable route (gets stuck & comes off).
+        public static void RecordImpossible()
+        {
+            _routeIndex = 4; _skipIntro = true;
+            RunRecording();
+        }
+
+        static void RunRecording()
         {
             ClimbSceneSetup.EnsureLayer("Hold");
             RenderPipelineSetup.Ensure();
@@ -78,7 +97,7 @@ namespace VRClimb.EditorTools
             int frames = LastFrameCount;
             string msg = $"[DemoBuild] Recording finished: {frames} frames in Logs/frames " +
                          (timedOut ? "(TIMED OUT) " : "") +
-                         (SimulatedClimber.Done ? "(summit reached). " : "(sim did not finish). ") +
+                         (SimulatedClimber.Done ? "(sim finished). " : "(sim did not finish). ") +
                          "Run ffmpeg to assemble the mp4.";
             Debug.Log(msg);
             File.WriteAllText("Logs/record-result.txt",
@@ -118,7 +137,7 @@ namespace VRClimb.EditorTools
             new GameObject("GameManager", typeof(GameManager));
 
             var rb = new GameObject("RouteBuilder").AddComponent<RouteBuilder>();
-            rb.routeIndex = 0; rb.holdLayerName = "Hold"; rb.buildOnAwake = true;
+            rb.routeIndex = _routeIndex; rb.holdLayerName = "Hold"; rb.buildOnAwake = true;
 
             // Spectator camera (also the MainCamera the systems will tolerate; head is explicitly wired).
             var camGo = new GameObject("SpectatorCamera", typeof(Camera));
@@ -162,6 +181,7 @@ namespace VRClimb.EditorTools
             sim.leftHand = leftHand; sim.rightHand = rightHand;
             sim.head = head; sim.rig = rig.transform;
             sim.demoMode = true;
+            sim.skipIntro = _skipIntro;
 
             var vis = rig.AddComponent<DemoVisuals>();
             vis.head = head; vis.body = null; vis.spectator = cam; vis.lookTargetRoot = rig.transform;
@@ -172,6 +192,7 @@ namespace VRClimb.EditorTools
             human.head = head; human.leftHand = left; human.rightHand = right;
             human.leftFoot = feet.leftFootMarker; human.rightFoot = feet.rightFootMarker;
             human.rig = rig.transform;
+            human.leftHandC = leftHand; human.rightHandC = rightHand;
 
             var overlay = rig.AddComponent<DemoOverlay>();
             overlay.spectator = cam; overlay.balance = sim.balance; overlay.sim = sim;

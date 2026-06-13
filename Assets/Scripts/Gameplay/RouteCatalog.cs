@@ -12,10 +12,10 @@ namespace VRClimb.Gameplay
     /// </summary>
     public static class RouteCatalog
     {
-        public const int Count = 4;
+        public const int Count = 5;
         const float Z = 0.12f;
 
-        public static readonly string[] Names = { "Warm-up", "Balance Test", "The Arete", "Endurance" };
+        public static readonly string[] Names = { "Warm-up", "Balance Test", "The Arete", "Endurance", "The Gap (unclimbable)" };
 
         public static List<RouteDefinition.HoldSpec> Get(int index, Vector2 wall)
         {
@@ -24,6 +24,7 @@ namespace VRClimb.Gameplay
                 case 1:  return BalanceTest(wall);
                 case 2:  return TheArete(wall);
                 case 3:  return Endurance(wall);
+                case 4:  return TheGap(wall);
                 default: return WarmUp(wall);
             }
         }
@@ -111,6 +112,27 @@ namespace VRClimb.Gameplay
             Foot(l, -0.5f, 0.8f); Foot(l, 0.5f, 1.1f); Foot(l, -0.4f, 1.5f); Foot(l, 0.4f, 1.9f);
             Foot(l, -0.3f, 2.4f); Foot(l, 0.5f, 2.8f); Foot(l, -0.4f, 3.3f); Foot(l, 0.4f, 3.7f);
             Foot(l, -0.3f, 4.2f); Foot(l, 0.4f, 4.6f);
+            return l;
+        }
+
+        // Route 4 — "The Gap": deliberately UNCLIMBABLE, to show the reach limit is a real constraint.
+        // A normal, reachable lower section ends at ~2.2 m. Then there is a blank wall: the next hand
+        // hold sits ~2.0 m higher with NO holds or feet in between, so no amount of pulling/lock-off
+        // (lock-off ≈ 0.6 m + arm reach ≈ 0.88 m) can bridge it. The climber tops out the low section,
+        // reaches full stretch for the gap hold, can't touch it, and comes off the wall.
+        static List<RouteDefinition.HoldSpec> TheGap(Vector2 wall)
+        {
+            var l = new List<RouteDefinition.HoldSpec>();
+
+            // Reachable start.
+            Hand(l, -0.4f, 1.3f); Hand(l, 0.4f, 1.7f); Hand(l, -0.3f, 2.2f);
+            // THE GAP — next hand hold ~2.0 m above the last, nothing to use in between.
+            Hand(l, 0.0f, 4.2f);
+            Either(l, 0.0f, 4.9f);
+            Finish(l, 0f, wall.y - 0.4f);
+
+            // Feet only under the lower (reachable) section — none to bridge the gap.
+            Foot(l, -0.4f, 0.8f); Foot(l, 0.4f, 1.1f); Foot(l, -0.3f, 1.6f); Foot(l, 0.4f, 2.0f);
             return l;
         }
     }

@@ -33,6 +33,9 @@ namespace VRClimb.Util
         public float demoPullSpeed = 0.45f;
         [Tooltip("Demo-mode pause after each hand match, so each move is legible.")]
         public float demoGrabPause = 0.35f;
+        [Tooltip("Skip the phase-A peel-off intro and climb the route straight from the ground " +
+                 "(used by the 'impossible route' demo, which is about getting stuck, not balance).")]
+        public bool skipIntro = false;
 
         /// <summary>Human-readable caption for the current beat, shown by DemoOverlay.</summary>
         public string Caption { get; private set; } = "";
@@ -46,9 +49,10 @@ namespace VRClimb.Util
         public Transform head;
         public Transform rig;
 
-        enum Phase { PeelOff, ClimbReach, ClimbWaitGrab, ClimbPull, Finished }
+        enum Phase { PeelOff, ClimbReach, ClimbWaitGrab, ClimbPull, Stuck, Finished }
         Phase _phase;
         float _phaseTime, _totalTime;
+        float _stuckTime, _stuckGap;
 
         Vector3 _start;
         ClimbHold _testHold;
@@ -66,6 +70,12 @@ namespace VRClimb.Util
         // Head re-centring speed. Must cross the widest hand-switch (~0.9 m) faster than the
         // BalanceSystem grace window (0.35 s), like a player shifting weight as they reach.
         const float LeanSpeed = 3f;
+        // Max lock-off: the gripping hold can sit at most this far below the gripping shoulder before
+        // the arm is fully locked off and you can't pull any higher — so each move has a real ceiling,
+        // and a gap larger than (lock-off + arm reach) is genuinely unclimbable.
+        const float LockoffMax = 0.62f;
+        const float HandMoveSpeed = 1.7f;   // free hand reaching toward a hold (m/s)
+        const float HandReadySpeed = 2.2f;  // free hand returning to a chambered ready pose (m/s)
         static readonly List<Vector3> s_Pts = new List<Vector3>(8);
 
         void Start()
@@ -73,6 +83,16 @@ namespace VRClimb.Util
             Done = false; Failures.Clear(); Summary = "";
             _start = rig.position;
             if (balance != null) balance.PeelOff += OnPeel;
+
+            if (skipIntro)
+            {
+                // Straight to climbing (used by the 'impossible route' demo).
+                BuildRouteList();
+                Caption = "Climbing — but how far can this route be pushed?";
+                _phase = Phase.ClimbReach;
+                Debug.Log($"[Sim] skipIntro: climbing {_route.Count} holds.");
+                return;
+            }
 
             // Phase A: empty stretch of wall — no foot holds within reach, one isolated hand hold.
             Teleport(new Vector3(1.2f, 0f, rig.position.z));
@@ -106,6 +126,7 @@ namespace VRClimb.Util
             {
                 _pause -= Time.deltaTime;
                 LeanTowardSupport();
+                ParkFreeHand();
                 return;
             }
 
@@ -115,6 +136,7 @@ namespace VRClimb.Util
                 case Phase.ClimbReach:   LeanTowardSupport(); StepReach();    break;
                 case Phase.ClimbWaitGrab:LeanTowardSupport(); StepWaitGrab(); break;
                 case Phase.ClimbPull:    LeanTowardSupport(); StepPull();     break;
+                case Phase.Stuck:        LeanTowardSupport(); StepStuck();    break;
             }
         }
 
@@ -157,13 +179,17 @@ namespace VRClimb.Util
             // Only reach a hold that is within arm's length of the free hand's shoulder — otherwise
             // climb (pull up / shift) until it comes into range, exactly like the real reach limit.
             var target = _route[_next];
-            if (WithinReach(target.GripPoint, _freeHand))
+            if (!WithinReach(target.GripPoint, _freeHand)) { _phase = Phase.ClimbPull; return; }
+
+            // Move the free hand smoothly toward the hold (a real reach), then grip on arrival —
+            // instead of snapping the hand onto the hold (which looked like a rigid arm in mid-air).
+            var ht = _freeHand.handTransform;
+            ht.position = Vector3.MoveTowards(ht.position, target.GripPoint, HandMoveSpeed * Time.deltaTime);
+            if ((ht.position - target.GripPoint).sqrMagnitude < 0.05f * 0.05f)
             {
-                _freeHand.handTransform.position = target.GripPoint;
                 _freeHand.overrideGrip = true;
                 _phase = Phase.ClimbWaitGrab; _phaseTime = 0f;
             }
-            else _phase = Phase.ClimbPull;   // not reachable yet — keep pulling on the current hold
         }
 
         // Shoulder of the given hand, and whether a point is within arm's reach of it (matches the
@@ -209,21 +235,78 @@ namespace VRClimb.Util
             if (CheckSummitDone()) return;
             if (_gripHand == null) { _phase = Phase.ClimbReach; return; }
 
-            // Pull the gripping hand down -> counter-motion raises the rig up the wall.
+            ParkFreeHand();   // the non-pulling hand rests chambered near the body, not stuck in air
+
+            bool nextExists = _next < _route.Count;
+            bool nextReachable = nextExists && WithinReach(_route[_next].GripPoint, _freeHand);
+            if (nextReachable) { _phase = Phase.ClimbReach; return; }
+
+            // Lock-off ceiling: once the gripping hold is this far below the shoulder you're fully
+            // locked off and can't pull any higher — like a real climber maxed out on a low hold.
+            float lockoff = _gripHand.CurrentHold != null
+                ? ShoulderOf(_gripHand).y - _gripHand.CurrentHold.GripPoint.y : 0f;
+            bool maxedOut = lockoff >= LockoffMax || (_gripHand.handTransform.position.y - rig.position.y) < 0.3f;
+
+            if (maxedOut)
+            {
+                if (demoMode && nextExists)   // can't reach the next hold even maxed out -> stuck
+                {
+                    _stuckGap = _route[_next].GripPoint.y - (ShoulderOf(_freeHand).y);
+                    Caption = $"Next hold ~{_stuckGap:0.0} m past full reach — no move bridges this gap.";
+                    _phase = Phase.Stuck; _stuckTime = 0f; _phaseTime = 0f;
+                    Debug.Log($"[Sim] STUCK at hold #{_next}: gap {_stuckGap:0.0} m beyond reach.");
+                }
+                else
+                {
+                    Fail(_next >= _route.Count
+                        ? "ran out of pull on the finish hold before the summit trigger fired"
+                        : $"ran out of pull before hold #{_next} became reachable");
+                }
+                return;
+            }
+
+            // Otherwise keep pulling: the gripping hand draws down -> counter-motion raises the rig.
             var ht = _gripHand.handTransform;
             float pull = demoMode ? demoPullSpeed : PullSpeed;
             ht.position += Vector3.down * Mathf.Min(pull * Time.deltaTime, 0.04f);
 
-            bool nextReachable = _next < _route.Count && WithinReach(_route[_next].GripPoint, _freeHand);
-            float armLocalY = ht.position.y - rig.position.y;
-
-            if (nextReachable) { _phase = Phase.ClimbReach; return; }
-            if (armLocalY < 0.3f)
-                Fail(_next >= _route.Count
-                    ? "ran out of pull on the finish hold before the summit trigger fired"
-                    : $"ran out of pull before hold #{_next} became reachable");
-            else if (_phaseTime > 30f)
+            if (_phaseTime > 30f)
                 Fail($"pull phase stalled (rig.y={rig.position.y:0.00}, next=#{_next})");
+        }
+
+        // The climber has exhausted every move and still can't reach the next hold: hold a full, taut
+        // reach toward it (the arm visibly stops short of the hold), then come off the wall.
+        void StepStuck()
+        {
+            _stuckTime += Time.deltaTime;
+            if (_next < _route.Count)
+            {
+                Vector3 sh = ShoulderOf(_freeHand);
+                Vector3 dir = (_route[_next].GripPoint - sh);
+                dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.up;
+                Vector3 maxHand = sh + dir * (_freeHand.armReach > 0f ? _freeHand.armReach : 0.85f);
+                _freeHand.handTransform.position =
+                    Vector3.MoveTowards(_freeHand.handTransform.position, maxHand, HandMoveSpeed * Time.deltaTime);
+            }
+
+            if (_stuckTime > 3.0f)
+            {
+                Caption = "Out of options — comes off the wall. Route unclimbable.";
+                if (feet != null) { feet.DropAll(); feet.enabled = false; }   // nothing left to hold on with
+                leftHand.overrideGrip = rightHand.overrideGrip = false;       // both hands let go -> gravity
+                Finish($"STUCK — route unclimbable: the gap to hold #{_next} exceeds lock-off + reach " +
+                       $"(~{_stuckGap:0.0} m past full extension). No technique closes it.");
+            }
+        }
+
+        // Park the free (non-gripping) hand in a relaxed chambered pose just in front of its shoulder,
+        // so the off arm bends naturally near the body instead of jutting out to a stale hold position.
+        void ParkFreeHand()
+        {
+            if (_freeHand == null || _freeHand.IsGripping) return;
+            Vector3 ready = ShoulderOf(_freeHand) + Vector3.forward * 0.22f + Vector3.down * 0.06f;
+            _freeHand.handTransform.position =
+                Vector3.MoveTowards(_freeHand.handTransform.position, ready, HandReadySpeed * Time.deltaTime);
         }
 
         bool CheckSummitDone()
