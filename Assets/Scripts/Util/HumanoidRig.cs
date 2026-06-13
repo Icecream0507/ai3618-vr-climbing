@@ -45,6 +45,7 @@ namespace VRClimb.Util
         [Range(0f, 1f)] public float standLean = 0.30f;  // torso lean when standing on feet (more upright)
         public float spineCurve = 0.14f;                 // chest leads the head a touch (curved back, not a pole)
         public float headTrack = 8f;                     // how fast the head turns to look toward the next reach
+        [Range(0f, 0.8f)] public float headLean = 0.5f;  // how far the neck bends off the spine toward the gaze (visible head tip)
         public float legSwing = 0.06f;                   // dangling legs trail the hip swing (pendulum secondary motion)
         public float hipTwist = 16f;                     // deg of spinal torsion: reaching-side hip turns into the wall
         public float swingImpulse = 0.7f;                // m/s sideways kick when a hand releases (body swings under the other)
@@ -54,7 +55,7 @@ namespace VRClimb.Util
         const float NeckLen  = 0.21f;                                          // shoulders -> head centre along spine
 
         Transform _torsoLo, _torsoHi, _pelvis;     // two spine segments + pelvis block
-        Transform _headPivot, _headBall, _nose;    // oriented head
+        Transform _headPivot, _headBall, _nose, _hair;  // oriented head (skull + hair crown so the tilt reads)
         Transform _luA, _lfA, _ruA, _rfA;          // arm capsules
         Transform _luL, _llL, _ruL, _rlL;          // leg capsules
         Transform _lShB, _rShB, _lElB, _rElB;      // shoulder + elbow joint balls
@@ -83,13 +84,18 @@ namespace VRClimb.Util
             _lHipB= Ball(_pants,  0.13f); _rHipB= Ball(_pants,  0.13f);  _lHipB.SetParent(transform, true);_rHipB.SetParent(transform, true);
             _lKnB = Ball(_pants,  0.105f);_rKnB = Ball(_pants,  0.105f); _lKnB.SetParent(transform, true); _rKnB.SetParent(transform, true);
 
-            // Head: a squashed skin ball + a small nose so its orientation is visible on camera.
+            // Head: a tall skull + a dark hair crown + a nose, so the head's tilt is unmistakable from
+            // any camera angle (a near-sphere hides rotation — that's why the head *looked* upright).
+            var hairMat = Mat(new Color(0.20f, 0.14f, 0.10f));
             _headPivot = new GameObject("HeadPivot").transform; _headPivot.SetParent(transform, true);
-            _headBall = Ball(_skin, 0.155f); _headBall.SetParent(_headPivot, false);
-            _headBall.localScale = new Vector3(0.155f, 0.175f, 0.16f);     // slight egg
+            _headBall = Ball(_skin, 0.16f); _headBall.SetParent(_headPivot, false);
+            _headBall.localScale = new Vector3(0.16f, 0.205f, 0.17f);       // taller skull -> the long axis tipping reads
+            _hair = Ball(hairMat, 0.1f); _hair.SetParent(_headPivot, false);
+            _hair.localPosition = new Vector3(0f, 0.055f, -0.03f);          // crown, slightly back of top
+            _hair.localScale = new Vector3(0.182f, 0.135f, 0.195f);
             _nose = Ball(_skin, 0.05f); _nose.SetParent(_headPivot, false);
-            _nose.localPosition = new Vector3(0f, -0.01f, 0.085f);          // points along +z of the pivot (look dir)
-            _nose.localScale = new Vector3(0.05f, 0.05f, 0.08f);
+            _nose.localPosition = new Vector3(0f, -0.01f, 0.09f);           // points along +z of the pivot (look dir)
+            _nose.localScale = new Vector3(0.05f, 0.055f, 0.085f);
         }
 
         void LateUpdate()
@@ -177,18 +183,18 @@ namespace VRClimb.Util
             PlaceCapsule(_torsoHi, mid, shC, 0.32f);                         // broader chest (athletic V-taper)
             PlaceCapsule(_pelvis, lHp, rHp, 0.24f);
 
-            // --- head: rides the spine and looks up the wall toward the next reach (never bolt upright) ---
-            Vector3 headC = shC + spineDir * NeckLen;
-            // look direction: up the spine, tilted to gaze up the wall and slightly into it
+            // --- head: the NECK BENDS off the spine toward the gaze, so the head visibly tips (not a
+            // ball balanced upright on the shoulders). It looks up the wall at the next hold. ---
             Vector3 freeHandTarget = PickFreeHand(grips, gripC);
-            Vector3 lookAt = freeHandTarget;
-            Vector3 lookDir = (lookAt - headC);
-            if (lookDir.sqrMagnitude < 1e-4f) lookDir = (spineDir + up * 0.4f + wallInto * 0.3f);
-            lookDir = Vector3.Slerp(spineDir, lookDir.normalized, 0.55f).normalized;
-            Quaternion targetRot = Quaternion.LookRotation(lookDir, spineDir);
+            Vector3 headC0 = shC + spineDir * NeckLen;                       // where the head would sit if rigid
+            Vector3 gaze = freeHandTarget - headC0;
+            if (gaze.sqrMagnitude < 1e-4f) gaze = spineDir + up * 0.4f + wallInto * 0.3f;
+            gaze.Normalize();
+            Vector3 neckDir = Vector3.Slerp(spineDir, gaze, headLean).normalized;  // neck arcs toward the look
+            Vector3 headC = shC + neckDir * NeckLen;                         // head offset off straight-up -> visible tilt
+            Quaternion targetRot = Quaternion.LookRotation(gaze, neckDir);
             _headRot = _init ? Quaternion.Slerp(_headRot, targetRot, Mathf.Clamp01(headTrack * dt)) : targetRot;
-            _headPivot.position = headC;
-            _headPivot.rotation = _headRot;
+            _headPivot.SetPositionAndRotation(headC, _headRot);
 
             // Arms: elbows bend down/out/away-from-wall; IK to wherever the sim put each hand.
             Vector3 armPoleL = (-right * 0.5f - up * 0.7f + fwd * 0.4f).normalized;
