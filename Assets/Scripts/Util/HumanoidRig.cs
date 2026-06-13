@@ -211,8 +211,14 @@ namespace VRClimb.Util
 
             // --- head: the NECK BENDS off the spine toward the gaze, so the head visibly tips (not a
             // ball balanced upright on the shoulders). It looks up the wall at the next hold. ---
-            Vector3 freeHandTarget = PickFreeHand(grips, gripC);
             Vector3 headC0 = shC + spineDir * NeckLen;                       // where the head would sit if rigid
+            Vector3 freeHandTarget = PickFreeHand(grips, gripC);
+            // If both hands are stacked high & close (an overhead match), looking up would bury the head
+            // between the two symmetric forearms. Instead scan the footwork — look down toward the feet,
+            // exactly what a climber does after matching — which keeps the head visible and reads natural.
+            bool handsClose = (leftHand.position - rightHand.position).sqrMagnitude < 0.1225f; // ~0.35 m apart
+            if (grips >= 1 && handsClose && freeHandTarget.y > headC0.y + 0.05f)
+                freeHandTarget = feetN > 0 ? footC : _hip + Vector3.down * 0.4f;
             Vector3 gaze = freeHandTarget - headC0;
             if (gaze.sqrMagnitude < 1e-4f) gaze = spineDir + up * 0.4f + wallInto * 0.3f;
             gaze.Normalize();
