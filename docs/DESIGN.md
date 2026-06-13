@@ -42,6 +42,16 @@
     the grips (saggier, swingier); dangling legs trail the hip swing as pendulum secondary motion.
   - **Joint limits everywhere:** elbows/knees never hyperextend; a hold beyond reach leaves the limb
     visibly taut and short of it (this is what makes the "impossible route" demo read as unclimbable).
+  - **Hands, feet & face are real, and stay attached:** gripping fists and dark climbing shoes sit at
+    the *IK end-effector* (the actual limb tip), so they never float off the arm/leg even at a full
+    out-of-reach stretch — the hand simply stops short of the hold. The head carries a simple face
+    (eyes + nose + hair) so it reads as a person, not a blank egg, watching the next hold.
+  - **Legible human motion (recorded demo):** each reach eases in/out (accelerates off the body,
+    decelerates into the hold) instead of sliding at constant velocity; on an overhead hand-match the
+    head drops its gaze to scan footwork (what a climber actually does) rather than burying straight up
+    between the two arms. The spectator camera looks slightly down onto the head so it stays seated on
+    the shoulders. All of this is **demo-only** — the headless test drives the same stack with the fast
+    linear motion, so the 10/10 end-to-end assertions are unaffected.
 
 ### Grab
 - A hand grabs the **nearest** `ClimbHold` within `grabRadius` when grip crosses `gripThreshold`.
