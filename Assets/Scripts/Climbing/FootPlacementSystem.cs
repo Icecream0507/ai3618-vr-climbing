@@ -76,7 +76,7 @@ namespace VRClimb.Climbing
                 {
                     var hold = s_Overlap[i].GetComponentInParent<ClimbHold>();
                     if (hold == null || hold.IsBroken) continue;
-                    if (hold.role == ClimbHold.HoldRole.Hand) continue;   // hand-only holds aren't foot-able
+                    // Any hold is foot-able (like real rock) — role/colour is only a visual hint.
                     float d = (hold.GripPoint - restPos).sqrMagnitude;
                     if (d < best) { best = d; chosen = hold; }
                 }

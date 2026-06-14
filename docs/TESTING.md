@@ -12,8 +12,12 @@
 | 确认代码没坏 / 逻辑对 | **无头自检** `Run Headless Check` | 否 |
 | 现场看「机器人爬墙」演示 | 打开 `Demo.unity` 按 Play | 否 |
 | 出一段 demo 视频文件 | **自动录制** `Record Demo` + ffmpeg | 否 |
+| 自己上手玩（鼠标键盘） | **Build Play Scene** → `Play.unity` 按 Play | 否 |
+| 体验 **VR 手柄第一视角**（仿真手柄） | **Build VR Scene** → `VR.unity` 按 Play | 否（用 XR Device Simulator） |
 
-三种都不碰 XR，全部在编辑器里跑。真机/Device Simulator 是可选项，本项目按老师"仿真即可"的口径**不依赖**它。
+全部在编辑器里跑。VR 那条用的是官方 **XR Device Simulator**（鼠标键盘模拟手柄 + 头显），不需要真机；真头显是可选项，本项目按老师"仿真即可"的口径**不依赖**它。
+
+> **岩点角色现已统一**：和真实岩壁一样，**任何岩点手脚都能用**——黄/橙/紫的颜色只是"建议用途"的视觉提示，不再做手/脚限制（见 `docs/DESIGN.md`）。
 
 ---
 
@@ -108,14 +112,33 @@ ffmpeg -y -framerate 30 -i Logs/frames/f_%05d.jpg \
 
 ---
 
-## 6. 自己玩（可选，需要真头显 XR）
+## 6. VR 手柄第一视角（免头显模拟器）
+
+想用 **VR 手柄 + 第一视角**的方式玩,但手上没头显——用官方 **XR Device Simulator**(鼠标键盘模拟左右手柄和头显):
+
+1. 菜单 **`VRClimb ▸ Build VR Scene`**(或命令行 `-executeMethod VRClimb.EditorTools.VRBuild.BuildAndExit`)。第一次会自动从 XRI 包里导入 **XR Device Simulator** 样例(落在 `Assets/Samples/...`),并生成 `Assets/Scenes/VR.unity`。
+2. 打开 `VR.unity`,按 **Play**。这是**第一视角**:相机就是你的头显,屏幕角上会显示模拟器的控制面板。
+3. **操作(XR Device Simulator 默认键位)**:
+   - **按住 `Left-Shift`** = 操作左手柄,**按住 `Space`** = 操作右手柄,松开 = 操作头显;`Tab` 循环切换当前设备。
+   - 当前设备:`WASD` 平移,**鼠标移动**转向/移动,`Q/E` 升降。
+   - **`G` 或鼠标右键 = 扣 grip(抓住瞄到的岩点)**。把抓住的那只手**往下拉**,身体就被拉上去(和真实 VR 攀岩一样的反向位移)。
+   - 左下角平衡条、右上角计时/跌落次数;重心偏出支撑面会脱手坠落,爬到顶通关。
+4. 想换线路:同 §5,改 `RouteBuilder.routeIndex`。
+
+> **老实说**:XR Device Simulator 一次只能操作一个设备(手柄/头显切着来),用它做"两手交替爬"会有点笨拙——它的价值是**验证 VR 手柄操作方案在编辑器里跑得通**。想轻松玩,还是 §5 的 `Play.unity`(鼠标点击抓点)更顺手。真要顺滑手感,得上真头显(见 §7)。
+>
+> 实现:`VRBuild` 搭一个 `XROrigin`(相机 + 两个手柄 transform 各挂 `TrackedPoseDriver` 跟随模拟设备),`ClimbingHand.gripAction` 绑 `<XRController>/grip`,`armReach=0`(纯 VR 由真手臂限制够不够得着)。同样只写 `handTransform` + `overrideGrip`,**不改任何玩法运算**,e2e 仍 10/10。
+
+---
+
+## 7. 自己玩（可选，需要真头显 XR）
 
 本项目**不要求**这一步，但若以后想上头显：照 [`SETUP.md`](SETUP.md) §1–2、§6 启用 OpenXR、导入 XRI Starter Assets、
 把 `XR Origin` 接上 `PlayerClimberSetup`、绑 grip action、Hold 层（已建好）。Quest 构建见 SETUP 末尾。
 
 ---
 
-## 6. 常见问题
+## 8. 常见问题
 
 | 现象 | 原因 / 处理 |
 |---|---|
@@ -124,13 +147,16 @@ ffmpeg -y -framerate 30 -i Logs/frames/f_%05d.jpg \
 | 爬不动 / 原地不动 | 已修：`CharacterController.minMoveDistance` 默认会吞掉慢速位移，代码里已置 0；若自建 rig 记得也置 0 |
 | 找不到 ffmpeg | 本机在 `D:\Application\ffmpeg-7.1.1-essentials_build\ffmpeg-7.1.1-essentials_build\bin\ffmpeg.exe`，或自行 `winget install ffmpeg` |
 | 想换更长 / 更慢的演示 | `SimulatedClimber` 上的 `demoPullSpeed`、`demoGrabPause` 调慢即可 |
+| VR 场景 Play 时控制台报一个 `ArgumentOutOfRangeException @ XRDeviceSimulatorUI` | 仅 **batchmode/无键盘** 时出现(模拟器 UI 取键位 `controls[0]`，没键盘设备就越界)；正常带窗口编辑器里有键鼠 → 不会发生，可忽略 |
 
 ---
 
-## 7. 代码里这些"测试"在哪
+## 9. 代码里这些"测试"在哪
 
 - `Assets/Editor/HeadlessCheck.cs` —— 无头自检入口（建场景 + 跑机器人 + 退出码）。
 - `Assets/Scripts/Util/SimulatedClimber.cs` —— 脚本机器人，驱动**真实**游戏栈（不是 mock），10 条断言。
 - `Assets/Scripts/Util/ClimbMathSelfTest.cs` —— 纯数学自检（9 条），组件上点 *Run Self-Test* 也能单独跑。
 - `Assets/Editor/DemoBuild.cs` —— 建/存 `Demo.unity`、录制入口。
+- `Assets/Editor/PlayBuild.cs` · `Assets/Scripts/Util/PlayInputController.cs` —— 建/存 `Play.unity`(鼠标键盘自己玩)、人控驱动 + HUD。
+- `Assets/Editor/VRBuild.cs` · `Assets/Scripts/Util/VRHud.cs` —— 建/存 `VR.unity`(VR 手柄第一视角)、导入 XR Device Simulator、第一视角 HUD。
 - `Assets/Scripts/Util/DemoOverlay.cs` · `DemoVisuals.cs` · `FrameRecorder.cs` —— 演示用的字幕/平衡条、可见化身/跟随相机、逐帧录制。

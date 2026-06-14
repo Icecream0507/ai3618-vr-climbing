@@ -5,11 +5,12 @@ namespace VRClimb.Climbing
     /// <summary>
     /// Marks a GameObject as a climbable hold. A hold needs a Collider; grabbing is resolved by
     /// <see cref="ClimbingHand"/> via an overlap query on the Hold layer, so the collider does not
-    /// have to be a trigger. Metadata drives gameplay: <see cref="role"/> says whether hands, feet,
-    /// or either may use it; <see cref="type"/> gives a Finish/Fragile/Rest behaviour.
+    /// have to be a trigger. Metadata drives gameplay: <see cref="type"/> gives a Finish/Fragile/Rest
+    /// behaviour. <see cref="role"/> is only a *visual suggestion* of intended use — like real rock,
+    /// any hold takes a hand or a foot (no role gating; see ClimbingHand/FootPlacementSystem).
     ///
-    /// Colour legend (see docs/DESIGN.md): yellow = hand, orange = foot, purple = either,
-    /// green = finish, red = fragile, blue = rest.
+    /// Colour legend (see docs/DESIGN.md): yellow = hand-ish, orange = foot-ish, purple = either,
+    /// green = finish, red = fragile, blue = rest — colours hint, they don't restrict.
     /// </summary>
     [DisallowMultipleComponent]
     public class ClimbHold : MonoBehaviour
@@ -20,7 +21,8 @@ namespace VRClimb.Climbing
         [Tooltip("Gameplay category for this hold.")]
         public HoldType type = HoldType.Normal;
 
-        [Tooltip("Whether this hold can be used by hands, feet, or either.")]
+        [Tooltip("Visual hint of intended use (hand/foot/either) — NOT a restriction. Any hold can be " +
+                 "used by a hand or a foot, like real rock. Only drives the resting colour.")]
         public HoldRole role = HoldRole.Hand;
 
         [Tooltip("Stamina drained per second while this hold is gripped (ignored for Rest holds).")]

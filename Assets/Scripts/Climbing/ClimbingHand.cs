@@ -107,7 +107,7 @@ namespace VRClimb.Climbing
             {
                 var hold = s_Overlap[i].GetComponentInParent<ClimbHold>();
                 if (hold == null || hold.IsBroken) continue;
-                if (hold.role == ClimbHold.HoldRole.Foot) continue;   // feet-only holds can't be hand-grabbed
+                // Any hold takes a hand or a foot (like real rock) — role/colour is only a visual hint.
                 // Out of arm's reach: your body isn't close enough yet — climb into range first.
                 if (limitReach && (hold.GripPoint - shoulder).sqrMagnitude > maxReachSqr) continue;
                 float d = (hold.GripPoint - p).sqrMagnitude;

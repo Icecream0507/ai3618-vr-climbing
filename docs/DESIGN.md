@@ -142,9 +142,11 @@ citations: [`RESEARCH.md`](RESEARCH.md).
   holds in a stance zone below the body and stay glued until you climb past them. Feet are an
   abstracted *state* (not IK legs / not Generative Legs, which fail in climbing poses) — they exist
   to widen your support base, so footwork is what gets you through hard moves.
-- **Hold roles + colour legend:** `ClimbHold.role` ∈ {Hand, Foot, Either}; legend **yellow=hand,
-  orange=foot, purple=either, green=finish, red=fragile, blue=rest** (chosen to avoid clashing with
-  the research's green=hand on our existing green=finish).
+- **Hold roles + colour legend:** `ClimbHold.role` ∈ {Hand, Foot, Either} is now only a **visual
+  hint** of intended use, *not* a restriction — like real rock, **any hold takes a hand or a foot**
+  (the old hand-only / foot-only gates in `ClimbingHand`/`FootPlacementSystem` were removed). Legend
+  **yellow=hand-ish, orange=foot-ish, purple=either, green=finish, red=fragile, blue=rest** (chosen to
+  avoid clashing with the research's green=hand on our existing green=finish); colours hint, they don't gate.
 - **v1 route** (`RouteBuilder`): builds a wall + colour-coded holds + summit from primitives so the
   game runs with no art. The baked route deliberately includes a **same-side stretch** (two right-hand
   holds in a row) that forces a left foot/flag — so balance + footwork are provably load-bearing, not
