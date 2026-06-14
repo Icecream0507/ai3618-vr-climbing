@@ -270,12 +270,18 @@ namespace VRClimb.Util
 
             // Support midpoint (gripped holds + planted feet), in rig-local lateral space.
             _contacts.Clear();
-            if (leftHand != null && leftHand.IsGripping && leftHand.CurrentHold != null) _contacts.Add(leftHand.CurrentHold.GripPoint);
-            if (rightHand != null && rightHand.IsGripping && rightHand.CurrentHold != null) _contacts.Add(rightHand.CurrentHold.GripPoint);
+            bool gripping = (leftHand != null && leftHand.IsGripping && leftHand.CurrentHold != null);
+            if (gripping) _contacts.Add(leftHand.CurrentHold.GripPoint);
+            bool rgrip = (rightHand != null && rightHand.IsGripping && rightHand.CurrentHold != null);
+            if (rgrip) _contacts.Add(rightHand.CurrentHold.GripPoint);
+            gripping |= rgrip;
             if (feet != null) feet.CollectContacts(_contacts);
 
-            float supportLocalX = head.localPosition.x;
-            if (_contacts.Count > 0)
+            // Only auto-lean toward the support span once a hand is on the wall. At the start (or hanging
+            // on feet only) stay centred — otherwise a single low foot-hold yanks the body fully to one
+            // side and the opening holds fall out of arm's reach.
+            float supportLocalX = 0f;
+            if (gripping && _contacts.Count > 0)
             {
                 float sum = 0f;
                 foreach (var c in _contacts) sum += Vector3.Dot(c - rig.position, rig.right);
