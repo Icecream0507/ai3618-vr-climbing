@@ -34,10 +34,14 @@
   - **The body hangs from the hands, not from an upright head.** The pelvis is the pendulum; the
     spine is *derived* from it, aiming pelvis → toward whatever bears load (grips, else feet). So a
     one-arm hang tilts the whole torso under that arm — the diagonal body tension of real climbing.
-  - **The head rides the top of the spine and is oriented** (visible face) to watch the next hold —
-    it tilts and turns with the body instead of staying bolt upright.
-  - **Spinal torsion / hip-twist:** the reaching-side hip turns into the wall and the shoulders
-    counter-rotate, so the body blades to the wall (real technique) instead of staying square.
+  - **The head faces the wall almost all the time** (a climber reads the holds in front of and above
+    them). It only *glances* partway toward the next hold (or down at the feet on an overhead match),
+    clamped to a neck range-of-motion cone so it never swivels away from the wall, and rate-damped so it
+    eases rather than snaps. Never bolt upright — it tips gently with the body, visible face toward the wall.
+  - **Spinal torsion / hip-twist (constrained):** only a genuine *one-arm* hang blades the torso — the
+    reaching-side hip turns into the wall and the shoulders counter-rotate (real technique); on two hands
+    or in the air the body relaxes back to square with the wall, so its forward orientation stays honest.
+    The twist is rate-limited, a damped rotational constraint rather than a free spin.
   - **Support-aware pose:** standing over planted feet (upright, stiffer spring) vs. dangling below
     the grips (saggier, swingier); dangling legs trail the hip swing as pendulum secondary motion.
   - **Joint limits everywhere:** elbows/knees never hyperextend; a hold beyond reach leaves the limb

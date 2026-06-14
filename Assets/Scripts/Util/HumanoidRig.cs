@@ -16,8 +16,10 @@ namespace VRClimb.Util
     ///    from the pelvis up toward the grip/feet support, so a one-arm hang leans the whole torso (and
     ///    head) under that arm — the diagonal body tension of real climbing. The spine also curves
     ///    slightly (chest leads, head trails), never a rigid pole.
-    ///  • The <b>head</b> rides the top of the spine and is ORIENTED (visible face/nose) to look up the
-    ///    wall toward the next hold — so it is never bolt upright; it tilts and turns with the body.
+    ///  • The <b>head</b> rides the top of the spine and FACES THE WALL almost all the time (a climber
+    ///    reads the holds in front of/above them); it only GLANCES partway toward the next hold or the
+    ///    feet, clamped to a neck range-of-motion cone so it never swivels away from the wall, and is
+    ///    rate-damped so it eases rather than snaps. Never bolt upright — it tilts gently with the body.
     ///  • Arms/legs are 2-bone IK with joint limits (no hyperextension); legs dangle under gravity when a
     ///    foot is off a hold.
     ///
@@ -44,8 +46,10 @@ namespace VRClimb.Util
         [Range(0f, 1f)] public float hangLean = 0.70f;   // how hard the torso leans under the loaded arm when hanging
         [Range(0f, 1f)] public float standLean = 0.30f;  // torso lean when standing on feet (more upright)
         public float spineCurve = 0.14f;                 // chest leads the head a touch (curved back, not a pole)
-        public float headTrack = 8f;                     // how fast the head turns to look toward the next reach
-        [Range(0f, 0.8f)] public float headLean = 0.30f; // how far the neck bends off the spine toward the gaze (kept modest so the head tucks onto the spine, never strands off-axis)
+        public float headTrack = 8f;                     // how fast the head turns to look toward the next reach (damped neck — rotational rate limit)
+        [Range(0f, 0.8f)] public float headLean = 0.26f; // how far the neck bends off the spine toward the gaze (kept modest so the head tucks onto the spine, never strands off-axis)
+        [Range(0f, 90f)] public float lookCone = 48f;    // neck range-of-motion: the head never turns more than this off facing the wall (so it stays wall-facing)
+        [Range(0f, 1f)] public float glanceWeight = 0.5f;// how far the head turns from wall-facing toward the active hold; the rest of the time it faces the wall
         public float legSwing = 0.06f;                   // dangling legs trail the hip swing (pendulum secondary motion)
         public float hipTwist = 16f;                     // deg of spinal torsion: reaching-side hip turns into the wall
         public float swingImpulse = 0.7f;                // m/s sideways kick when a hand releases (body swings under the other)
@@ -188,13 +192,14 @@ namespace VRClimb.Util
             Vector3 mid = hpC + midDir * (TorsoLen * 0.5f);
             Vector3 shC = chest;
 
-            // Spinal torsion (real climbing technique): the reaching-side hip turns into the wall and
-            // the shoulders counter-rotate, so the body blades to the wall instead of staying square.
+            // Spinal torsion (blading) — CONSTRAINED so the body stays fundamentally square to the wall
+            // (正向性). Only a genuine ONE-ARM load blades the torso; on two hands or in the air the body
+            // relaxes back to square-with-the-wall. The twist is rate-limited so it eases rather than snaps
+            // (a damped rotational constraint, not a free spin).
             bool lg2 = leftHandC != null && leftHandC.IsGripping;
             bool rg2 = rightHandC != null && rightHandC.IsGripping;
-            float reachTarget = (lg2 && !rg2) ? 1f : (rg2 && !lg2) ? -1f
-                                : (rightHand.position.y > leftHand.position.y ? 1f : -1f);
-            _reach = Mathf.MoveTowards(_reach, reachTarget, 2.5f * dt);
+            float reachTarget = (lg2 && !rg2) ? 1f : (rg2 && !lg2) ? -1f : 0f; // square (0) unless one-arm hanging
+            _reach = Mathf.MoveTowards(_reach, reachTarget, 1.8f * dt);
             Vector3 hipR = Quaternion.AngleAxis(hipTwist * _reach, spineDir) * right;
             Vector3 shR  = Quaternion.AngleAxis(-hipTwist * 0.5f * _reach, spineDir) * right;
             Vector3 lSh = shC - shR * BodyMetrics.ShoulderHalf, rSh = shC + shR * BodyMetrics.ShoulderHalf;
@@ -209,22 +214,33 @@ namespace VRClimb.Util
             _belly.position = mid; _belly.localScale = new Vector3(0.285f, 0.26f, 0.255f);
             PlaceCapsule(_pelvis, lHp, rHp, 0.255f);
 
-            // --- head: the NECK BENDS off the spine toward the gaze, so the head visibly tips (not a
-            // ball balanced upright on the shoulders). It looks up the wall at the next hold. ---
+            // --- head: a climber FACES THE WALL almost all the time (they read the holds in front of and
+            // above them) and only GLANCES toward the next hold or their feet. So the gaze is anchored INTO
+            // the wall (a touch up the route) and turned only PARTWAY toward the point of interest, then
+            // hard-clamped to a neck range-of-motion cone — it can never swivel away from the wall. ---
             Vector3 headC0 = shC + spineDir * NeckLen;                       // where the head would sit if rigid
             Vector3 freeHandTarget = PickFreeHand(grips, gripC);
-            // If both hands are stacked high & close (an overhead match), looking up would bury the head
-            // between the two symmetric forearms. Instead scan the footwork — look down toward the feet,
-            // exactly what a climber does after matching — which keeps the head visible and reads natural.
+            // On an overhead match (both hands stacked high & close) glance DOWN to scan footwork instead of
+            // burying the face straight up between the two symmetric forearms — what a climber actually does.
             bool handsClose = (leftHand.position - rightHand.position).sqrMagnitude < 0.1225f; // ~0.35 m apart
             if (grips >= 1 && handsClose && freeHandTarget.y > headC0.y + 0.05f)
                 freeHandTarget = feetN > 0 ? footC : _hip + Vector3.down * 0.4f;
-            Vector3 gaze = freeHandTarget - headC0;
-            if (gaze.sqrMagnitude < 1e-4f) gaze = spineDir + up * 0.4f + wallInto * 0.3f;
-            gaze.Normalize();
-            Vector3 neckDir = Vector3.Slerp(spineDir, gaze, headLean).normalized;  // neck arcs toward the look
+
+            // Rest gaze = into the wall, slightly up the route (where the next holds are). Turn only
+            // `glanceWeight` of the way toward the active hold, then clamp within `lookCone` of the wall —
+            // a neck-like range-of-motion limit that keeps the head wall-facing and the body's orientation honest.
+            Vector3 wallGaze = (wallInto + up * 0.15f).normalized;
+            Vector3 toPoi = freeHandTarget - headC0;
+            Vector3 desired = toPoi.sqrMagnitude > 1e-4f
+                ? Vector3.Slerp(wallGaze, toPoi.normalized, glanceWeight).normalized
+                : wallGaze;
+            Vector3 gaze = Vector3.RotateTowards(wallGaze, desired, lookCone * Mathf.Deg2Rad, 0f).normalized;
+
+            Vector3 headUp = Vector3.Slerp(up, spineDir, 0.35f).normalized;  // head stays near-upright, tipped slightly with the spine
+            Vector3 neckDir = Vector3.Slerp(spineDir, gaze, headLean).normalized;  // neck arcs gently toward the look
             Vector3 headC = shC + neckDir * NeckLen;                         // head offset off straight-up -> visible tilt
-            Quaternion targetRot = Quaternion.LookRotation(gaze, neckDir);
+            Quaternion targetRot = Quaternion.LookRotation(gaze, headUp);
+            // Rotational constraint: ease toward the target (a damped neck with a capped rate), never snap.
             _headRot = _init ? Quaternion.Slerp(_headRot, targetRot, Mathf.Clamp01(headTrack * dt)) : targetRot;
             _headPivot.SetPositionAndRotation(headC, _headRot);
             // Neck: a substantial column running the FULL distance shoulders→skull (overlapping into the
