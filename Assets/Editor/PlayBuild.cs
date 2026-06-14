@@ -73,7 +73,7 @@ namespace VRClimb.EditorTools
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.16f, 0.19f, 0.26f);
             cam.fieldOfView = 56f;
-            camGo.transform.position = new Vector3(1.25f, 1.8f, 3.9f);
+            camGo.transform.position = new Vector3(0f, 2.05f, 3.3f);
 
             // Player rig in front of the wall (front face at z = 0).
             var rig = new GameObject("PlayerRig");

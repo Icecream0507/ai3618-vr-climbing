@@ -293,9 +293,13 @@ namespace VRClimb.Util
         void LateUpdate()
         {
             if (cam == null || head == null) return;
-            Vector3 want = new Vector3(1.25f, head.position.y + 0.25f, 3.9f);
+            // Centred, slightly-high head-on follow: track the head's world X and Y so the climber
+            // stays in the middle at rest AND as they traverse; holds read straight-on (easy to click);
+            // we see the back as they face the wall.
+            float hx = head.position.x;
+            Vector3 want = new Vector3(hx, head.position.y + 0.45f, 3.3f);
             cam.transform.position = Vector3.Lerp(cam.transform.position, want, 1f - Mathf.Exp(-6f * Time.deltaTime));
-            cam.transform.LookAt(new Vector3(0f, head.position.y - 0.05f, 0.25f));
+            cam.transform.LookAt(new Vector3(hx, head.position.y - 0.1f, 0f));
         }
 
         void Flash(string s) { _flash = s; _flashT = 1.6f; }
