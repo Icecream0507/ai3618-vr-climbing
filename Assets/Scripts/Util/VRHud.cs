@@ -19,8 +19,8 @@ namespace VRClimb.Util
 
         [Tooltip("One-line control hint shown along the bottom (XR Device Simulator keys).")]
         public string controlsHint =
-            "XR Device Simulator:  hold Left-Shift = left controller / Space = right / Tab cycles  |  " +
-            "move: WASD + mouse-look  |  grip (grab): G or right-mouse  |  reset: open VRClimb ▸ Build VR Scene again";
+            "Hold Left-Shift = aim LEFT hand / Space = aim RIGHT hand   |   move: mouse + WASD, Q/E = down/up   |   " +
+            "G = grab / let go (latches)   |   hold right-mouse = look   |   pull a gripped hand DOWN to climb";
 
         Texture2D _px;
         GUIStyle _mid, _small, _rightLbl;

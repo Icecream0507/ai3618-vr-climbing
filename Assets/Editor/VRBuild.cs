@@ -45,9 +45,9 @@ namespace VRClimb.EditorTools
             EditorSceneManager.SaveScene(SceneManager.GetActiveScene(), ScenePath);
             AssetDatabase.SaveAssets();
             Debug.Log("[VRBuild] Saved " + ScenePath + " — open it and press Play. " +
-                      "Drive the XR Device Simulator: hold Left-Shift = left controller / Space = right " +
-                      "(Tab cycles); move with WASD + mouse-look; grip (grab a hold) with G or right-mouse. " +
-                      "Pull a gripped hand down to haul yourself up.");
+                      "Hold Left-Shift to aim the LEFT hand / Space for the RIGHT hand; move it with the " +
+                      "mouse + WASD (Q/E = down/up); tap G to grab (it LATCHES — tap G again to let go). " +
+                      "Hold right-mouse to look around. Move a gripped hand DOWN to haul yourself up.");
         }
 
         // Entry point for -executeMethod (headless build smoke test): import + build + save, exit 0/3.
@@ -201,6 +201,10 @@ namespace VRClimb.EditorTools
             human.leftFoot = feet.leftFootMarker; human.rightFoot = feet.rightFootMarker;
             human.rig = originGo.transform;
             human.leftHandC = leftHand; human.rightHandC = rightHand;
+
+            // Grip-as-toggle so the simulator is actually playable (tap to grab, tap to release).
+            var latch = originGo.AddComponent<VRGripLatch>();
+            latch.leftHand = leftHand; latch.rightHand = rightHand;
 
             // On-screen balance / timer / banners + control hint.
             var hud = originGo.AddComponent<VRHud>();
