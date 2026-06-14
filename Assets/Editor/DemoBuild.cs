@@ -48,6 +48,11 @@ namespace VRClimb.EditorTools
         [MenuItem("VRClimb/Record Demo (impossible route)")]
         public static void RecordImpossibleFromMenu() { RecordImpossible(); }
 
+        [MenuItem("VRClimb/Record V1 (Warm-up)")]      public static void RecordV1FromMenu() { RecordV1(); }
+        [MenuItem("VRClimb/Record V2 (Balance Test)")] public static void RecordV2FromMenu() { RecordV2(); }
+        [MenuItem("VRClimb/Record V3 (The Arete)")]    public static void RecordV3FromMenu() { RecordV3(); }
+        [MenuItem("VRClimb/Record V4 (Endurance)")]    public static void RecordV4FromMenu() { RecordV4(); }
+
         // Entry point for -executeMethod: the completable route-0 playthrough.
         public static void Record()
         {
@@ -59,6 +64,19 @@ namespace VRClimb.EditorTools
         public static void RecordImpossible()
         {
             _routeIndex = 4; _skipIntro = true;
+            RunRecording();
+        }
+
+        // Entry points for -executeMethod: the four graded routes V1–V4 (Warm-up, Balance Test, The
+        // Arete, Endurance). Each is a clean ascent (no peel-off intro) so the video is about the route.
+        public static void RecordV1() => RecordRoute(0);
+        public static void RecordV2() => RecordRoute(1);
+        public static void RecordV3() => RecordRoute(2);
+        public static void RecordV4() => RecordRoute(3);
+
+        static void RecordRoute(int routeIndex)
+        {
+            _routeIndex = routeIndex; _skipIntro = true;
             RunRecording();
         }
 

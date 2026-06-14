@@ -49,7 +49,13 @@
   - **Hands, feet & face are real, and stay attached:** gripping fists and dark climbing shoes sit at
     the *IK end-effector* (the actual limb tip), so they never float off the arm/leg even at a full
     out-of-reach stretch — the hand simply stops short of the hold. The head carries a simple face
-    (eyes + nose + hair) so it reads as a person, not a blank egg, watching the next hold.
+    (eyes + a hair cap) so it reads as a person, not a blank egg, watching the next hold.
+  - **Clean, simple silhouette (matched to the Klifur figure):** one rounded torso (tank top) over
+    shorts, smooth bare-skin arms and lower legs, and a plain head — no chunky joint balls, no extra
+    belly/nose primitives. The earlier build stacked ~10 cosmetic spheres (8 joint balls + belly +
+    nose) that made the climber read as a segmented mannequin; stripping them to flat-shaded tubes
+    gives the minimal, readable look of the reference GIF. `docs/avatar-evolution.png` shows the
+    before/after side by side.
   - **Legible human motion (recorded demo):** each reach eases in/out (accelerates off the body,
     decelerates into the hold) instead of sliding at constant velocity; on an overhead hand-match the
     head drops its gaze to scan footwork (what a climber actually does) rather than burying straight up

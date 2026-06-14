@@ -89,7 +89,7 @@ namespace VRClimb.Util
             {
                 // Straight to climbing (used by the 'impossible route' demo).
                 BuildRouteList();
-                Caption = "Climbing — but how far can this route be pushed?";
+                Caption = "Climbing the route — balance over the feet, reach for the next hold.";
                 _phase = Phase.ClimbReach;
                 Debug.Log($"[Sim] skipIntro: climbing {_route.Count} holds.");
                 return;
@@ -255,9 +255,30 @@ namespace VRClimb.Util
                 ? ShoulderOf(_gripHand).y - _gripHand.CurrentHold.GripPoint.y : 0f;
             bool maxedOut = lockoff >= LockoffMax || (_gripHand.handTransform.position.y - rig.position.y) < 0.3f;
 
-            if (maxedOut)
+            // Lateral traverse (demo only): shift the body along the wall toward the next hold's column so
+            // wide and same-side moves come into reach — a climber moves their hips along the wall, they
+            // aren't pinned to one x. We move the GRIPPING hand sideways and the counter-motion drags the
+            // body the other way (the grip itself stays put). Bounded to ±0.5 m of the gripping hold so we
+            // never slide off our own grip. A purely VERTICAL gap (the "impossible" route) gets no help
+            // from this, so it still maxes out and gets stuck.
+            Vector3 handDelta = Vector3.zero;
+            bool traversing = false;
+            if (demoMode && nextExists && _gripHand.CurrentHold != null)
             {
-                if (demoMode && nextExists)   // can't reach the next hold even maxed out -> stuck
+                float gx = _gripHand.CurrentHold.GripPoint.x;
+                float desiredX = Mathf.Clamp(_route[_next].GripPoint.x, gx - 0.5f, gx + 0.5f);
+                float dx = desiredX - rig.position.x;
+                if (Mathf.Abs(dx) > 0.03f)
+                {
+                    float step = Mathf.Clamp(dx, -0.05f, 0.05f);   // body step toward the column this frame
+                    handDelta += Vector3.right * (-step);          // hand -step -> counter-motion moves body +step
+                    traversing = true;
+                }
+            }
+
+            if (maxedOut && !traversing)
+            {
+                if (demoMode && nextExists)   // can't pull higher and can't traverse -> genuinely stuck
                 {
                     _stuckGap = _route[_next].GripPoint.y - (ShoulderOf(_freeHand).y);
                     Caption = $"Next hold ~{_stuckGap:0.0} m past full reach — no move bridges this gap.";
@@ -273,10 +294,12 @@ namespace VRClimb.Util
                 return;
             }
 
-            // Otherwise keep pulling: the gripping hand draws down -> counter-motion raises the rig.
+            // Pull up (unless we've hit the vertical lock-off ceiling) plus any lateral traverse. The
+            // gripping hand draws down/sideways -> counter-motion moves the rig the opposite way.
             var ht = _gripHand.handTransform;
             float pull = demoMode ? demoPullSpeed : PullSpeed;
-            ht.position += Vector3.down * Mathf.Min(pull * Time.deltaTime, 0.04f);
+            if (!maxedOut) handDelta += Vector3.down * Mathf.Min(pull * Time.deltaTime, 0.04f);
+            ht.position += handDelta;
 
             if (_phaseTime > 30f)
                 Fail($"pull phase stalled (rig.y={rig.position.y:0.00}, next=#{_next})");
@@ -323,7 +346,9 @@ namespace VRClimb.Util
             var gm = GameManager.Instance;
             if (gm == null || gm.State != GameState.Summit) return false;
 
-            Caption = $"SUMMIT! Topped out in {gm.ElapsedTime:0.0}s — 1 fall, footwork held the rest";
+            Caption = gm.FallCount == 1
+                ? $"SUMMIT! Topped out in {gm.ElapsedTime:0.0}s — 1 fall, footwork held the rest"
+                : $"SUMMIT! Topped out in {gm.ElapsedTime:0.0}s — clean ascent, footwork held it together";
             Check("summit reached", true);
             Check("climb timer ran (ElapsedTime > 1 s)", gm.ElapsedTime > 1f);
             Check("exactly one fall — the scripted peel-off", gm.FallCount == 1);
@@ -356,14 +381,18 @@ namespace VRClimb.Util
             if (_phase != Phase.PeelOff && _next < _route.Count)
             {
                 float nextL = _route[_next].GripPoint.x - rig.position.x;
-                desiredL = Mathf.Lerp(supportMidL, nextL, 0.6f);
-                // Allow the CoM to drift a little past the support edge toward the next hold (a
-                // recoverable weight-shift), so opposite-side holds can be reached before a foot plants.
-                float lo = (min - rig.position.x) - 0.12f, hi = (max - rig.position.x) + 0.12f;
+                // The recorded demo leans harder toward the next hold (and a touch past the support edge)
+                // so it can commit to wide cross-body moves the way a real climber does — a deliberate
+                // weight-shift the feet then catch up to. The headless test keeps the tighter, safer values
+                // (demoMode = false) so its balance assertions are unchanged.
+                float blend  = demoMode ? 0.68f : 0.6f;
+                float margin = demoMode ? 0.16f : 0.12f;   // a hair more reach than the test, but still safely inside balance
+                desiredL = Mathf.Lerp(supportMidL, nextL, blend);
+                float lo = (min - rig.position.x) - margin, hi = (max - rig.position.x) + margin;
                 desiredL = Mathf.Clamp(desiredL, lo, hi);
             }
 
-            desiredL = Mathf.Clamp(desiredL, -0.45f, 0.45f);
+            desiredL = Mathf.Clamp(desiredL, -0.47f, 0.47f);
             var lp = head.localPosition;
             lp.x = Mathf.MoveTowards(lp.x, desiredL, LeanSpeed * Time.deltaTime);
             head.localPosition = lp;
@@ -375,11 +404,22 @@ namespace VRClimb.Util
         {
             _route.Clear();
             foreach (var h in FindObjectsOfType<ClimbHold>())
-                if (h.role != ClimbHold.HoldRole.Foot && !h.IsBroken) _route.Add(h);
+            {
+                if (h.role == ClimbHold.HoldRole.Foot || h.IsBroken) continue;
+                // In the recorded demo, climb a clean line that doesn't weight Fragile holds: the slow,
+                // paced demo bot would hang on one long enough to snap it (breakAfterSeconds), whereas a
+                // real climber taps and moves on. The gaps this leaves are still within reach. Tests run
+                // with demoMode = false, so the headless route (route 0, no fragile) is unchanged.
+                if (demoMode && h.type == ClimbHold.HoldType.Fragile) continue;
+                _route.Add(h);
+            }
             _route.Sort((a, b) => a.GripPoint.y.CompareTo(b.GripPoint.y));
             _next = 0;
             _gripHand = null;
-            _freeHand = leftHand;
+            // Open with the hand on the same side as the first hold (a right-side hold -> right hand), so
+            // the opening move isn't an awkward cross-body grab. (Route 0 starts left, so the test is
+            // unchanged.)
+            _freeHand = (_route.Count > 0 && _route[0].GripPoint.x > rig.position.x) ? rightHand : leftHand;
         }
 
         void Teleport(Vector3 pos)

@@ -58,12 +58,10 @@ namespace VRClimb.Util
         const float TorsoLen = BodyMetrics.HipDrop - BodyMetrics.ShoulderDrop; // pelvis -> shoulders (~0.58)
         const float NeckLen  = 0.21f;                                          // shoulders -> head centre along spine
 
-        Transform _torsoLo, _torsoHi, _belly, _pelvis, _neck;   // trunk: waist + chest + belly-fill + pelvis + neck
-        Transform _headPivot, _headBall, _nose, _hair;  // oriented head (skull + hair crown so the tilt reads)
-        Transform _luA, _lfA, _ruA, _rfA;          // arm capsules
-        Transform _luL, _llL, _ruL, _rlL;          // leg capsules
-        Transform _lShB, _rShB, _lElB, _rElB;      // shoulder + elbow joint balls
-        Transform _lHipB, _rHipB, _lKnB, _rKnB;    // hip + knee joint balls
+        Transform _torso, _pelvis, _neck;          // trunk: one rounded torso (tank top) + shorts/pelvis + neck
+        Transform _headPivot, _headBall, _hair;    // oriented head (skull + hair cap so the facing reads)
+        Transform _luA, _lfA, _ruA, _rfA;          // arm capsules (bare skin — sleeveless)
+        Transform _luL, _llL, _ruL, _rlL;          // leg capsules (shorts thigh + bare shin)
         Transform _lHand, _rHand, _lShoe, _rShoe;  // gripping fists + climbing-shoe feet (so hands/feet aren't bare balls)
         Material _skin, _jacket, _pants;
 
@@ -79,19 +77,14 @@ namespace VRClimb.Util
             _jacket = Mat(new Color(0.12f, 0.55f, 0.62f));
             _pants  = Mat(new Color(0.18f, 0.22f, 0.32f));
 
-            _torsoLo = Limb(_jacket); _torsoHi = Limb(_jacket); _pelvis = Limb(_pants); _neck = Limb(_skin);
-            _luA = Limb(_jacket); _lfA = Limb(_skin); _ruA = Limb(_jacket); _rfA = Limb(_skin);
-            _luL = Limb(_pants);  _llL = Limb(_pants);  _ruL = Limb(_pants);  _rlL = Limb(_pants);
+            // Trunk: ONE rounded torso (tank top) + shorts + a short neck — no separate waist/chest/belly
+            // blocks (the old stack read as "too complex"; the Klifur reference is a single clean torso).
+            _torso = Limb(_jacket); _pelvis = Limb(_pants); _neck = Limb(_skin);
 
-            // Joint balls so the limbs read as one connected body (no gaps at shoulders/elbows/hips/knees).
-            _lShB = Ball(_jacket, 0.13f); _rShB = Ball(_jacket, 0.13f);  _lShB.SetParent(transform, true); _rShB.SetParent(transform, true);
-            _lElB = Ball(_skin,   0.085f);_rElB = Ball(_skin,   0.085f); _lElB.SetParent(transform, true); _rElB.SetParent(transform, true);
-            _lHipB= Ball(_pants,  0.13f); _rHipB= Ball(_pants,  0.13f);  _lHipB.SetParent(transform, true);_rHipB.SetParent(transform, true);
-            _lKnB = Ball(_pants,  0.105f);_rKnB = Ball(_pants,  0.105f); _lKnB.SetParent(transform, true); _rKnB.SetParent(transform, true);
-
-            // Belly: a soft ellipsoid at the midriff that bridges the chest→waist width step, so the
-            // trunk reads as one continuous body rather than a wide block stacked on a narrow one.
-            _belly = Ball(_jacket, 0.27f); _belly.SetParent(transform, true);
+            // Limbs are smooth bare-skin tubes (sleeveless top, shorts). The rounded capsule caps form the
+            // shoulder/elbow/hip/knee joints directly, so there are NO separate joint balls cluttering it.
+            _luA = Limb(_skin);  _lfA = Limb(_skin);  _ruA = Limb(_skin);  _rfA = Limb(_skin);   // bare arms
+            _luL = Limb(_pants); _llL = Limb(_skin);  _ruL = Limb(_pants); _rlL = Limb(_skin);   // shorts thigh + bare shin
 
             // Hands & feet: gripping fists (skin) and climbing shoes (dark rubber) so the contact points
             // read as a person's hands/feet, not bare marker balls. Oriented each frame in LateUpdate.
@@ -101,26 +94,22 @@ namespace VRClimb.Util
             _lShoe = Ball(rubber, 0.12f); _lShoe.SetParent(transform, true);
             _rShoe = Ball(rubber, 0.12f); _rShoe.SetParent(transform, true);
 
-            // Head: a tall skull + a dark hair crown + a nose, so the head's tilt is unmistakable from
-            // any camera angle (a near-sphere hides rotation — that's why the head *looked* upright).
+            // Head: a clean rounded skull + a hair cap (an unmistakable front/back so the facing reads) and
+            // two small eyes. No nose — the Klifur reference head is a smooth, simple shape, not a face study.
             var hairMat = Mat(new Color(0.20f, 0.14f, 0.10f));
             _headPivot = new GameObject("HeadPivot").transform; _headPivot.SetParent(transform, true);
             _headBall = Ball(_skin, 0.15f); _headBall.SetParent(_headPivot, false);
-            _headBall.localScale = new Vector3(0.15f, 0.175f, 0.16f);       // skull, slight egg (not so tall it reads as a helmet)
-            // hair: a flat cap on the CROWN/back only, raised and pushed back so it never bands across the face
+            _headBall.localScale = new Vector3(0.16f, 0.178f, 0.165f);      // clean rounded skull (barely egg)
             _hair = Ball(hairMat, 0.1f); _hair.SetParent(_headPivot, false);
-            _hair.localPosition = new Vector3(0f, 0.058f, -0.03f);          // a fuller head of hair: a touch lower & taller, still
-            _hair.localScale = new Vector3(0.165f, 0.115f, 0.178f);         // kept high/back of centre so it never bands across the face
-            _nose = Ball(_skin, 0.05f); _nose.SetParent(_headPivot, false);
-            _nose.localPosition = new Vector3(0f, -0.012f, 0.082f);         // points along +z of the pivot (look dir)
-            _nose.localScale = new Vector3(0.045f, 0.05f, 0.075f);
-            // Eyes: two dark ovals on the face (+z), above and flanking the nose. They give the head an
-            // unmistakable front, so it reads as a face looking toward the next hold instead of a blank egg.
+            _hair.localPosition = new Vector3(0f, 0.056f, -0.028f);         // a smooth cap high/back of centre
+            _hair.localScale = new Vector3(0.172f, 0.118f, 0.184f);        // so it never bands across the face
+            // Eyes: two small dark ovals on the face (+z) so the head still reads as a person looking at the
+            // wall (kept subtle — the reference head has no facial detail at all).
             var eyeMat = Mat(new Color(0.09f, 0.08f, 0.11f));
             var le = Ball(eyeMat, 0.04f); le.SetParent(_headPivot, false);
-            le.localPosition = new Vector3(-0.045f, 0.024f, 0.067f); le.localScale = new Vector3(0.038f, 0.05f, 0.03f);
+            le.localPosition = new Vector3(-0.043f, 0.012f, 0.073f); le.localScale = new Vector3(0.033f, 0.043f, 0.03f);
             var re = Ball(eyeMat, 0.04f); re.SetParent(_headPivot, false);
-            re.localPosition = new Vector3( 0.045f, 0.024f, 0.067f); re.localScale = new Vector3(0.038f, 0.05f, 0.03f);
+            re.localPosition = new Vector3( 0.043f, 0.012f, 0.073f); re.localScale = new Vector3(0.033f, 0.043f, 0.03f);
         }
 
         void LateUpdate()
@@ -186,10 +175,7 @@ namespace VRClimb.Util
 
             Vector3 hpC = _hip;
             Vector3 chest = hpC + spineDir * TorsoLen;                       // shoulders / chest top
-            // curve the back: the lower spine leans a touch more toward the wall than the chest
-            Vector3 wallInto = -fwd;
-            Vector3 midDir = Vector3.Slerp(spineDir, (spineDir + wallInto * spineCurve).normalized, 0.5f);
-            Vector3 mid = hpC + midDir * (TorsoLen * 0.5f);
+            Vector3 wallInto = -fwd;                                         // toward the wall (used by gaze & toe)
             Vector3 shC = chest;
 
             // Spinal torsion (blading) — CONSTRAINED so the body stays fundamentally square to the wall
@@ -205,14 +191,11 @@ namespace VRClimb.Util
             Vector3 lSh = shC - shR * BodyMetrics.ShoulderHalf, rSh = shC + shR * BodyMetrics.ShoulderHalf;
             Vector3 lHp = hpC - hipR * BodyMetrics.HipHalf,      rHp = hpC + hipR * BodyMetrics.HipHalf;
 
-            // Continuous trunk (the fix for the "stacked blocks" look): the waist and chest capsules
-            // OVERLAP through the midriff and a belly ellipsoid fills the width step, so the taper reads
-            // pelvis(0.255) → waist(0.245, narrowest) → belly(0.28) → chest(0.305) as one body.
-            Vector3 chestLo = Vector3.Lerp(mid, hpC, 0.22f);                 // chest capsule starts below mid (overlap)
-            PlaceCapsule(_torsoLo, hpC, Vector3.Lerp(mid, shC, 0.12f), 0.245f); // waist, runs slightly past mid
-            PlaceCapsule(_torsoHi, chestLo, shC, 0.305f);                    // broader chest (athletic V-taper)
-            _belly.position = mid; _belly.localScale = new Vector3(0.285f, 0.26f, 0.255f);
-            PlaceCapsule(_pelvis, lHp, rHp, 0.255f);
+            // Trunk: ONE clean rounded torso (tank top) running hips→shoulders + the shorts across the
+            // hips. The capsule's rounded caps give rounded shoulders & hips, so the body reads as a single
+            // smooth shape (like the Klifur figure) instead of a stack of blocks — and needs no joint balls.
+            PlaceCapsule(_torso, hpC, shC, 0.33f);
+            PlaceCapsule(_pelvis, lHp, rHp, 0.27f);
 
             // --- head: a climber FACES THE WALL almost all the time (they read the holds in front of and
             // above them) and only GLANCES toward the next hold or their feet. So the gaze is anchored INTO
@@ -252,8 +235,8 @@ namespace VRClimb.Util
             Vector3 armPoleL = (-right * 0.5f - up * 0.7f + fwd * 0.4f).normalized;
             Vector3 armPoleR = ( right * 0.5f - up * 0.7f + fwd * 0.4f).normalized;
             Vector3 lHandP, rHandP;
-            Vector3 lEl = SolveLimb(lSh, leftHand.position,  BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleL, _luA, _lfA, 0.088f, out lHandP);
-            Vector3 rEl = SolveLimb(rSh, rightHand.position, BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleR, _ruA, _rfA, 0.088f, out rHandP);
+            Vector3 lEl = SolveLimb(lSh, leftHand.position,  BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleL, _luA, _lfA, 0.10f, out lHandP);
+            Vector3 rEl = SolveLimb(rSh, rightHand.position, BodyMetrics.UpperArm, BodyMetrics.ForeArm, armPoleR, _ruA, _rfA, 0.10f, out rHandP);
 
             // Fists: a compact flattened hand at each wrist, elongated along the forearm. Placed at the IK
             // end-effector (the clamped forearm tip), so the fist stays attached even when the hold is out
@@ -272,20 +255,14 @@ namespace VRClimb.Util
             Vector3 rFootT = (rightFoot != null && rightFoot.gameObject.activeInHierarchy)
                 ? rightFoot.position : rHp + ( right * 0.16f - up * (BodyMetrics.LegReach * 0.72f) + fwd * 0.20f) + swing;
             Vector3 lFootP, rFootP;
-            Vector3 lKn = SolveLimb(lHp, lFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleL, _luL, _llL, 0.11f, out lFootP);
-            Vector3 rKn = SolveLimb(rHp, rFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleR, _ruL, _rlL, 0.11f, out rFootP);
+            SolveLimb(lHp, lFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleL, _luL, _llL, 0.12f, out lFootP);
+            SolveLimb(rHp, rFootT, BodyMetrics.Thigh, BodyMetrics.Shin, legPoleR, _ruL, _rlL, 0.12f, out rFootP);
 
             // Shoes: an elongated climbing shoe at each foot, toe pointing into the wall (and a touch down).
             // Placed at the IK end-effector so the shoe never detaches from the shin.
             Vector3 toe = (wallInto - up * 0.18f).normalized;
             PlaceShoe(_lShoe, lFootP, toe, up);
             PlaceShoe(_rShoe, rFootP, toe, up);
-
-            // Drop the joint balls onto the computed joints so the body reads as one connected figure.
-            _lShB.position = lSh; _rShB.position = rSh;
-            _lElB.position = lEl; _rElB.position = rEl;
-            _lHipB.position = lHp; _rHipB.position = rHp;
-            _lKnB.position = lKn; _rKnB.position = rKn;
         }
 
         // The hand most likely reaching for the next hold (the non-gripping one), so the head looks at it.

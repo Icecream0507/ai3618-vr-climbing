@@ -86,9 +86,11 @@ ffmpeg -y -framerate 30 -i Logs/frames/f_%05d.jpg \
 
 - 第 1 步用 `Time.captureDeltaTime` 锁定 30fps 离线渲染，渲染多慢都不影响成片节奏。
 - 也可在编辑器里点菜单 **`VRClimb ▸ Record Demo (success)`** 跑同样的录制。
-- **两段成片**（都已放进 `Demo/`）：
-  - `Demo/SummitVR_demo.mp4` —— **成功完攀**（爬 Route 0 到顶）。
+- **成片**（都已放进 `Demo/`）：
+  - `Demo/SummitVR_demo.mp4` —— **完整演示**：开场失衡坠落 → 重生 → 爬 Route 0 到顶（带开场字幕）。
+  - `Demo/SummitVR_V1.mp4` … `Demo/SummitVR_V4.mp4` —— **四条难度线路**（V1 Warm-up / V2 Balance Test / V3 The Arete / V4 Endurance），每条都是一次干净完攀（跳过开场坠落，专注线路本身），落脚/平衡/耐力难点各不相同。
   - `Demo/SummitVR_impossible.mp4` —— **线路太难、完攀失败**：Route 4「The Gap」中段有一个约 2m 的空白(超过臂展+锁定的极限)，攀岩者全身伸展也够不到,最后脱手坠落,字幕 *Route unclimbable*。
+- 录 V1–V4:菜单 **`VRClimb ▸ Record V1..V4`**,或命令行 `-executeMethod VRClimb.EditorTools.DemoBuild.RecordV1`(`RecordV2`/`RecordV3`/`RecordV4` 同理),再用同样的 ffmpeg 命令(输出名改 `SummitVR_V1.mp4` 等)。
 - 重录失败线路:菜单 **`VRClimb ▸ Record Demo (impossible route)`**,或命令行 `-executeMethod VRClimb.EditorTools.DemoBuild.RecordImpossible`,再用同样的 ffmpeg 命令(输出名改 `SummitVR_impossible.mp4`)。
 
 ---

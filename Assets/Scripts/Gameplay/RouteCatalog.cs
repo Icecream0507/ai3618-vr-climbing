@@ -73,16 +73,18 @@ namespace VRClimb.Gameplay
             return l;
         }
 
-        // Route 2 — taller, with a fragile hold you can't linger on (forces committing a foot/flag).
+        // Route 2 — "The Arete": a line up the edge with a tempting Fragile hold mid-way you must NOT
+        // weight (commit a foot / move past it instead). Gentle zig-zags (≤ ~0.6 m apart) so balance is
+        // about reading the fragile decoy, not lunging.
         static List<RouteDefinition.HoldSpec> TheArete(Vector2 wall)
         {
             var l = new List<RouteDefinition.HoldSpec>();
-            Hand(l, 0.4f, 1.2f); Hand(l, -0.4f, 1.6f); Hand(l, 0.4f, 2.1f);
-            Fragile(l, 0.5f, 2.6f);                                    // don't hang here
-            Hand(l, -0.5f, 3.0f); Hand(l, -0.6f, 3.5f);                // left same-side after the fragile
-            Either(l, 0.3f, 3.9f); Hand(l, -0.2f, 4.4f); Hand(l, 0.3f, 4.9f);
-            Foot(l, 0.4f, 0.7f); Foot(l, -0.4f, 1.1f); Foot(l, 0.4f, 1.6f);
-            Foot(l, 0.5f, 2.1f); Foot(l, -0.5f, 2.6f); Foot(l, -0.5f, 3.2f); Foot(l, 0.2f, 3.8f);
+            Hand(l, 0.25f, 1.2f); Hand(l, -0.25f, 1.6f); Hand(l, 0.3f, 2.1f);
+            Fragile(l, 0.05f, 2.5f);                                   // tempting central hold — but it crumbles
+            Hand(l, -0.3f, 2.9f); Hand(l, 0.25f, 3.4f);
+            Either(l, -0.1f, 3.8f); Hand(l, 0.3f, 4.3f); Hand(l, -0.2f, 4.8f);
+            Foot(l, 0.3f, 0.7f); Foot(l, -0.3f, 1.1f); Foot(l, 0.3f, 1.6f);
+            Foot(l, -0.2f, 2.2f); Foot(l, 0.2f, 2.8f); Foot(l, -0.3f, 3.4f); Foot(l, 0.2f, 4.0f);
             Finish(l, 0f, wall.y - 0.4f);
             return l;
         }
