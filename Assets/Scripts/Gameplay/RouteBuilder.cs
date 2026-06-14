@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using VRClimb.Climbing;
 
@@ -17,7 +17,15 @@ namespace VRClimb.Gameplay
     {
         public RouteDefinition route;
         [Tooltip("Which baked route to build when no RouteDefinition is assigned (0=Warm-up, 1=Balance Test, 2=The Arete, 3=Endurance).")]
-        public int routeIndex = 0;
+       public int routeIndex = 0;
+        [Header("Materials")]
+        [Tooltip("Optional: assign a custom material for the wall. Leave empty to use the default procedural colour.")]
+       public Material wallMaterial;
+        [Tooltip("Optional materials for hold roles. Leave empty to use the default procedural colours.")]
+        public Material handHoldMaterial;
+        public Material footHoldMaterial;
+        public Material restHoldMaterial;
+        public Material handAndFootHoldMaterial;
         [Tooltip("Layer name climb holds are placed on. Create it in Tags & Layers.")]
         public string holdLayerName = "Hold";
         public bool buildOnAwake = true;
@@ -40,10 +48,13 @@ namespace VRClimb.Gameplay
             // Wall: front face at local z = 0, bottom at y = 0.
             var wallGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
             wallGo.name = "Wall";
-            wallGo.transform.SetParent(root, false);
-            wallGo.transform.localScale = new Vector3(wall.x, wall.y, thick);
-            wallGo.transform.localPosition = new Vector3(0f, wall.y * 0.5f, -thick * 0.5f);
-            Paint(wallGo, new Color(0.45f, 0.42f, 0.40f));
+           wallGo.transform.SetParent(root, false);
+           wallGo.transform.localScale = new Vector3(wall.x, wall.y, thick);
+           wallGo.transform.localPosition = new Vector3(0f, wall.y * 0.5f, -thick * 0.5f);
+            if (wallMaterial != null)
+                wallGo.GetComponent<Renderer>().sharedMaterial = wallMaterial;
+            else
+                Paint(wallGo, new Color(0.45f, 0.42f, 0.40f));
 
             var holds = (route != null && route.holds.Count > 0) ? route.holds : RouteCatalog.Get(routeIndex, wall);
             int holdLayer = LayerMask.NameToLayer(holdLayerName);
@@ -64,8 +75,20 @@ namespace VRClimb.Gameplay
                 if (col != null) col.isTrigger = true;   // grabbed via overlap; must not block the CharacterController
 
                 var hold = go.AddComponent<ClimbHold>();
-                hold.role = h.role;
-                hold.type = h.type;
+           hold.type = h.type;
+           hold.role = h.role;
+           hold.type = h.type;
+            // Check if a custom material is assigned for this role
+            Material roleMat = null;
+            switch (h.role)
+            {
+                case ClimbHold.HoldRole.Hand:       roleMat = handHoldMaterial; break;
+                case ClimbHold.HoldRole.Foot:       roleMat = footHoldMaterial; break;
+                case ClimbHold.HoldRole.Either: roleMat = handAndFootHoldMaterial; break;
+            }
+            if (roleMat != null)
+                go.GetComponent<Renderer>().sharedMaterial = roleMat;
+            else
                 Paint(go, ColorFor(h.role, h.type));
             }
 
@@ -96,12 +119,11 @@ namespace VRClimb.Gameplay
             switch (role)
             {
                 case ClimbHold.HoldRole.Foot:   return new Color(1f, 0.55f, 0f);     // orange
-                case ClimbHold.HoldRole.Either: return new Color(0.7f, 0.3f, 0.9f);  // purple
                 default:                        return new Color(0.95f, 0.85f, 0.2f); // yellow
             }
         }
 
-        // One material per colour, reused across rebuilds (avoids leaking a material per hold).
+
         void Paint(GameObject go, Color c)
         {
             var r = go.GetComponent<Renderer>();
@@ -120,3 +142,6 @@ namespace VRClimb.Gameplay
         }
     }
 }
+
+
+
