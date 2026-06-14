@@ -62,6 +62,11 @@
     between the two arms. The spectator camera looks slightly down onto the head so it stays seated on
     the shoulders. All of this is **demo-only** — the headless test drives the same stack with the fast
     linear motion, so the 10/10 end-to-end assertions are unaffected.
+  - **Contact highlight:** a hold lights up bright (emissive) green the instant a hand grips it or a
+    foot is planted on it, and reverts to its resting colour the moment that contact leaves — so the
+    spectator can read *which* four points are currently loaded at a glance. Implemented as a shared
+    material swap on `ClimbHold` (hand grippers + a foot count from `FootPlacementSystem`), guarded so
+    it's a no-op when there's no render pipeline (headless), leaving gameplay/e2e untouched.
 
 ### Grab
 - A hand grabs the **nearest** `ClimbHold` within `grabRadius` when grip crosses `gripThreshold`.

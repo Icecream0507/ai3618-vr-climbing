@@ -82,6 +82,13 @@ namespace VRClimb.Climbing
                 }
             }
 
+            // Update the green contact highlight when this foot steps onto a different hold (or off).
+            if (prev.hold != chosen)
+            {
+                if (prev.planted && prev.hold != null) prev.hold.DecrementFeet();
+                if (chosen != null) chosen.IncrementFeet();
+            }
+
             var foot = new Foot { planted = chosen != null, hold = chosen };
             if (marker != null)
             {
@@ -101,6 +108,8 @@ namespace VRClimb.Climbing
         /// <summary>Drop both feet (e.g. on a peel-off / respawn).</summary>
         public void DropAll()
         {
+            if (_left.planted  && _left.hold  != null) _left.hold.DecrementFeet();
+            if (_right.planted && _right.hold != null) _right.hold.DecrementFeet();
             _left = default; _right = default;
             if (leftFootMarker != null)  leftFootMarker.gameObject.SetActive(false);
             if (rightFootMarker != null) rightFootMarker.gameObject.SetActive(false);

@@ -41,6 +41,65 @@ namespace VRClimb.Climbing
 
         float _heldTime;
         int _gripperCount;
+        int _footCount;
+
+        // --- contact highlight: a hold a hand is gripping or a foot is standing on lights up green,
+        //     and reverts the instant it's let go. Purely cosmetic; never read by gameplay. ---
+        [Tooltip("Light the hold up green while a hand grips it or a foot stands on it.")]
+        public bool highlightOnContact = true;
+        Renderer _renderer;
+        Material _baseMat;
+        bool _highlighted;
+        static Material s_contactMat;
+        static bool s_contactMatTried;
+
+        static Material ContactMat
+        {
+            get
+            {
+                if (!s_contactMatTried)
+                {
+                    s_contactMatTried = true;
+                    var sh = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+                    if (sh != null)
+                    {
+                        var green = new Color(0.18f, 1f, 0.35f);
+                        var m = new Material(sh) { name = "HoldContactGreen" };
+                        if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", green);
+                        if (m.HasProperty("_Color")) m.SetColor("_Color", green);
+                        m.EnableKeyword("_EMISSION");
+                        if (m.HasProperty("_EmissionColor")) m.SetColor("_EmissionColor", green * 0.55f);
+                        s_contactMat = m;
+                    }
+                }
+                return s_contactMat;
+            }
+        }
+
+        void RefreshHighlight()
+        {
+            if (!highlightOnContact) return;
+            SetHighlighted(_gripperCount + _footCount > 0);
+        }
+
+        void SetHighlighted(bool on)
+        {
+            if (on == _highlighted) return;
+            if (_renderer == null) _renderer = GetComponentInChildren<Renderer>();
+            if (_renderer == null) return;
+            if (on)
+            {
+                var mat = ContactMat;
+                if (mat == null) return;            // no render pipeline (e.g. headless) — stay a no-op
+                _baseMat = _renderer.sharedMaterial; // capture the painted resting colour the first time
+                _renderer.sharedMaterial = mat;
+            }
+            else if (_baseMat != null)
+            {
+                _renderer.sharedMaterial = _baseMat;
+            }
+            _highlighted = on;
+        }
 
         public void NotifyGrabbed(ClimbingHand hand)
         {
@@ -50,8 +109,12 @@ namespace VRClimb.Climbing
 
         public void NotifyReleased(ClimbingHand hand) => Released?.Invoke(hand);
 
-        public void IncrementGrippers() => _gripperCount++;
-        public void DecrementGrippers() => _gripperCount = Mathf.Max(0, _gripperCount - 1);
+        public void IncrementGrippers() { _gripperCount++; RefreshHighlight(); }
+        public void DecrementGrippers() { _gripperCount = Mathf.Max(0, _gripperCount - 1); RefreshHighlight(); }
+
+        // Foot contact (driven by FootPlacementSystem; feet don't grip, so they're counted separately).
+        public void IncrementFeet() { _footCount++; RefreshHighlight(); }
+        public void DecrementFeet() { _footCount = Mathf.Max(0, _footCount - 1); RefreshHighlight(); }
 
         void Update()
         {
