@@ -95,7 +95,20 @@ ffmpeg -y -framerate 30 -i Logs/frames/f_%05d.jpg \
 
 ---
 
-## 5. 自己玩（可选，需要 XR）
+## 5. 自己玩（鼠标键盘，不用头显）
+
+不用头显、不用导任何 XRI 样例，直接在编辑器里玩:
+
+1. 菜单 **`VRClimb ▸ Build Play Scene`**(或命令行 `-executeMethod VRClimb.EditorTools.PlayBuild.BuildAndExit`),会生成并保存 `Assets/Scenes/Play.unity`。
+2. 打开 `Play.unity`,按 **Play**。第三人称视角,能看到身体、平衡条、脚点和绿色高亮。
+3. **操作**:鼠标指向岩点(出现准星) → **左键 = 左手抓 / 右键 = 右手抓**;抓到后身体自动拉起到肩高。**A/D** 调重心,**W/S** 上拉/下移,**R** 重来。够不到臂展的点抓不住(准星变灰);重心偏出支撑面会脱手坠落;爬到顶通关。
+4. 想换线路:选中场景里的 `RouteBuilder`,改 `routeIndex`(0–4)后右键组件 **Build Route**(或改 `PlayBuild._routeIndex` 重新 Build Play Scene)。
+
+> 实现:`PlayInputController`(纯输入,只写 `ClimbingHand.handTransform` + `overrideGrip`,和无头机器人 `SimulatedClimber` 同一套契约,不进任何玩法运算)。HUD 用英文(IMGUI 默认字体无中文字形)。
+
+---
+
+## 6. 自己玩（可选，需要真头显 XR）
 
 本项目**不要求**这一步，但若以后想上头显：照 [`SETUP.md`](SETUP.md) §1–2、§6 启用 OpenXR、导入 XRI Starter Assets、
 把 `XR Origin` 接上 `PlayerClimberSetup`、绑 grip action、Hold 层（已建好）。Quest 构建见 SETUP 末尾。
