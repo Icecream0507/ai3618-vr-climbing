@@ -225,6 +225,22 @@ The crucial design move is that the default route is **not balanceable hands-onl
 
 This single piece of route geometry is what converts footwork and balance from decoration into a **load-bearing** mechanic: the route cannot be completed without using them, and that is the behaviour our planned evaluation is designed to detect.
 
+#### 3.5.4 A catalogue of authored routes
+
+A single forced-same-side route proves footwork is load-bearing, but it exercises only one of the model's mechanics. To cover the whole system — and to give the planned study (§5) a difficulty *curve* rather than a lone wall — routes are authored as a small **catalogue** (`RouteCatalog`), where each route is deliberately designed to isolate one mechanic so that its contribution can be taught, seen, and (in future) measured on its own. All five share the primitive vocabulary (§3.5.2) and the colour legend (§3.5.1) and differ only in hold placement: here the *geometry is the design*.
+
+| # | Route | Mechanic it isolates | Defining geometry |
+|---|---|---|---|
+| 0 | **Warm-up** | The core grab–pull–step loop | gentle zig-zag hand line, feet threaded below, one mild same-side reach |
+| 1 | **Balance Test** | Footwork as the *fix* for imbalance | two same-side sequences with sparse feet and a mid-route `Rest` — only a foot (or flag) keeps the CoM in support |
+| 2 | **The Arete** | Balance under light time pressure | a tempting central `Fragile` hold that crumbles if weighted, forcing a quick, balanced move past it |
+| 3 | **Endurance** | **Stamina management** | a long, hold-dense line with two `Rest` holds to recover and a `Fragile` *decoy* that looks restful but breaks |
+| 4 | **The Gap** | The reach limit as a real constraint (*negative control*) | a reachable lower section, then a blank ≈2 m span with no holds or feet — deliberately **unclimbable** |
+
+The ordering is a **mechanic-teaching difficulty curve**. *Warm-up* (0) introduces the grab–pull–step loop with only a hint of imbalance. *Balance Test* (1) strips out easy holds so the only way up is to widen the base with a foot, making footwork mandatory rather than optional. *The Arete* (2) adds a `Fragile` hold that breaks after a short hold time (§4.6), converting balance from a static problem into a lightly time-pressured one. *Endurance* (3) moves the bottleneck off any single move and onto the *resource* axis: the long line drains stamina, and the climber must plan which of two `Rest` holds to spend while ignoring a `Fragile` decoy that looks like a third rest but collapses — turning the otherwise-optional `StaminaSystem` (§4.8) into the route's defining constraint, and exercising the third, independent fall cause (stamina, alongside let-go and balance-slip) that the planned evaluation instruments (§5.4).
+
+*The Gap* (4) is the catalogue's deliberate **negative control**. Its lower section climbs normally, but the next hand-hold sits roughly two metres above the last with no holds or feet in between — beyond what a lock-off (≈0.6 m) plus arm-span (≈0.88 m) can bridge — so it cannot be completed *by design*. Its value is honesty: it shows, in-engine, that the reach and counter-motion limits are **real mechanical constraints** rather than artefacts of a forgiving grab radius, the same commitment to making the model's behaviour observable that motivates the fall-cause instrumentation in §5.4. For the user study (§5.3), route difficulty is held constant by climbing a single mechanic-appropriate route (e.g. *Balance Test* or *Endurance*) in both conditions, while the remaining routes serve as a tutorial ramp and as future material for a per-mechanic ablation.
+
 ## 4. Implementation
 
 ### 4.1 Engine and package stack
@@ -298,7 +314,7 @@ Two "virtual feet" are solved each frame. A stance base is estimated `bodyDrop` 
 
 So that v1 needs **no art assets**, `RouteBuilder` constructs an entire playable boulder from Unity primitives on `Awake`. It spawns a cube **wall** (default 3.5 × 6 m, front face at local z = 0), a list of **sphere holds**, and a **summit trigger** box spanning the top. Holds are placed on a named *Hold* layer (with a warning if the layer is missing), have their colliders set to trigger (so they register in overlap queries but never block the `CharacterController`), and receive a `ClimbHold` plus a URP-*Lit* material tinted per the colour legend. Materials are cached one-per-colour and reused across rebuilds to avoid leaking a material per hold.
 
-Routes come from a serializable **`RouteDefinition`** ScriptableObject (wall size plus a list of `HoldSpec` records: local position, role, type, size), so routes can be hand-authored as assets via the *VRClimb → Route Definition* menu. If no definition is assigned, `RouteBuilder.DefaultRoute` bakes a short beginner route. That default is designed to make footwork **load-bearing rather than decorative**: the hand holds zig-zag upward but include a deliberate **same-side (right) stretch** (`Hand(0.6, 3.2)` → `Hand(0.7, 3.7)`) where, with both hands on the right, the CoM falls outside the hand-only support span — the climber must place a left/lower foot (or flag) to restore balance and pass. Foot holds are threaded below the hand line throughout, and a green `Either`/`Finish` hold sits near the top.
+Routes come from a serializable **`RouteDefinition`** ScriptableObject (wall size plus a list of `HoldSpec` records: local position, role, type, size), so routes can be hand-authored as assets via the *VRClimb → Route Definition* menu. If no definition is assigned, `RouteBuilder` builds one of a small **catalogue of baked routes** (`RouteCatalog`, selected by `routeIndex`) — five authored routes that form a mechanic-teaching difficulty curve (detailed in §3.5.4). The default (route 0, *Warm-up*) is designed to make footwork **load-bearing rather than decorative**: the hand holds zig-zag upward but include a deliberate **same-side (right) stretch** (`Hand(0.6, 3.2)` → `Hand(0.7, 3.7)`) where, with both hands on the right, the CoM falls outside the hand-only support span — the climber must place a left/lower foot (or flag) to restore balance and pass. Foot holds are threaded below the hand line throughout, and a green `Either`/`Finish` hold sits near the top.
 
 ### 4.8 Game flow and challenge layers
 
@@ -488,7 +504,7 @@ This was a five-person course project; roles follow the division in `docs/TASKS.
 | Member | Role | Primary contributions |
 |---|---|---|
 | ____ | P1 — Climbing systems | Counter-motion locomotion (`ClimbController`), grab/reach (`ClimbingHand`), two-hand handling; §3.2, §4.3 |
-| ____ | P2 — Gameplay & rules | Win/lose flow (`GameManager`, `SummitTrigger`, `Checkpoint`), stamina (`StaminaSystem`), hold behaviour (`ClimbHold`); §4.6, §4.8 |
+| ____ | P2 — Gameplay & rules | Win/lose flow (`GameManager`, `SummitTrigger`, `Checkpoint`), stamina (`StaminaSystem`), hold behaviour (`ClimbHold`), route catalogue & difficulty curve (`RouteCatalog`); §3.5.4, §4.6, §4.8 |
 | ____ | P3 — Scene & art | Wall/route layout, materials, lighting, colour legend; route authoring support for §3.5 |
 | ____ | P4 — XR integration & build | OpenXR/XRI rig, input bindings, haptics, Quest/Android build, comfort & frame-rate checks; §4.1, §4.10 |
 | ____ | P5 — UX · audio · report · video | HUD (`GameHUD`), audio (`ClimbAudio`), report consolidation, demo video and slides; §4.8 (HUD/audio) |
