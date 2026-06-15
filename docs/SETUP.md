@@ -3,6 +3,11 @@
 This skeleton ships the **code**. Follow these steps to turn it into a playable scene. Times are
 rough estimates for someone new to Unity XR.
 
+> **Course demo path (no headset):** for AI3618 submission the critical path is **simulation only** —
+> see [`docs/TESTING.md`](TESTING.md) for Headless Check, `Demo.unity`, and mouse/keyboard `Play.unity` /
+> `VR.unity`. The steps below (§1–2, manual XR Origin) are for **future Quest / Device Simulator**
+> wiring and are optional per the course brief.
+
 ## 0. Prerequisites (~30 min)
 
 - **Unity Hub** + **Unity 2022.3 LTS** (or Unity 6 LTS). When installing, tick **Android Build
@@ -90,14 +95,12 @@ with either locomotion backend.
 
 This is the quickest way to a running game — no manual hold placement, no art.
 
-1. **Create the Hold layer.** Edit → Project Settings → Tags and Layers → add a layer named **`Hold`**.
+1. **Create the Hold layer** (or run menu **`VRClimb ▸ Set Up Test Scene`**, which creates it). Edit → Project Settings → Tags and Layers → add a layer named **`Hold`**.
 2. **Player rig.** New scene → drag in the **XR Origin (XR Rig)** prefab. Add **`PlayerClimberSetup`**
    to the XR Origin; assign `head` (the Main Camera), `leftController`, `rightController`. Right-click
    the component → **Set Up Climber**. It adds + wires `CharacterController`, `ClimbController`,
-   `ClimbingHand` ×2, `FootPlacementSystem`, `BalanceSystem`.
-3. **Two manual fields it can't guess:**
-   - On each **`ClimbingHand`**, set `gripAction` → *XRI LeftHand/RightHand Interaction → Select Value*.
-   - Set the **Hold** layer on both `ClimbingHand.holdLayer` and `FootPlacementSystem.holdLayer`.
+   `ClimbingHand` ×2, `FootPlacementSystem`, `BalanceSystem`, and auto-assigns the **Hold** layer when it exists.
+3. **One manual field for a real headset:** on each **`ClimbingHand`**, set `gripAction` → *XRI LeftHand/RightHand Interaction → Select Value*. (Simulation / keyboard play uses `overrideGrip` instead — see [`docs/TESTING.md`](TESTING.md).)
    (The summit and checkpoints detect the player via its `ClimbController`, so no "Player" tag is needed.)
 4. **Build the route.** Empty GameObject → add **`RouteBuilder`** (leave `route` empty for the baked
    default; `holdLayerName` = `Hold`). Add another empty GameObject with **`GameManager`**.

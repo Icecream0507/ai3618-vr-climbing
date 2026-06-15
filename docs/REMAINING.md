@@ -56,9 +56,12 @@
 
 ### P4 — XR 集成与构建（整体可选，按"仿真即可"已降级）
 - [x] `Hold` 层 / URP 管线资产 / `ProjectSettings`（Input System 后端）/ packages-lock 已生成并提交
-- [ ] （可选）启用 OpenXR、导入 XRI Starter Assets、`PlayerClimberSetup` 接 XR Origin 真机玩（`SETUP §1–2、§6`）
-- [ ] （可选）Quest 构建 / 帧率 / 舒适度 vignette
-> 关键路径不再依赖本节；仿真演示与录制已覆盖"能演示"的目标。
+- [x] 仿真验证闭环：`HeadlessCheck`（9/9 + 10/10）+ `DemoBuild`/`Record Demo` + `PlayBuild`/`VRBuild` 键鼠试玩场景
+- [x] `PlayerClimberSetup` 一键接线 + 自动 Hold 层；XR packages 已声明（供将来接真机）
+- [x] 文档对齐：`REPORT` §4.1/§4.10、`TESTING` PR smoke 流程、`DEFENSE_QA` P4 话术
+- [ ] ~~（可选，课程口径不做）~~ 启用 OpenXR、导入 XRI Starter Assets、Device Simulator 真机玩（`SETUP §1–2、§6`）
+- [ ] ~~（可选，课程口径不做）~~ Quest 构建 / 帧率 / 舒适度 vignette
+> 关键路径不再依赖本节；仿真演示与录制已覆盖"能演示"的目标。真机 XR 留作 future work。
 
 ### P5 — UX · 音频 · 报告 · 视频（部分认领：syh886）
 - [x] HUD（计时 + 平衡条 + 状态）`GameHUD` + 一键接线 `VRClimb ▸ Set Up HUD + Audio`

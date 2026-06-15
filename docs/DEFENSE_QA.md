@@ -124,6 +124,22 @@
 
 ---
 
+## 六点五、P4 — XR 集成 / 构建 / 验证（负责人可背）
+
+**Q-P4-1：为什么不用 Unity XRI 的 Climb Provider，要自己写 `ClimbController`？**
+- 一句话：我们要在反向位移之上**叠加平衡和脚法**，自研 `ClimbController` 更透明、好扩展；输入用 Input System 的 `InputActionProperty` 抽象，不锁死 XRI 版本。
+- 展开：XRI Climb Provider 只解决「手抓-拉」；我们的 `BalanceSystem` / `FootPlacementSystem` 需要同一 rig 上的接触点、PeelOff 等钩子。自研 counter-motion 与 XRI 原理一致（见 `ClimbMath.ClimbDelta`），但和平衡层是同一套代码路径。
+
+**Q-P4-2：没头显 / 没接 Quest，怎么验证「XR 集成」？**
+- 一句话：**仿真驱动与真机共用同一 gameplay 栈**——机器人 `SimulatedClimber` 和无头 `HeadlessCheck`（10/10 PASS）；人可以用 `Play.unity` / `VR.unity` 键鼠试玩；demo 视频用 `Record Demo` 批渲染。
+- 展开：`ClimbingHand.overrideGrip` + `handTransform` 与真手柄契约相同；`PlayerClimberSetup` 一键接线 CharacterController / 双手 / 脚 / 平衡，将来接 XR Origin 只需绑 `gripAction`。
+
+**Q-P4-3：Quest 构建 / OpenXR / Device Simulator 呢？**
+- 一句话：**课程口径仿真即可**；manifest 里已声明 OpenXR/XRI packages，接真机按 `SETUP.md` §1–2 扩展即可，不在本次提交关键路径。
+- 展开：`EditorBuildSettings` 尚未配 Android 场景列表；真机 vignette、帧率优化列在 future work。答辩时强调机制验证已完成，外设接入是纯工程接线。
+
+---
+
 ## 附：30 秒电梯陈述（开场可用）
 
 > "市面上的 VR 攀岩基本只是'用手抓'，把真实攀岩里最关键的**身体平衡和脚法**丢了。我们做的 Summit VR，在只有头和两个手柄的普通 VR 设备上，用**头显当重心、脚做成自动吸附的抽象落脚点**，把'重心有没有落在支撑面内'变成可玩的失衡-脱落机制：同侧硬够不踩脚就会被甩下墙，踩对脚就稳住。整套机制我们用一个脚本机器人在引擎里端到端验证通过，并能自动产出演示视频。"

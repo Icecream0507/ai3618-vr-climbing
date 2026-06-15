@@ -142,16 +142,12 @@ namespace VRClimb.EditorTools
 
             var setup = rig.AddComponent<PlayerClimberSetup>();
             setup.head = head; setup.leftController = left; setup.rightController = right;
-            setup.SetUp();   // adds + links CC, ClimbController, hands, feet, balance
+            setup.SetUp();   // adds + links CC, ClimbController, hands, feet, balance; assigns Hold layer
 
-            int holdLayer = LayerMask.NameToLayer("Hold");
-            LayerMask mask = holdLayer >= 0 ? (LayerMask)(1 << holdLayer) : (LayerMask)~0;
             var leftHand = left.GetComponent<ClimbingHand>();
             var rightHand = right.GetComponent<ClimbingHand>();
-            leftHand.holdLayer = mask; rightHand.holdLayer = mask;
             leftHand.hapticOnGrab = rightHand.hapticOnGrab = false;
             var feet = rig.GetComponent<FootPlacementSystem>();
-            feet.holdLayer = mask;
 
             var sim = rig.AddComponent<SimulatedClimber>();
             sim.controller = rig.GetComponent<ClimbController>();
