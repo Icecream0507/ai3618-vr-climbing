@@ -33,6 +33,10 @@ namespace VRClimb.Util
         public Camera cam;
         public LayerMask holdLayer = ~0;
 
+        [Tooltip("First-person camera (sit at the eyes, look up the wall) instead of the third-person " +
+                 "follow. Used by the first-person 'VR' scene; same mouse controls either way.")]
+        public bool firstPerson = false;
+
         [Header("Feel")]
         [Tooltip("Body-rise speed of the auto-pull after a grab (m/s).")]
         public float pullSpeed = 1.25f;
@@ -150,8 +154,9 @@ namespace VRClimb.Util
         {
             _holds.Clear();
             // FindObjectsOfType skips inactive (broken) holds, which is exactly what we want.
+            // Any hold can be hand-grabbed now (roles unified), so don't filter by role.
             foreach (var h in Object.FindObjectsOfType<ClimbHold>())
-                if (h != null && !h.IsBroken && h.role != ClimbHold.HoldRole.Foot) _holds.Add(h);
+                if (h != null && !h.IsBroken) _holds.Add(h);
         }
 
         void UpdateTarget()
@@ -294,18 +299,30 @@ namespace VRClimb.Util
             head.localPosition = lp;
         }
 
-        // ---- camera: third-person 3/4 view that follows the climber up ----
+        // ---- camera: third-person follow, or first-person at the eyes ----
 
         void LateUpdate()
         {
             if (cam == null || head == null) return;
+
+            if (firstPerson)
+            {
+                // Sit at the eyes (just in front of the cosmetic head so it isn't in shot) and look up the
+                // wall toward the next holds. Tracks the head tightly — your A/D lean sways the view.
+                float hx = head.position.x;
+                Vector3 eye = new Vector3(hx, head.position.y + 0.05f, head.position.z - 0.05f);
+                cam.transform.position = Vector3.Lerp(cam.transform.position, eye, 1f - Mathf.Exp(-14f * Time.deltaTime));
+                cam.transform.LookAt(new Vector3(hx, head.position.y + 0.55f, 0f));   // tilt up toward the holds you grab
+                return;
+            }
+
             // Centred, slightly-high head-on follow: track the head's world X and Y so the climber
             // stays in the middle at rest AND as they traverse; holds read straight-on (easy to click);
             // we see the back as they face the wall.
-            float hx = head.position.x;
-            Vector3 want = new Vector3(hx, head.position.y + 0.45f, 3.3f);
+            float hx2 = head.position.x;
+            Vector3 want = new Vector3(hx2, head.position.y + 0.45f, 3.3f);
             cam.transform.position = Vector3.Lerp(cam.transform.position, want, 1f - Mathf.Exp(-6f * Time.deltaTime));
-            cam.transform.LookAt(new Vector3(hx, head.position.y - 0.1f, 0f));
+            cam.transform.LookAt(new Vector3(hx2, head.position.y - 0.1f, 0f));
         }
 
         void Flash(string s) { _flash = s; _flashT = 1.6f; }

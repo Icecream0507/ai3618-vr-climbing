@@ -88,8 +88,11 @@
 - 一句话：写了个**脚本机器人**驱动真实游戏逻辑做端到端自检，外加纯数学单测，全自动、无需头显。
 - 展开：`SimulatedClimber` 像真玩家一样抓握、探身、爬墙，断言"失衡会脱落、坠落会重生、登顶会计时、脚会落点"等 10 条；`ClimbMathSelfTest` 9 条验证平衡数学。命令行 `HeadlessCheck.Run` 一键跑，出退出码 + 报告。**当前 9/9 + 10/10 PASS**。
 - 加分点（可主动说）：这个机器人在跑的时候**抓到一个真 bug**——`CharacterController.minMoveDistance` 默认 0.001m 会吞掉慢速攀爬的每帧位移导致"爬不动"，纯看代码发现不了，只有实跑才暴露，已修复。说明我们不是"写完就交"，是真在引擎里验证过。
-- 还能**真人上手玩**(不用头显):菜单 `VRClimb ▸ Build Play Scene` 生成 `Play.unity`,第三人称鼠标键盘操作——鼠标指向岩点、左/右键左右手抓、抓到自动拉起、A/D 调重心、够不到抓不住、登顶通关。用的是 `PlayInputController`,和机器人同一套"写手部位置 + overrideGrip"的契约,所以"机器人能跑通"="人也能玩通"。
-- 还能**用 VR 手柄第一视角玩**(也不用真头显):菜单 `VRClimb ▸ Build VR Scene` 生成 `VR.unity`,接官方 **XR Device Simulator**(鼠标键盘模拟左右手柄 + 头显),第一视角——瞄准岩点扣 grip 抓住、把手往下拉身体就上升(和真 VR 攀岩一样的反向位移)。证明这套"控制器-only"的玩法**直接能接真手柄**;接口本就是为 VR 写的(`ClimbingHand.gripAction` 绑 `<XRController>/grip`,`armReach=0` 由真手臂限制够不够得着),同样不改任何玩法运算,e2e 仍 10/10。
+- 还能**真人上手玩**(不用头显),给了**两个视角**、操作完全一样——鼠标指向岩点、**左键左手 / 右键右手**抓、抓到自动拉起、A/D 调重心、够不到抓不住、登顶通关:
+  - `VRClimb ▸ Build Play Scene` → `Play.unity`:**第三人称**,看清整面墙,最好上手;
+  - `VRClimb ▸ Build VR Scene` → `VR.unity`:**第一视角**(相机在眼睛、朝墙上看,能看到自己的手臂伸向岩点),身临其境。
+  两者都用同一个 `PlayInputController`(只差 `firstPerson` 开关),和机器人同一套"写手部位置 + overrideGrip"的契约,所以"机器人能跑通"="人也能玩通"。
+- 想上**真头显**也直接能接:攀爬接口本就是为 VR 写的(`ClimbingHand.handTransform` = 手柄、`gripAction` = grip 键),按 `SETUP.md` 接上 `XR Origin` 即可,玩法运算一行不改。
 
 ---
 
