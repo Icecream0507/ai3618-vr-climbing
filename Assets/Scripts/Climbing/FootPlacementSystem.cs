@@ -31,8 +31,9 @@ namespace VRClimb.Climbing
         public float bodyDrop = 1.15f;
         [Tooltip("How far left/right of centre each foot looks for a hold (m).")]
         public float stanceHalfWidth = 0.22f;
-        [Tooltip("Radius a foot searches for / keeps a hold (m).")]
-        public float footReach = 0.45f;
+        [Tooltip("Radius a foot searches for / keeps a hold (m). Smaller = feet only stick to holds " +
+                 "right below you, so support isn't always free (stops the 'float up forever' feel).")]
+        public float footReach = 0.28f;
         [Tooltip("Physics layer(s) climb holds live on.")]
         public LayerMask holdLayer = ~0;
 

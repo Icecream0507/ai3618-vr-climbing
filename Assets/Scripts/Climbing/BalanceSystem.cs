@@ -31,13 +31,13 @@ namespace VRClimb.Climbing
 
         [Header("Tuning (empirical)")]
         [Tooltip("Lateral slack (m) the CoM may sit outside the contact span before counting as unstable.")]
-        public float supportMargin = 0.06f;
+        public float supportMargin = 0.03f;
         [Tooltip("Lateral distance (m) past the support edge that counts as fully unstable.")]
         public float maxOvershoot = 0.30f;
-        public float drainPerSecond = 0.6f;
+        public float drainPerSecond = 0.9f;
         public float regenPerSecond = 0.7f;
         [Tooltip("Seconds of instability tolerated before the meter starts draining (anti-jitter).")]
-        public float graceTime = 0.35f;
+        public float graceTime = 0.22f;
 
         public float Balance { get; private set; } = 1f;
         public float Normalized => Balance;
