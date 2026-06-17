@@ -95,15 +95,8 @@ def card(s, x, y, w, h, red_bg=False):
     return sp
 
 def speak(s, t):
-    y = SH - Inches(1.30)
-    rect(s, Inches(0.55), y, Inches(0.06), Inches(0.72), RED)
-    bx = s.shapes.add_textbox(Inches(0.72), y, SW-Inches(1.5), Inches(0.72))
-    tfx = bx.text_frame; tfx.word_wrap = True
-    p = tfx.paragraphs[0]; p.line_spacing = 1.15
-    r = p.add_run(); r.text = "讲："; r.font.bold = True; r.font.color.rgb = RED
-    r.font.size = Pt(11); r.font.name = "Microsoft YaHei"
-    r2 = p.add_run(); r2.text = t; r2.font.size = Pt(11)
-    r2.font.color.rgb = RGBColor(0x5A,0x3A,0x3E); r2.font.name = "Microsoft YaHei"
+    # Speaker notes removed from on-slide deck — script lives in the Word doc.
+    return
 
 def bullets(s, x, y, w, h, items, size=15, gap=7):
     tb = s.shapes.add_textbox(x, y, w, h); tf = tb.text_frame
