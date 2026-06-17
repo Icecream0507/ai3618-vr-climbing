@@ -19,8 +19,7 @@ Unity XRI). What makes it **bouldering** rather than monkey-bars:
 
 - **Balance** — your head is your centre of mass. Reach too far to one side without support and you
   start to **slip** (balance bar drains, turns red); recover by getting balanced again.
-- **Footwork** — colour-coded **foot holds** auto-catch "virtual feet" placed below your body. A foot
-  widens your support base, so good footwork keeps you balanced through hard moves.
+- **Footwork** — colour-coded holds suggest hand vs foot placement; **virtual feet** auto-snap to nearby holds below your body (like real rock, any hold can take a hand or a foot — colour is a hint, not a hard rule). Good footwork widens your support base and keeps you balanced through hard moves.
 - **Summit & score** — reach the green finish / summit zone to win; a timer and fall count give a run
   to beat. Optional **stamina** and **fragile holds** add challenge.
 
@@ -31,11 +30,13 @@ is our differentiator. See [`docs/RESEARCH.md`](docs/RESEARCH.md).
 
 ### Hold colour legend
 
-| Colour | Meaning |
+Colours suggest intended use (like tape on a real wall); **any hold accepts a hand or a virtual foot**.
+
+| Colour | Suggested use |
 |---|---|
-| 🟡 Yellow | Hand hold |
-| 🟠 Orange | Foot hold |
-| 🟣 Purple | Either (hand or foot) |
+| 🟡 Yellow | Hand |
+| 🟠 Orange | Foot |
+| 🟣 Purple | Either |
 | 🟢 Green | Finish |
 | 🔴 Red | Fragile (breaks if held too long) |
 | 🔵 Blue | Rest (no stamina drain) |

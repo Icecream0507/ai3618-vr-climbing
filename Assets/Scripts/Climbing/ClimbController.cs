@@ -159,16 +159,24 @@ namespace VRClimb.Climbing
 
         public void SetCheckpoint(Vector3 worldPos) => _spawnPoint = worldPos;
 
-        public void Respawn()
+        /// <summary>Teleport to spawn, release all contacts, reset balance — no fall counted.</summary>
+        public void FullReset()
         {
             _velocity = Vector3.zero;
             _activeHand = null;
             _fellFromWall = false;
-            // CharacterController must be disabled to teleport reliably.
+            if (leftHand != null) leftHand.ForceRelease();
+            if (rightHand != null) rightHand.ForceRelease();
+            if (footPlacement != null) footPlacement.DropAll();
             characterController.enabled = false;
             rig.position = _spawnPoint;
             characterController.enabled = true;
             if (balanceSystem != null) balanceSystem.ResetBalance();
+        }
+
+        public void Respawn()
+        {
+            FullReset();
             GameManager.Instance?.OnPlayerFell();
         }
     }

@@ -101,6 +101,19 @@ namespace VRClimb.Util
             ResetHands();
         }
 
+        void ManualRestart()
+        {
+            controller.FullReset();
+            ResetHands();
+            _lean = 0f;
+            if (head != null)
+            {
+                var lp = head.localPosition;
+                head.localPosition = new Vector3(0f, lp.y, lp.z);
+            }
+            GameManager.Instance?.RestartRun();
+        }
+
         void ResetHands()
         {
             _pulling = false;
@@ -143,7 +156,7 @@ namespace VRClimb.Util
             AutoPull();
             Balance(kb, won);
 
-            if (kb != null && kb.rKey.wasPressedThisFrame && controller != null) { controller.Respawn(); ResetHands(); }
+            if (kb != null && kb.rKey.wasPressedThisFrame && controller != null) ManualRestart();
 
             if (_flashT > 0f) _flashT -= Time.deltaTime;
         }
@@ -246,8 +259,10 @@ namespace VRClimb.Util
         void AutoPull()
         {
             if (!_pulling) return;
-            if (_active == null || _active.h == null || !_active.h.IsGripping ||
-                GameManager.Instance == null || GameManager.Instance.State != GameState.Climbing)
+            if (_active == null || _active.h == null || !_active.h.IsGripping)
+            { _pulling = false; return; }
+            var gm = GameManager.Instance;
+            if (gm != null && gm.State == GameState.Summit)
             { _pulling = false; return; }
 
             float remaining = _pullTargetY - rig.position.y;

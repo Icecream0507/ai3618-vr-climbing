@@ -67,7 +67,7 @@ namespace VRClimb.EditorTools
             var rb = new GameObject("RouteBuilder").AddComponent<RouteBuilder>();
             rb.routeIndex = _routeIndex; rb.holdLayerName = "Hold"; rb.buildOnAwake = true;
 
-            var camGo = new GameObject("PlayCamera", typeof(Camera));
+            var camGo = new GameObject("PlayCamera", typeof(Camera), typeof(AudioListener));
             camGo.tag = "MainCamera";
             var cam = camGo.GetComponent<Camera>();
             cam.clearFlags = CameraClearFlags.SolidColor;
@@ -117,6 +117,8 @@ namespace VRClimb.EditorTools
             play.feet = feet;
             play.cam = cam;
             play.holdLayer = mask;
+
+            ClimbUIAudioSetup.ApplyToScene();
         }
 
         static Transform MakeHand(Transform parent, string name, Vector3 localPos)

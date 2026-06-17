@@ -68,7 +68,7 @@ namespace VRClimb.EditorTools
             rb.routeIndex = _routeIndex; rb.holdLayerName = "Hold"; rb.buildOnAwake = true;
 
             // First-person camera (PlayInputController repositions it to the eyes every frame).
-            var camGo = new GameObject("PlayCamera", typeof(Camera));
+            var camGo = new GameObject("PlayCamera", typeof(Camera), typeof(AudioListener));
             camGo.tag = "MainCamera";
             var cam = camGo.GetComponent<Camera>();
             cam.clearFlags = CameraClearFlags.SolidColor;
@@ -120,6 +120,8 @@ namespace VRClimb.EditorTools
             play.cam = cam;
             play.holdLayer = mask;
             play.firstPerson = true;     // the only difference from Play.unity
+
+            ClimbUIAudioSetup.ApplyToScene();
         }
 
         static Transform MakeHand(Transform parent, string name, Vector3 localPos)

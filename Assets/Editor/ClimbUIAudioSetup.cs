@@ -22,9 +22,22 @@ namespace VRClimb.EditorTools
     public static class ClimbUIAudioSetup
     {
         const string AudioDir = "Assets/Audio";
+        const string SfxScript = AudioDir + "/_generate_placeholder_sfx.py";
 
         [MenuItem("VRClimb/Set Up HUD + Audio")]
         public static void SetUpHudAndAudio()
+        {
+            ApplyToScene();
+
+            if (!Application.isPlaying)
+                UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
+
+            Debug.Log("[VRClimb] HUD + Audio set up. If any ref is missing, run this after the climber " +
+                      "is wired (BalanceSystem + hands must exist), then re-run — or assign in the Inspector.");
+        }
+
+        /// <summary>Wire HUD + ClimbAudio in the active scene (used by PlayBuild / VRBuild too).</summary>
+        public static void ApplyToScene()
         {
             var balance = Object.FindObjectOfType<BalanceSystem>();
             var stamina = Object.FindObjectOfType<StaminaSystem>();
@@ -34,12 +47,41 @@ namespace VRClimb.EditorTools
 
             BuildHud(balance, stamina);
             BuildAudio(balance, left, right);
+        }
 
-            if (!Application.isPlaying)
-                UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
-
-            Debug.Log("[VRClimb] HUD + Audio set up. If any ref is missing, run this after the climber " +
-                      "is wired (BalanceSystem + hands must exist), then re-run — or assign in the Inspector.");
+        [MenuItem("VRClimb/Generate Placeholder SFX")]
+        public static void GeneratePlaceholderSfx()
+        {
+            if (!System.IO.File.Exists(SfxScript))
+            {
+                Debug.LogError("[VRClimb] Missing " + SfxScript);
+                return;
+            }
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "python",
+                Arguments = "\"" + System.IO.Path.GetFullPath(SfxScript) + "\"",
+                WorkingDirectory = System.IO.Path.GetFullPath(AudioDir),
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+            };
+            using (var p = System.Diagnostics.Process.Start(psi))
+            {
+                p.WaitForExit();
+                var stdout = p.StandardOutput.ReadToEnd();
+                var stderr = p.StandardError.ReadToEnd();
+                if (!string.IsNullOrEmpty(stdout)) Debug.Log(stdout.Trim());
+                if (!string.IsNullOrEmpty(stderr)) Debug.LogWarning(stderr.Trim());
+                if (p.ExitCode != 0)
+                {
+                    Debug.LogError("[VRClimb] Placeholder SFX generation failed (exit " + p.ExitCode + ").");
+                    return;
+                }
+            }
+            AssetDatabase.Refresh();
+            Debug.Log("[VRClimb] Placeholder SFX written to " + AudioDir + ". Re-run Set Up HUD + Audio if needed.");
         }
 
         // ---- HUD ---------------------------------------------------------------------------------
@@ -185,8 +227,10 @@ namespace VRClimb.EditorTools
             EditorUtility.SetDirty(audio);
 
             if (audio.grab == null)
-                Debug.LogWarning("[VRClimb] Audio: SFX not found in " + AudioDir +
-                                 ". Run Assets/Audio/_generate_placeholder_sfx.py or drop your own clips.");
+                Debug.LogError("[VRClimb] Audio: SFX not found in " + AudioDir +
+                               ". Menu VRClimb ▸ Generate Placeholder SFX, or run " + SfxScript + ".");
+            else if (Object.FindObjectOfType<AudioListener>() == null)
+                Debug.LogWarning("[VRClimb] Audio: no AudioListener in scene — add one to the main camera.");
         }
 
         static AudioClip LoadClip(string file) =>
