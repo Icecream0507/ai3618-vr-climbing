@@ -106,8 +106,9 @@ ffmpeg -y -framerate 30 -i Logs/frames/f_%05d.jpg \
 **操作(两个场景通用)**:鼠标指向岩点(出现准星) → **左键 = 左手抓 / 右键 = 右手抓**;抓到后身体自动拉起到肩高。**A/D** 调重心,**W/S** 上拉/下移,**R** 重来。够不到臂展的点抓不住(准星变灰);重心偏出支撑面会脱手坠落;爬到顶通关。
 
 ### 5a. 第三人称 —— `Play.unity`
-1. 菜单 **`VRClimb ▸ Build Play Scene`**(或命令行 `-executeMethod VRClimb.EditorTools.PlayBuild.BuildAndExit`),生成 `Assets/Scenes/Play.unity`。
-2. 打开按 **Play**。镜头在身后斜上方,能看清整面墙、身体、平衡条、脚点和绿色高亮——**最容易上手**。
+1. 菜单 **`VRClimb ▸ Build Play Scene`**(或命令行 `-executeMethod VRClimb.EditorTools.PlayBuild.BuildAndExit`)，生成 `Assets/Scenes/Play.unity`。**新场景已自带** `AudioListener`、世界空间 HUD 与 `ClimbAudio` 接线。
+2. 打开按 **Play**。若无声：菜单 **`VRClimb ▸ Generate Placeholder SFX`** 生成 `Assets/Audio/*.wav`，再 **Build Play Scene** 重建一次。
+3. 镜头在身后斜上方,能看清整面墙、身体、平衡条、脚点和绿色高亮——**最容易上手**。
 
 ### 5b. 第一视角 —— `VR.unity`
 1. 菜单 **`VRClimb ▸ Build VR Scene`**(或命令行 `-executeMethod VRClimb.EditorTools.VRBuild.BuildAndExit`),生成 `Assets/Scenes/VR.unity`。

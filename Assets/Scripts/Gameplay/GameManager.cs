@@ -61,6 +61,14 @@ namespace VRClimb.Gameplay
             Finished?.Invoke(ElapsedTime);
         }
 
+        /// <summary>Manual restart (e.g. R key): back to Ready, timer and fall count cleared.</summary>
+        public void RestartRun()
+        {
+            ElapsedTime = 0f;
+            FallCount = 0;
+            SetState(GameState.Ready);
+        }
+
         void SetState(GameState next)
         {
             _state = next;
