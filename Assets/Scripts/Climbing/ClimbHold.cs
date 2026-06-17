@@ -25,8 +25,8 @@ namespace VRClimb.Climbing
                  "used by a hand or a foot, like real rock. Only drives the resting colour.")]
         public HoldRole role = HoldRole.Hand;
 
-        [Tooltip("Stamina drained per second while this hold is gripped (ignored for Rest holds).")]
-        public float staminaCostPerSecond = 5f;
+        [Tooltip("Stamina drained per second, per hand, while this hold is gripped (ignored for Rest holds). Empirical placeholder — tune in-engine.")]
+        public float staminaCostPerSecond = 4f;
 
         [Tooltip("For Fragile holds: seconds it can be held before it breaks.")]
         public float breakAfterSeconds = 1.5f;
