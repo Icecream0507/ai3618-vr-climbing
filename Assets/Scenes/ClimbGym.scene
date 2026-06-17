@@ -28,7 +28,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: fc17a48a996f51343a9a59b618fc145f, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -383,11 +383,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   route: {fileID: 0}
   routeIndex: 0
-  wallMaterial: {fileID: 0}
-  handHoldMaterial: {fileID: 0}
-  footHoldMaterial: {fileID: 0}
+  wallMaterial: {fileID: 2100000, guid: 88cc4d263e2c9c14a92d289d1776759c, type: 2}
+  handHoldMaterial: {fileID: 2100000, guid: 319dc08b3fe3ce344b1ac9cb95355d81, type: 2}
+  footHoldMaterial: {fileID: 2100000, guid: 6435caffb7f00224c8149980732d13b0, type: 2}
   restHoldMaterial: {fileID: 0}
-  handAndFootHoldMaterial: {fileID: 0}
+  handAndFootHoldMaterial: {fileID: 2100000, guid: d148ff003a708c346a354a584e0c4ee7, type: 2}
   holdLayerName: Hold
   buildOnAwake: 1
 --- !u!4 &175988284
@@ -890,12 +890,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 616988678}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0.4}
   m_LocalScale: {x: 0.14, y: 0.08, z: 0.14}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1952233987}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &808667716
 GameObject:
@@ -1224,7 +1224,7 @@ MonoBehaviour:
   gripAction:
     m_UseReference: 0
     m_Action:
-      m_Name: 
+      m_Name: Grip
       m_Type: 0
       m_ExpectedControlType: 
       m_Id: 93d635f6-2e59-40a0-a18b-de41fbaa9c54
@@ -1412,7 +1412,7 @@ MonoBehaviour:
   gripAction:
     m_UseReference: 0
     m_Action:
-      m_Name: 
+      m_Name: Grip
       m_Type: 0
       m_ExpectedControlType: 
       m_Id: e53b4b1d-9fd7-4f02-a7e3-3d5b2ec96ea8
@@ -1562,8 +1562,8 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.3, g: 0.33, b: 0.36, a: 1}
-    - _Color: {r: 0.3, g: 0.33, b: 0.36, a: 1}
+    - _BaseColor: {r: 0.9622642, g: 0.6194349, b: 0.5492168, a: 1}
+    - _Color: {r: 0.9622642, g: 0.6194349, b: 0.5492168, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
@@ -1628,8 +1628,8 @@ Camera:
   m_GameObject: {fileID: 1526857483}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.16, g: 0.19, b: 0.26, a: 1}
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.5066305, g: 0.8683594, b: 0.9339623, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -2197,6 +2197,7 @@ Transform:
   - {fileID: 1213960602}
   - {fileID: 1322554961}
   - {fileID: 576127027}
+  - {fileID: 616988681}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
@@ -2210,4 +2211,3 @@ SceneRoots:
   - {fileID: 1526857485}
   - {fileID: 1952233987}
   - {fileID: 1062793181}
-  - {fileID: 616988681}
