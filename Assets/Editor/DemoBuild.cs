@@ -182,14 +182,10 @@ namespace VRClimb.EditorTools
             setup.head = head; setup.leftController = left; setup.rightController = right;
             setup.SetUp();
 
-            int holdLayer = LayerMask.NameToLayer("Hold");
-            LayerMask mask = holdLayer >= 0 ? (LayerMask)(1 << holdLayer) : (LayerMask)~0;
             var leftHand = left.GetComponent<ClimbingHand>();
             var rightHand = right.GetComponent<ClimbingHand>();
-            leftHand.holdLayer = rightHand.holdLayer = mask;
             leftHand.hapticOnGrab = rightHand.hapticOnGrab = false;
             var feet = rig.GetComponent<FootPlacementSystem>();
-            feet.holdLayer = mask;
             feet.leftFootMarker = MakeFootMarker("LeftFoot");
             feet.rightFootMarker = MakeFootMarker("RightFoot");
 

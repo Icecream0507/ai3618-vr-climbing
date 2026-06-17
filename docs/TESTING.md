@@ -51,6 +51,28 @@ Tuanjie.exe -projectPath . -batchmode -nographics \
 
 这一步在做 PR / 改完代码后跑一下，能挡住绝大多数回归。
 
+### 2.1 PR 前三连 smoke（改 Editor / 场景构建脚本后建议跑）
+
+三条命令都只验证「能建场景、不报错」，**不**需要头显。在仓库根目录执行（把 `Tuanjie.exe` 换成你的 Unity/Tuanjie 编辑器路径）：
+
+```powershell
+# 1) 逻辑回归 — 9/9 数学 + 10/10 端到端（约 10–30 s）
+Tuanjie.exe -projectPath . -batchmode -nographics `
+    -executeMethod VRClimb.EditorTools.HeadlessCheck.Run -logFile Logs/e2e.log
+
+# 2) 第三人称试玩场景能生成（退出码 0）
+Tuanjie.exe -projectPath . -batchmode -nographics `
+    -executeMethod VRClimb.EditorTools.PlayBuild.BuildAndExit -logFile Logs/play-build.log
+
+# 3) 第一视角键鼠场景能生成（退出码 0；VR.unity 不是 OpenXR，见 §5b）
+Tuanjie.exe -projectPath . -batchmode -nographics `
+    -executeMethod VRClimb.EditorTools.VRBuild.BuildAndExit -logFile Logs/vr-build.log
+```
+
+- 第 1 条看 `Logs/headless-check.txt` 是否 `PASS`。
+- 第 2–3 条成功后分别更新 `Assets/Scenes/Play.unity` / `VR.unity`；若只改 gameplay 脚本、没动 Editor 构建器，跑第 1 条通常就够。
+- GitHub Actions 上可只跑第 1 条（见 `.github/workflows/headless-check.yml`），Play/VR 构建留在本地 smoke。
+
 ---
 
 ## 3. 现场看演示（答辩 / 录屏都用这个）

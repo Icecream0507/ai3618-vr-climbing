@@ -6,11 +6,11 @@ namespace VRClimb.Gameplay
     /// <summary>
     /// One-click wiring helper. Put this on your XR Origin, assign the HMD and the left/right
     /// controller transforms, then use the context menu <c>Set Up Climber</c>. It adds and links the
-    /// CharacterController, ClimbController, ClimbingHand (×2), FootPlacementSystem and BalanceSystem.
+    /// CharacterController, ClimbController, ClimbingHand (×2), FootPlacementSystem and BalanceSystem,
+    /// and auto-assigns the Hold layer when it exists.
     ///
-    /// Two things it deliberately leaves for you (they can't be guessed safely): each
-    /// <see cref="ClimbingHand.gripAction"/> (bind to your XRI grip/Select action) and the Hold
-    /// <c>LayerMask</c> on the hands and feet. Set those in the Inspector afterwards.
+    /// For a real XR rig, bind each <see cref="ClimbingHand.gripAction"/> to your XRI grip/Select
+    /// action in the Inspector. Simulation scenes use <c>overrideGrip</c> instead.
     /// </summary>
     public class PlayerClimberSetup : MonoBehaviour
     {
@@ -47,8 +47,25 @@ namespace VRClimb.Gameplay
             controller.footPlacement = feet; controller.balanceSystem = balance;
 
             Debug.Log("[VRClimb] Climber wired. Still to do in the Inspector: assign each " +
-                      "ClimbingHand.gripAction, and set the Hold LayerMask on both hands and the " +
-                      "FootPlacementSystem.", this);
+                      "ClimbingHand.gripAction when using a real XR rig (simulation scenes use " +
+                      "overrideGrip instead).", this);
+            TryAssignHoldLayer(leftHand, rightHand, feet);
+        }
+
+        /// <summary>Sets Hold layer on hands and feet when the layer exists (no-op otherwise).</summary>
+        public static void TryAssignHoldLayer(ClimbingHand leftHand, ClimbingHand rightHand, FootPlacementSystem feet)
+        {
+            int holdLayer = LayerMask.NameToLayer("Hold");
+            if (holdLayer < 0)
+            {
+                Debug.LogWarning("[VRClimb] Layer 'Hold' not found — create it (Edit → Project Settings → " +
+                                 "Tags and Layers) or run VRClimb ▸ Set Up Test Scene.", leftHand != null ? leftHand : feet);
+                return;
+            }
+            LayerMask mask = 1 << holdLayer;
+            if (leftHand != null) leftHand.holdLayer = mask;
+            if (rightHand != null) rightHand.holdLayer = mask;
+            if (feet != null) feet.holdLayer = mask;
         }
 
         ClimbingHand EnsureHand(Transform controller, UnityEngine.XR.XRNode node, float shoulderSide)

@@ -43,8 +43,9 @@ namespace VRClimb.EditorTools
                                  "prefab from the XRI Starter Assets, then re-run this, or add PlayerClimberSetup manually.");
             }
 
-            Debug.Log("[VRClimb] Test scene scaffolded. Remaining manual steps (docs/SETUP.md §6): " +
-                      "on each ClimbingHand assign gripAction; set the Hold layer on the hands + FootPlacementSystem.");
+            Debug.Log("[VRClimb] Test scene scaffolded. Remaining manual steps for a real XR rig " +
+                      "(docs/SETUP.md §6): on each ClimbingHand assign gripAction. Simulation scenes " +
+                      "use overrideGrip instead — see docs/TESTING.md.");
         }
 
         static GameObject FindXrOrigin()

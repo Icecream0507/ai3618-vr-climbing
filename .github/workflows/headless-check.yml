@@ -1,0 +1,34 @@
+# Runs VRClimb HeadlessCheck on push/PR (logic regression only — no headset).
+# Play/VR scene build smoke tests stay local; see docs/TESTING.md §2.1.
+name: Headless Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  headless-check:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run HeadlessCheck
+        shell: pwsh
+        run: |
+          $editor = @(
+            "${{ github.workspace }}\Unity\Editor\Unity.exe",
+            "C:\Program Files\Unity\Hub\Editor\2022.3.62f1\Editor\Unity.exe",
+            "D:\Application\tuanjie\2022.3.62t7\Editor\Tuanjie.exe"
+          ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $editor) {
+            Write-Host "::warning::Unity/Tuanjie editor not found on runner — skipping (run locally per docs/TESTING.md §2)."
+            exit 0
+          }
+          New-Item -ItemType Directory -Force -Path Logs | Out-Null
+          & $editor -projectPath . -batchmode -nographics `
+            -executeMethod VRClimb.EditorTools.HeadlessCheck.Run `
+            -logFile Logs/e2e.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-Content Logs/headless-check.txt
