@@ -41,6 +41,12 @@ namespace VRClimb.Climbing
         [Tooltip("World Y below which the player is considered fallen and is respawned.")]
         public float fallResetY = -10f;
 
+        [Header("Safety")]
+        [Tooltip("Hard cap on how far one frame of counter-motion may move the rig (m). A real hand " +
+                 "can't move far in a single frame, so this stops a frame-time spike, a tracking " +
+                 "glitch, or a runaway auto-pull from teleporting the body up past several holds.")]
+        public float maxStepPerFrame = 0.5f;
+
         public bool IsClimbing => _activeHand != null && _activeHand.IsGripping;
 
         bool HasContact =>
@@ -139,6 +145,9 @@ namespace VRClimb.Climbing
             // Counter the hand's motion: move the rig so the active hand returns to its anchor.
             Vector3 handNow = _activeHand.HandPosition;
             Vector3 delta = ClimbMath.ClimbDelta(_anchorWorld, handNow);
+            // Hard per-frame cap so a dt spike / glitch / runaway auto-pull can't teleport the body up
+            // past several holds. Normal climbing deltas are ~centimetres and never reach this.
+            delta = Vector3.ClampMagnitude(delta, maxStepPerFrame);
             characterController.Move(delta);
             // The hand is a child of the rig, so it moved with the rig; re-pin the anchor.
             _anchorWorld = _activeHand.HandPosition;

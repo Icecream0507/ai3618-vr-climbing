@@ -255,6 +255,7 @@ namespace VRClimb.Util
 
             float ease = Mathf.Clamp01(remaining / 0.3f);         // decelerate into the settle point
             float step = pullSpeed * Mathf.Lerp(0.25f, 1f, ease) * Time.deltaTime;
+            step = Mathf.Min(step, remaining);                    // never overshoot the settle target (e.g. on a dt spike)
             _active.h.handTransform.position += Vector3.down * step;
         }
 
