@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Summit VR — AI3618 Pre</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.css">
+<style>
+:root{
+  --bg:#0b0f1a; --bg2:#121a2e; --ink:#e8edf7; --muted:#9aa7c2;
+  --accent:#5e;--accent:#5ee0c8; --warn:#ff5d5d; --hand:#ffd23f; --foot:#ff8c2b;
+  --either:#b06bff; --finish:#46d36b; --line:#26314d;
+}
+.reveal{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(--ink);}
+.reveal .slides{text-align:left;}
+.reveal section{height:100%;}
+.bg{background:
+  radial-gradient(1200px 600px at 80% -10%, #1c2c52 0%, transparent 55%),
+  radial-gradient(900px 500px at -10% 110%, #15324a 0%, transparent 50%),
+  linear-gradient(160deg,#0b0f1a,#0d1322);}
+.reveal h1,.reveal h2,.reveal h3{color:var(--ink);font-weight:800;letter-spacing:.5px;text-transform:none;line-height:1.15;}
+.reveal h1{font-size:2.0em;} .reveal h2{font-size:1.45em;} .reveal h3{font-size:1.05em;}
+.kicker{color:var(--accent);font-weight:700;font-size:.5em;letter-spacing:3px;text-transform:uppercase;margin-bottom:.4em;}
+.reveal p,.reveal li{font-size:.62em;line-height:1.5;color:var(--ink);}
+.reveal .muted{color:var(--muted);}
+.reveal strong{color:#fff;}
+.reveal em{color:var(--accent);font-style:normal;font-weight:700;}
+.accent{color:var(--accent);} .warn{color:var(--warn);}
+.pill{display:inline-block;padding:.18em .7em;border-radius:999px;border:1px solid var(--line);
+  background:rgba(94,224,200,.08);color:var(--accent);font-size:.5em;font-weight:700;letter-spacing:1px;margin:.15em .2em;}
+.pill.red{background:rgba(255,93,93,.1);color:var(--warn);border-color:#5a2630;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.2em;align-items:start;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.9em;}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01));
+  border:1px solid var(--line);border-radius:14px;padding:.9em 1.1em;}
+.card h3{margin:0 0 .35em;color:var(--accent);}
+.legend{display:flex;flex-wrap:wrap;gap:.5em;margin-top:.4em;}
+.lg{display:flex;align-items:center;gap:.4em;font-size:.5em;color:var(--muted);}
+.dot{width:.85em;height:.85em;border-radius:50%;display:inline-block;}
+.foot-note{position:fixed;left:0;right:0;bottom:0;font-size:13px;color:var(--muted);
+  padding:8px 28px;border-top:1px solid var(--line);background:rgba(8,11,20,.6);display:flex;justify-content:space-between;}
+.reveal .speak{margin-top:.8em;padding:.6em .9em;border-left:3px solid var(--accent);
+  background:rgba(94,224,200,.06);border-radius:0 10px 10px 0;font-size:.52em;color:var(--muted);}
+.reveal .speak b{color:var(--accent);}
+.big{font-size:1.1em;}
+.hl{background:linear-gradient(transparent 60%, rgba(94,224,200,.25) 0);padding:0 .1em;}
+.metric{font-size:2.4em;font-weight:800;color:var(--accent);line-height:1;}
+.metric.warn{color:var(--warn);}
+table.tbl{width:100%;border-collapse:collapse;font-size:.5em;margin-top:.4em;}
+table.tbl th,table.tbl td{border:1px solid var(--line);padding:.45em .6em;text-align:left;}
+table.tbl th{background:rgba(94,224,200,.08);color:var(--accent);}
+.arch code{color:var(--accent);font-size:.92em;}
+.flow{font-family:"JetBrains Mono",Consolas,monospace;font-size:.46em;line-height:1.45;
+  background:#070b14;border:1px solid var(--line);border-radius:12px;padding:1em 1.2em;color:#c9d6f0;white-space:pre;}
+.reveal section img{border-radius:12px;border:1px solid var(--line);}
+.title-wrap{display:flex;flex-direction:column;justify-content:center;height:100%;}
+.authors{margin-top:1.2em;color:var(--muted);font-size:.55em;letter-spacing:1px;}
+.tageq{font-family:"JetBrains Mono",Consolas,monospace;color:var(--accent);font-size:.55em;
+  background:#070b14;border:1px solid var(--line);border-radius:10px;padding:.5em .8em;display:inline-block;margin-top:.6em;}
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+<!-- 1 TITLE -->
+<section class="bg" data-auto-animate>
+  <div class="title-wrap">
+    <div class="kicker">AI3618 · Group N</div>
+    <h1>Summit VR</h1>
+    <p class="big" style="color:var(--muted);max-width:22em;">把真实抱石的两件核心——<em>平衡</em> 与 <em>脚法</em>——带回只有头+两手柄的 VR 攀岩。</p>
+    <div style="margin-top:.6em;">
+      <span class="pill">stock Quest · 3-point</span>
+      <span class="pill">引擎端到端 10/10 PASS</span>
+      <span class="pill">5 条程序化线路</span>
+    </div>
+    <div class="authors">成员：____ · ____ · ____ · ____ · ____ &nbsp;|&nbsp; github.com/Icecream0507/ai3618-vr-climbing</div>
+  </div>
+  <div class="foot-note"><span>Summit VR</span><span>AI3618 Pre · 2026</span></div>
+</section>
+
+<!-- 2 THE GAP -->
+<section class="bg">
+  <div class="kicker">背景与问题</div>
+  <h2>VR 攀岩很火，但<span class="warn">几乎全是「纯手」</span></h2>
+  <div class="grid2" style="margin-top:.7em;">
+    <div>
+      <p><strong>现状：</strong>The Climb · Gorilla Tag —— 舒适、不晕、成功。但掉下来只有两种原因：<span class="warn">松手</span> 或 <span class="warn">够不到</span>。</p>
+      <p><strong>真实抱石恰恰相反：</strong>难点不在手有多大力，而在<em>重心怎么落在脚上</em>、要不要换脚、会不会「开门」(barn-door) 被甩出去。</p>
+      <p class="muted">2026 新出的平面游戏 <em>New Heights</em> 主打的正是平衡/脚法 → 玩家确实想要这一层。</p>
+    </div>
+    <div class="card">
+      <h3>缺口</h3>
+      <p style="font-size:.7em;">市面 VR 攀岩把真实攀岩<strong>最核心的脚法和身体平衡全砍了</strong>。<br><br>这就是我们要补的地方。</p>
+    </div>
+  </div>
+  <div class="speak"><b>讲：</b>真实抱石的功夫在脚上，不在手上。市面 VR 攀岩把这块全砍了——这是我们的切入点。</div>
+  <div class="foot-note"><span>背景</span><span>2 / 10</span></div>
+</section>
+
+<!-- 3 OUR IDEA -->
+<section class="bg">
+  <div class="kicker">我们的点子</div>
+  <h2>测不到的就<em>抽象</em>，只模拟<em>影响玩法</em>的部分</h2>
+  <div class="grid3" style="margin-top:.7em;">
+    <div class="card"><h3>头 = 重心代理</h3><p>只用 3 个追踪点（头+两手柄，无脚部追踪）。看头有没有歪出支撑范围——这就是判平衡。</p></div>
+    <div class="card"><h3>脚 = 抽象状态</h3><p>不是 IK 腿。虚拟脚自动吸附到身体下方的脚点，<strong>撑宽支撑面</strong>，不去渲染会穿模的假腿。</p></div>
+    <div class="card"><h3>平衡 = 渐变条</h3><p>带迟滞 + 缓冲时间，不是一下子掉。<strong>可预警、可救回</strong>——是技巧判定，不是掷骰子。</p></div>
+  </div>
+  <div class="tageq">abstract what we can't sense — simulate only what changes play</div>
+  <div class="speak"><b>讲：</b>关键取舍——我们不渲染会穿模的假腿，只模拟脚带来的后果：更宽的支撑面。</div>
+  <div class="foot-note"><span>点子</span><span>3 / 10</span></div>
+</section>
+
+<!-- 4 RESEARCH -->
+<section class="bg">
+  <div class="kicker">调研支撑</div>
+  <h2>不是拍脑袋——文献给了 <em>why</em> 和 <em>how</em></h2>
+  <div class="grid2" style="margin-top:.7em;">
+    <div class="card"><h3>Kosmalla et al. · CHI 2020</h3><p>真实墙实验：<strong>「脚」比「手」更影响</strong>动作准确感与乐趣。<br><span class="muted">→ 告诉我们为什么值得做脚</span></p></div>
+    <div class="card"><h3>Mitsuda &amp; Kimura · Frontiers VR 2026</h3><p>头当重心、头歪出无支撑脚即判掉落（n=24 已验证）。<br><span class="muted">→ 告诉我们怎么用头做平衡判定</span></p></div>
+  </div>
+  <p style="margin-top:.6em;"><strong>机器人平衡理论</strong>提供词汇：支撑多边形 / ZMP / capture point —— 可信的平衡<em>不需要</em>贵的追踪或全身 IK。</p>
+  <div class="speak"><b>讲：</b>一篇论文告诉我们要做脚，一篇告诉我们用头当重心怎么做。我们把它落到了消费级硬件上。</div>
+  <div class="foot-note"><span>调研</span><span>4 / 10</span></div>
+</section>
+<!-- 5 ARCHITECTURE -->
+<section class="bg arch">
+  <div class="kicker">系统架构</div>
+  <h2>加法式设计：拿掉平衡/脚法，退回普通纯手攀爬</h2>
+  <div class="flow">Input(grip)                          Physics overlap (Hold layer)
+     │                                        │
+     ▼                                        ▼
+ClimbingHand ×2 ──grab/release──►  ClimbHold {role: Hand/Foot/Either, type}
+     │                                        ▲
+     │                          FootPlacementSystem ──auto-snap 虚拟脚→脚点
+     ▼                                        │
+ClimbController ──反向位移 + 重力 + 坠落/重生──► CharacterController (XR Origin)
+     ▲   │  contacts(手+脚) 把你留在墙上              │
+     │   └──────────────►  <span class="accent">BalanceSystem</span> (头=重心; 横向支撑判定)
+     │  PeelOff(balance==0) ◄────────────┘  探出支撑就扣血
+GameManager(状态/计时/跌落) ──events──► GameHUD(计时 / 体力条 / 平衡条)</div>
+  <div class="speak"><b>讲：</b>核心是反向位移攀爬这个成熟基座；平衡和脚法是叠在上面的可选层，所以永远不会把稳的部分搞坏。<span class="muted">（P1 在此补 1–2 句技术细节）</span></div>
+  <div class="foot-note"><span>架构</span><span>5 / 10</span></div>
+</section>
+
+<!-- 6 BALANCE MECHANIC (core) -->
+<section class="bg">
+  <div class="kicker">核心机制 · 整个项目的心脏</div>
+  <h2>把支撑面压成<em>一维左右区间</em></h2>
+  <div class="grid2" style="margin-top:.4em;grid-template-columns:1.05fr .95fr;">
+    <div>
+      <svg viewBox="0 0 460 300" style="width:100%;background:#070b14;border:1px solid var(--line);border-radius:12px;">
+        <!-- support interval -->
+        <line x1="60" y1="210" x2="400" y2="210" stroke="#26314d" stroke-width="2"/>
+        <rect x="150" y="200" width="170" height="20" rx="6" fill="rgba(94,224,200,.18)" stroke="#5ee0c8" stroke-dasharray="4 3"/>
+        <text x="235" y="245" fill="#5ee0c8" font-size="15" text-anchor="middle" font-family="monospace">[low, high] 支撑区间</text>
+        <!-- contacts: hands + foot -->
+        <circle cx="170" cy="210" r="9" fill="#ffd23f"/><text x="170" y="190" fill="#ffd23f" font-size="13" text-anchor="middle">手</text>
+        <circle cx="300" cy="210" r="9" fill="#ffd23f"/><text x="300" y="190" fill="#ffd23f" font-size="13" text-anchor="middle">手</text>
+        <circle cx="150" cy="210" r="9" fill="#ff8c2b"/><text x="150" y="190" fill="#ff8c2b" font-size="13" text-anchor="middle">脚</text>
+        <!-- CoM head -->
+        <g>
+          <line x1="235" y1="60" x2="235" y2="200" stroke="#e8edf7" stroke-width="2" stroke-dasharray="3 3"/>
+          <circle cx="235" cy="50" r="16" fill="#e8edf7"/>
+          <text x="235" y="34" fill="#e8edf7" font-size="13" text-anchor="middle">头 = 重心</text>
+          <text x="235" y="285" fill="#9aa7c2" font-size="13" text-anchor="middle">重心横向坐标 = 0</text>
+        </g>
+      </svg>
+    </div>
+    <div>
+      <p>所有接触点（抓住的手点 + 踩住的脚点）投影到墙横轴，得到跨度 <code>[low, high]</code>。</p>
+      <p>头的横向位置落在区间内 → <span class="accent">稳</span>（条回升）；歪出去 → <span class="warn">不稳</span>（缓冲后条下掉）。</p>
+      <div class="tageq" style="display:block;">s ∈ [−1,+1] &nbsp;→&nbsp; 平衡条 B &nbsp;→&nbsp; B≤0 则 PeelOff 脱落</div>
+      <p style="margin-top:.5em;"><strong>救法：</strong>踩一只脚 / 抓对侧点 → <span class="hl">撑宽区间</span> → 重心回到里面。</p>
+    </div>
+  </div>
+  <div class="speak"><b>讲：</b>踩一只脚为什么管用？因为它撑宽了这个区间，把你的重心重新框进去——这一下就是整个 demo 的高光。</div>
+  <div class="foot-note"><span>平衡机制</span><span>6 / 10</span></div>
+</section>
+<!-- 7 DEMO -->
+<section class="bg">
+  <div class="kicker">Demo · 重点</div>
+  <h2>失衡变红 → 踩脚回正，<em>这一下</em>市面没有</h2>
+  <div class="grid2" style="margin-top:.5em;grid-template-columns:1.1fr .9fr;">
+    <div class="card" style="display:flex;align-items:center;justify-content:center;min-height:300px;
+      background:repeating-linear-gradient(135deg,#0e1526,#0e1526 14px,#111a2e 14px,#111a2e 28px);">
+      <div style="text-align:center;">
+        <div style="font-size:2.2em;">▶</div>
+        <p class="muted" style="font-size:.8em;">放 60–90s demo 视频<br><span style="font-size:.85em;">（money shot：同侧伸手 → 条变红 → 踩橙色脚点 → 回正）</span></p>
+      </div>
+    </div>
+    <div>
+      <h3 class="accent" style="font-size:.8em;">颜色图例</h3>
+      <div class="legend">
+        <span class="lg"><span class="dot" style="background:#ffd23f"></span>手</span>
+        <span class="lg"><span class="dot" style="background:#ff8c2b"></span>脚</span>
+        <span class="lg"><span class="dot" style="background:#b06bff"></span>都行</span>
+        <span class="lg"><span class="dot" style="background:#46d36b"></span>终点</span>
+        <span class="lg"><span class="dot" style="background:#ff5d5d"></span>易碎</span>
+        <span class="lg"><span class="dot" style="background:#4da3ff"></span>休息</span>
+      </div>
+      <p style="margin-top:.8em;">默认线路<strong>故意不可纯手通过</strong>：两个手点都在右边 → 重心出界 → 必须踩左脚或 flag 才能过。</p>
+      <p class="muted">脱落 → 重生回检查点 → 顶部 “Summit!” + 计时显示在 HUD。</p>
+    </div>
+  </div>
+  <div class="speak"><b>讲（配视频）：</b>注意——两只手都在右边，平衡条开始变红、闪……现在踩上左边这只脚……条回来了。<b>这一下是市面所有 VR 攀岩都没有的。</b></div>
+  <div class="foot-note"><span>Demo</span><span>7 / 10</span></div>
+</section>
+
+<!-- 8 EVALUATION -->
+<section class="bg">
+  <div class="kicker">评测计划</div>
+  <h2>系统已实现，<span class="warn">数据诚实留空</span>——交的是可证伪的设计</h2>
+  <div class="grid2" style="margin-top:.5em;">
+    <div>
+      <p><strong>被试内对比</strong>（同线路、顺序平衡）：</p>
+      <p>A 纯手 &nbsp;<span class="muted">vs</span>&nbsp; B 平衡 + 脚法</p>
+      <p style="margin-top:.4em;"><strong>指标：</strong>登顶时间 · 跌落按原因分（松手/失衡/体力）· 平衡余量曲线 · <em>NASA-TLX</em> · <em>SSQ</em> · 真实感量表</p>
+    </div>
+    <div class="card">
+      <h3>核心假设</h3>
+      <p>B：<span class="accent">真实感 ↑ · 挑战 ↑</span>，但 <span class="accent">晕动 SSQ 不升</span>（H3）。</p>
+      <p class="muted" style="font-size:.85em;">挑战来自<strong>决策</strong>难度，而非 vection/运动冲突——这是市面 VR 攀岩都没有的差异化卖点。</p>
+    </div>
+  </div>
+  <table class="tbl">
+    <tr><th>验证状态</th><th>方式</th><th>结果</th></tr>
+    <tr><td>机制正确性</td><td>引擎内端到端机器人仿真（失衡→脱落→重生→登顶闭环）</td><td class="accent">10 / 10 PASS</td></tr>
+    <tr><td>平衡/位移数学</td><td><code>ClimbMath</code> 纯函数单测</td><td class="accent">9 / 9 PASS</td></tr>
+    <tr><td>人因评测（真实感/晕动）</td><td>n≈5–8 同学被试内实验</td><td class="warn">待收集</td></tr>
+  </table>
+  <div class="speak"><b>讲：</b>我们没假装有结果。机制正确性已用仿真验证；人因数据是诚实留空的占位——这正是这份报告的诚信所在。<span class="muted">（P2 在此补线路设计 1–2 句）</span></div>
+  <div class="foot-note"><span>评测</span><span>8 / 10</span></div>
+</section>
+<!-- 9 DIVISION + FUTURE -->
+<section class="bg">
+  <div class="kicker">分工与未来工作</div>
+  <h2>五人分工 · 下一步</h2>
+  <div class="grid2" style="margin-top:.6em;">
+    <div>
+      <h3 class="accent" style="font-size:.78em;">分工</h3>
+      <table class="tbl">
+        <tr><th>角色</th><th>负责</th></tr>
+        <tr><td>P1</td><td>攀爬系统（反向位移 / 抓握 / 平衡数学）</td></tr>
+        <tr><td>P2</td><td>玩法规则（状态机 / 体力 / 5 条线路）</td></tr>
+        <tr><td>P3</td><td>场景 / 美术（墙 / 握点 / 灯光 / 化身）</td></tr>
+        <tr><td>P4</td><td>XR 集成与构建（rig / 输入 / 仿真验证）</td></tr>
+        <tr><td>P5</td><td>UX · 音频 · 报告 · 视频（主讲）</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3 class="accent" style="font-size:.78em;">未来工作</h3>
+      <p>① <strong>真的把评测跑了</strong>，填上空表<br>
+      ② 一维区间 → 2D 支撑多边形（加前后向平衡）<br>
+      ③ 玩家自主选脚点（取代纯自动吸附）<br>
+      ④ 用手柄位置改进重心估计<br>
+      ⑤ 真机 Quest 构建 + 帧率/舒适度</p>
+      <p class="muted" style="margin-top:.5em;">提交：GitHub 链接 + demo 视频（7/2）</p>
+    </div>
+  </div>
+  <div class="speak"><b>讲：</b>下一步最重要的，就是真的把评测跑了，把那些空表填上。<span class="muted">（P3@化身、P4@构建 各补一句）</span></div>
+  <div class="foot-note"><span>分工</span><span>9 / 10</span></div>
+</section>
+
+<!-- 10 CLOSING -->
+<section class="bg" data-auto-animate>
+  <div class="title-wrap">
+    <div class="kicker">结语</div>
+    <h1 style="font-size:1.7em;max-width:20em;">一个<em>能跑</em>的存在性证明</h1>
+    <p class="big" style="color:var(--muted);max-width:24em;">脚法和平衡，可以<strong>廉价、加法式</strong>地加进纯手柄 VR 攀岩。剩下的工作，是去测它到底有没有让体验更像真攀岩。</p>
+    <div class="tageq" style="margin-top:1em;">github.com/Icecream0507/ai3618-vr-climbing</div>
+    <div class="authors">Thanks · Q&amp;A &nbsp;|&nbsp; 答辩问答见 docs/DEFENSE_QA.md</div>
+  </div>
+  <div class="foot-note"><span>Summit VR</span><span>10 / 10</span></div>
+</section>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.js"></script>
+<script>
+Reveal.initialize({hash:true,slideNumber:'c/t',transition:'slide',backgroundTransition:'fade',
+  width:1280,height:720,margin:0.04,controls:true,progress:true});
+</script>
+</body>
+</html>
