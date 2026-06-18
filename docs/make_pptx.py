@@ -244,8 +244,8 @@ for label, filled in pills:
     px = px + w + Inches(0.18)
 team = [("P1","薛俊智","攀爬系统","反向位移·平衡·脚法"),
         ("P2","吴一轩","玩法规则","状态机·体力·线路"),
-        ("P3","邹沛霖","场景美术","墙·握点·灯光·化身"),
-        ("P4","陶锐","XR集成构建","rig·输入·仿真验证"),
+        ("P3","陶锐","场景美术","墙·握点·灯光·化身"),
+        ("P4","邹沛霖","XR集成构建","rig·输入·仿真验证"),
         ("P5","孙艺豪","UX音频报告视频","HUD·音效·主讲")]
 tw = Inches(2.36); gap = Inches(0.13); tx = Inches(0.6); ty = Inches(3.85)
 for code, nm, role, tk in team:
@@ -362,7 +362,7 @@ for n, icon, h, body in cards3:
     cx = cx + cw + Inches(0.33)
 mono = card(s, Inches(0.6), Inches(4.75), Inches(12.1), Inches(0.55))
 txt(s, Inches(0.85), Inches(4.83), Inches(11.6), Inches(0.4),
-    [[("abstract what we can't sense — simulate only what changes play", 15, RED, True)]])
+    [[("我们的做法：追踪不到的（脚）就估计出来，只实现真正影响玩法的部分。", 14, REDD, True)]])
 speak(s, "我们不渲染会穿模的假腿，只模拟脚带来的后果：更宽的支撑面。三者都是加法层，关掉就退回普通纯手攀爬。")
 footer(s, "我们的点子")
 print("slide 3 done")
@@ -433,7 +433,7 @@ print("slide 5 done")
 
 # ============== SLIDE 6 — BALANCE MECHANIC ==============
 s = slide(); header_band(s)
-kicker(s, "核心机制 · 整个项目的心脏")
+kicker(s, "核心机制 · 平衡判定")
 txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
     [[("把支撑面压成", 30, INK, True), ("一维左右区间", 30, RED, True)]])
 # left: diagram drawn from shapes
@@ -542,7 +542,7 @@ def legend(s, x, y):
 s = slide(); header_band(s)
 kicker(s, "Demo · 重点")
 txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
-    [[("失衡变红 → 踩脚回正，", 28, INK, True), ("这一下", 28, RED, True), ("市面没有", 28, INK, True)]])
+    [[("失衡变红 → 踩脚回正：", 28, INK, True), ("脚法如何撑住平衡", 28, RED, True)]])
 add_video(s, "demo", Inches(0.6), Inches(1.95), Inches(7.1), Inches(4.0))
 txt(s, Inches(0.6), Inches(5.95), Inches(7.1), Inches(0.3),
     [[("Demo/SummitVR_demo.mp4 · 同侧硬够 → 平衡条变红 → 踩橙色脚点 → 回正", 11, MUT, False)]], align=PP_ALIGN.CENTER)
@@ -554,7 +554,7 @@ bullets(s, Inches(8.0), Inches(2.95), Inches(4.7), Inches(2.5), [
   [("脱落 → 重生回检查点 → 顶部 “Summit!” + 计时。", False, MUT)],
 ], size=13, gap=10)
 speak(s, "两只手都在右边，平衡条开始变红、闪……现在踩上左边这只脚……条回来了。这一下是市面所有 VR 攀岩都没有的。")
-footer(s, "Demo · 核心高光")
+footer(s, "Demo · 平衡演示")
 print("slide 8 done")
 
 # ============== SLIDE 9 — ROUTES ==============
@@ -635,7 +635,7 @@ bullets(s, Inches(0.6), Inches(1.95), Inches(6.4), Inches(2.0), [
 c = card(s, Inches(0.6), Inches(3.85), Inches(6.4), Inches(1.5), red_bg=True)
 txt(s, Inches(0.85), Inches(4.0), Inches(5.9), Inches(1.2),
     [[("核心假设 H（待真人实验检验）", 14, WHITE, True)],
-     [("B 的 真实感↑ · 挑战↑，但 晕动 SSQ 不升——挑战来自决策难度而非运动冲突，这是市面 VR 攀岩都没有的差异化卖点。", 13, WHITE, False)]],
+     [("B 的 真实感↑ · 挑战↑，但 晕动 SSQ 不升——我们的设想是：难度来自决策判断，而非画面晃动带来的不适。", 13, WHITE, False)]],
     space_after=4, line=1.3)
 txt(s, Inches(7.3), Inches(1.95), Inches(5.4), Inches(0.4), [[("已交付清单 ✓", 14, RED, True)]])
 bullets(s, Inches(7.3), Inches(2.45), Inches(5.4), Inches(3.0), [
@@ -656,27 +656,27 @@ s = slide()
 rect(s, 0, 0, Inches(7.6), SH, WHITE)
 rect(s, Inches(7.6), 0, SW-Inches(7.6), SH, RED)
 grad_band(s, 0, 0, Inches(7.6), Inches(0.16))
-txt(s, Inches(0.6), Inches(1.2), Inches(6.6), Inches(0.4), [[("结语", 14, RED, True)]])
+txt(s, Inches(0.6), Inches(1.2), Inches(6.6), Inches(0.4), [[("总结", 14, RED, True)]])
 txt(s, Inches(0.55), Inches(1.7), Inches(6.8), Inches(1.4),
-    [[("一个", 40, INK, True), ("能跑", 40, RED, True), ("的存在性证明", 40, INK, True)]], line=1.1)
+    [[("我们做了什么", 40, INK, True)]], line=1.1)
 txt(s, Inches(0.6), Inches(3.3), Inches(6.6), Inches(1.6),
-    [[("脚法和平衡，可以", 17, MUT, False), ("廉价、加法式", 17, REDD, True),
-      ("地加进纯手柄 VR 攀岩。剩下的工作，是去测它到底有没有让体验更像真攀岩。", 17, MUT, False)]], line=1.35)
+    [[("在只有头和两个手柄的普通 VR 上，把", 17, MUT, False), ("平衡和脚法", 17, REDD, True),
+      ("做成了可玩机制。系统已经能完整跑通，下一步是找同学做真人实验来检验效果。", 17, MUT, False)]], line=1.35)
 mono3 = card(s, Inches(0.6), Inches(5.0), Inches(6.5), Inches(0.55))
 txt(s, Inches(0.8), Inches(5.08), Inches(6.1), Inches(0.4),
-    [[("github.com/Icecream0507/ai3618-vr-climbing", 14, RED, True)]])
+    [[("项目代码：github.com/Icecream0507/ai3618-vr-climbing", 13, RED, True)]])
 txt(s, Inches(0.6), Inches(5.75), Inches(6.6), Inches(0.4),
-    [[("薛俊智 · 吴一轩 · 邹沛霖 · 陶锐 · 孙艺豪   |   答辩问答见 docs/DEFENSE_QA.md", 11, MUT, False)]])
+    [[("薛俊智 · 吴一轩 · 陶锐 · 邹沛霖 · 孙艺豪   |   答辩问答见 docs/DEFENSE_QA.md", 11, MUT, False)]])
 # right panel
-txt(s, Inches(8.0), Inches(1.5), Inches(4.8), Inches(0.6), [[("一句话总结", 22, WHITE, True)]])
+txt(s, Inches(8.0), Inches(1.5), Inches(4.8), Inches(0.6), [[("核心思路回顾", 22, WHITE, True)]])
 rect(s, Inches(8.0), Inches(2.15), Inches(4.5), Pt(2), RGBColor(0xFF,0xB0,0xBC))
 txt(s, Inches(8.0), Inches(2.4), Inches(4.8), Inches(2.2),
-    [[("在只有头 + 两手柄的普通 VR 上，用", 15, WHITE, False), ("头当重心", 15, RGBColor(0xFF,0xD9,0xDF), True),
-      (" + ", 15, WHITE, False), ("自动吸附的抽象落脚点", 15, RGBColor(0xFF,0xD9,0xDF), True),
-      ("，把『重心有没有落在支撑面内』变成可玩的失衡-脱落机制。", 15, WHITE, False)]], line=1.5)
+    [[("用", 15, WHITE, False), ("头当重心", 15, RGBColor(0xFF,0xD9,0xDF), True),
+      ("、用", 15, WHITE, False), ("自动吸附的虚拟脚", 15, RGBColor(0xFF,0xD9,0xDF), True),
+      ("，判断重心有没有落在支撑范围内，落出去就失衡脱落。", 15, WHITE, False)]], line=1.5)
 txt(s, Inches(8.0), Inches(4.7), Inches(4.8), Inches(0.8),
-    [[("同侧硬够不踩脚就会被甩下墙，踩对脚就稳住。", 15, WHITE, False)]], line=1.4)
-txt(s, Inches(8.0), Inches(5.7), Inches(4.8), Inches(0.8), [[("Thanks · Q&A", 32, WHITE, True)]])
+    [[("两只手都在同侧时不踩脚就会被甩下墙，踩对脚就能稳住。", 15, WHITE, False)]], line=1.4)
+txt(s, Inches(8.0), Inches(5.7), Inches(4.8), Inches(0.8), [[("谢谢 · 欢迎提问", 30, WHITE, True)]])
 print("slide 13 done")
 
 out = os.path.join(HERE, "SummitVR_Pre.pptx")
