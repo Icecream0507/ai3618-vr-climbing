@@ -134,7 +134,7 @@ def codebox(s, x, y, w, h, lines, size=11):
         r.font.bold = hot
 
 def legend(s, x, y):
-    items = [("手","F5B301"),("脚","FF7A1A"),("任意","9B51E0"),("登顶","1FAA59"),("易碎","E23B3B"),("休息","2D8CFF")]
+    items = [("手","F5B301"),("脚","FF7A1A"),("任意","9B51E0"),("到顶","1FAA59"),("易碎","E23B3B"),("休息","2D8CFF")]
     cx = x
     for label, hexc in items:
         d = s.shapes.add_shape(MSO_SHAPE.OVAL, cx, y, Inches(0.16), Inches(0.16))
@@ -178,19 +178,19 @@ txt(s, Inches(0.75), Inches(1.9), Inches(7.6), Inches(1.4),
     [[("Summit ", 70, INK, True), ("VR", 70, RED, True)]])
 rect(s, Inches(0.85), Inches(3.35), Inches(2.2), Pt(4), RED)
 txt(s, Inches(0.8), Inches(3.6), Inches(7.4), Inches(1.2),
-    [[("面向纯手柄 VR 攀岩的平衡与脚法机制", 23, INK, True)],
-     [("课程项目 · 设计、实现与评测方案", 14, MUT, False)]],
+    [[("面向纯手柄 VR 攀爬的平衡与脚法建模", 23, INK, True)],
+     [("一项交互机制的设计、实现与评测方案", 14, MUT, False)]],
     space_after=8, line=1.3)
 txt(s, Inches(0.8), Inches(5.25), Inches(7.4), Inches(0.5),
-    [[("AI3618《虚拟现实技术》· 课程作业汇报", 15, REDD, True)]])
+    [[("AI3618《虚拟现实技术》· 课程研究报告", 15, REDD, True)]])
 txt(s, Inches(0.8), Inches(6.4), Inches(7.4), Inches(0.5),
     [[("第 N 组　薛俊智 · 吴一轩 · 陶锐 · 邹沛霖 · 孙艺豪", 13, MUT, False)]])
 txt(s, Inches(8.8), Inches(2.6), Inches(4.2), Inches(3.0),
     [[("研究问题", 16, RGBColor(0xFF,0xD9,0xDF), True)],
      [("", 6, WHITE, False)],
-     [("如何在仅有头显与两个", 17, WHITE, False)],
-     [("手柄的消费级 VR 上，", 17, WHITE, False)],
-     [("重建真实攀岩中的", 17, WHITE, False)],
+     [("在仅有头显与两个手柄", 17, WHITE, False)],
+     [("的三点追踪条件下，", 17, WHITE, False)],
+     [("能否重建真实攀爬中的", 17, WHITE, False)],
      [("身体平衡与脚法？", 19, WHITE, True)]],
     space_after=3, line=1.3)
 print("cover done")
@@ -203,10 +203,10 @@ txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
 txt(s, Inches(0.6), Inches(1.65), Inches(12), Inches(0.5),
     [[("课程要求每人主负责一个模块；平衡与脚法机制为全组共同设计。", 13, MUT, False)]])
 team = [("P1","薛俊智","攀爬系统","反向位移移动 · 抓握 · 平衡与脚法核心算法"),
-        ("P2","吴一轩","玩法规则","状态机 · 计时与跌落 · 体力 · 线路设计"),
-        ("P3","陶锐","场景与美术","墙体 · 握点造型 · 灯光 · 角色化身"),
+        ("P2","吴一轩","规则与任务","状态机 · 计时与脱落 · 体力 · 攀爬路径设计"),
+        ("P3","陶锐","场景与可视化","墙体 · 握点造型 · 灯光 · 角色化身"),
         ("P4","邹沛霖","XR 集成与验证","设备接入 · 输入 · 仿真自检 · 构建"),
-        ("P5","孙艺豪","UX·音频·报告","HUD · 音效 · 报告统稿 · 视频与汇报")]
+        ("P5","孙艺豪","交互·音频·报告","HUD · 音频反馈 · 报告统稿 · 演示与汇报")]
 ty = Inches(2.35)
 for code, nm, role, tk in team:
     card(s, Inches(0.6), ty, Inches(12.1), Inches(0.82))
@@ -228,11 +228,11 @@ kicker(s, "汇报提纲")
 txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
     [[("汇报提纲", 30, INK, True)]])
 agenda = [
-  ("01","研究背景与问题","VR 攀岩的现状与所缺失的能力"),
-  ("02","相关工作","脚法、重心与平衡模型的已有研究"),
+  ("01","研究背景与问题","VR 攀爬交互的现状与所缺失的能力"),
+  ("02","相关工作","脚部表征、重心与平衡模型的已有研究"),
   ("03","方法与系统设计","三点追踪下的平衡与脚法建模"),
   ("04","核心算法","支撑区间平衡判定 · 脚法抽象"),
-  ("05","实现与演示","系统实现 · 线路设计 · 运行演示"),
+  ("05","实现与演示","系统实现 · 攀爬路径设计 · 运行演示"),
   ("06","验证、评测与总结","开发验证方法 · 评测方案 · 结论"),
 ]
 colx = [Inches(0.6), Inches(6.7)]
@@ -254,14 +254,14 @@ print("agenda done")
 s = slide(); header_band(s)
 kicker(s, "一 · 研究背景")
 txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
-    [[("VR 攀岩的交互，长期停留在「纯手」", 28, INK, True)]])
+    [[("VR 攀爬交互长期局限于", 28, INK, True), ("纯手部操作", 28, RED, True)]])
 bullets(s, Inches(0.6), Inches(1.85), Inches(6.3), Inches(3.2), [
-    [("现有成熟作品（如 The Climb、Gorilla Tag）以「抓握—反向位移」为核心：", False, INK)],
-    [("• 玩家用双手抓点并将身体拉起，体验舒适、晕动较低；", False, INK)],
-    [("• 失败仅来自两种情形——", False, INK), ("松手", True, RED), (" 或 ", False, INK), ("臂展不足够不到", True, RED), ("。", False, INK)],
-    [("而真实抱石中，决定成败的往往是", False, INK), ("重心与脚的配合", True, RED),
-     ("：身体若偏离支撑范围，会绕支点旋出（俗称「开门 / barn-door」）。", False, INK)],
-    [("近年平面作品（New Heights, 2026）将平衡与脚法作为核心卖点，反映出此类需求。", False, MUT)],
+    [("现有 VR 攀爬交互普遍以「抓握—反向位移」为基本范式：", False, INK)],
+    [("• 用户用双手抓握握点并将身体拉起，运动与手部动作耦合、晕动较低；", False, INK)],
+    [("• 失败仅源于两种情形——", False, INK), ("脱手", True, RED), (" 或 ", False, INK), ("臂展不足够不到", True, RED), ("。", False, INK)],
+    [("而真实攀爬中，决定成败的主要是", False, INK), ("重心与脚的协同", True, RED),
+     ("：身体偏离支撑范围时会绕支点旋出，即「开门 / barn-door」效应。", False, INK)],
+    [("现有交互普遍忽略这一层，使身体平衡与脚法无法成为可建模的交互维度。", False, MUT)],
 ], size=14, gap=10)
 # right illustration: barn-door
 c = card(s, Inches(7.1), Inches(1.85), Inches(5.6), Inches(3.6))
@@ -280,21 +280,21 @@ print("bg done")
 s = slide(); header_band(s)
 kicker(s, "一 · 问题分析")
 txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
-    [[("难点：消费级 VR ", 28, INK, True), ("看不到脚", 28, RED, True)]])
+    [[("难点：三点追踪条件下 ", 28, INK, True), ("脚不可观测", 28, RED, True)]])
 left = card(s, Inches(0.6), Inches(1.85), Inches(6.0), Inches(3.6))
 txt(s, Inches(0.85), Inches(2.0), Inches(5.5), Inches(0.4), [[("硬件约束", 15, RED, True)]])
 bullets(s, Inches(0.85), Inches(2.5), Inches(5.5), Inches(2.8), [
-    [("消费级头显仅提供 3 个追踪点：", False, INK), ("头显 + 两手柄", True, REDD), ("；", False, INK)],
+    [("主流头显仅提供 3 个追踪点：", False, INK), ("头显 + 两手柄", True, REDD), ("；", False, INK)],
     [("无脚部 / 躯干追踪，下半身姿态不可观测；", False, INK)],
-    [("用 IK 或生成式方法反解腿部，在攀岩这类极端姿势下易失真、穿模。", False, INK)],
+    [("以 IK 或生成式方法反解腿部，在攀爬这类极端姿势下易失真、穿模。", False, INK)],
 ], size=13.5, gap=9)
 right = card(s, Inches(6.8), Inches(1.85), Inches(5.9), Inches(3.6))
-txt(s, Inches(7.05), Inches(2.0), Inches(5.4), Inches(0.4), [[("我们要回答的问题", 15, RED, True)]])
+txt(s, Inches(7.05), Inches(2.0), Inches(5.4), Inches(0.4), [[("研究目标", 15, RED, True)]])
 bullets(s, Inches(7.05), Inches(2.5), Inches(5.4), Inches(2.8), [
-    [("能否在不增加任何硬件的前提下，", False, INK)],
-    [("用现有的 3 个追踪点，", False, INK), ("近似", True, REDD), ("出「重心是否落在支撑范围内」？", False, INK)],
-    [("并把脚法表达为「是否提供了有效支撑」，", False, INK)],
-    [("从而让平衡与脚法成为", False, INK), ("真正影响成败的玩法", True, RED), ("。", False, INK)],
+    [("在不增加任何硬件的前提下，", False, INK)],
+    [("利用现有 3 个追踪点，", False, INK), ("近似", True, REDD), ("判定「重心是否落在支撑范围内」；", False, INK)],
+    [("将脚法表征为「是否提供有效支撑」，", False, INK)],
+    [("使平衡与脚法成为", False, INK), ("可建模、可验证的交互维度", True, RED), ("。", False, INK)],
 ], size=13.5, gap=9)
 footer(s, "一 · 问题分析")
 print("problem done")
@@ -305,9 +305,9 @@ kicker(s, "二 · 相关工作")
 txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
     [[("已有研究为方法提供了依据", 28, INK, True)]])
 works = [
-  ("脚的重要性","Kosmalla et al.\nCHI 2020","真实攀岩墙上的实验表明：呈现「脚」比呈现「手」更能提升动作准确感与体验。"),
-  ("头作为重心","Mitsuda & Kimura\nFrontiers in VR 2026","以头显近似重心，当重心越过无支撑的脚即判定跌落；n=24 实验验证可行。"),
-  ("平衡的形式化","机器人学\n(ZMP / 支撑多边形)","支撑多边形、零力矩点、capture point 给出了「重心是否在支撑区内」的理论语言。"),
+  ("脚部表征的作用","Kosmalla et al.\nCHI 2020","真实攀爬墙上的实验表明：呈现「脚」比呈现「手」更能提升动作准确度感知与任务表现。"),
+  ("头作为重心代理","Mitsuda & Kimura\nFrontiers in VR 2026","以头显近似重心，当重心越过无支撑的脚即判定失稳；n=24 受试者实验验证其可行性。"),
+  ("平衡的形式化","机器人学\n(ZMP / 支撑多边形)","支撑多边形、零力矩点、capture point 给出了「重心是否位于支撑区内」的理论判据。"),
 ]
 cx = Inches(0.6)
 for tag, src, body in works:
@@ -319,7 +319,7 @@ for tag, src, body in works:
     cx = cx + Inches(4.05)
 txt(s, Inches(0.6), Inches(5.55), Inches(12.1), Inches(0.4),
     [[("本工作定位：", 13, REDD, True),
-      ("把上述「为什么做脚」「如何用头判平衡」的结论，落实到无脚追踪的消费级硬件与可玩机制中。", 13, INK, False)]])
+      ("将上述「脚部表征的价值」与「头部重心平衡判据」结合，落实到无脚追踪的受限设备与可建模、可验证的交互机制中。", 13, INK, False)]])
 footer(s, "二 · 相关工作")
 print("related done")
 # <<<NEXT>>>
@@ -328,10 +328,10 @@ print("related done")
 s = slide(); header_band(s)
 kicker(s, "三 · 方法概述")
 txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
-    [[("设计原则：", 28, INK, True), ("抽象不可观测量，只建模影响玩法的部分", 28, RED, True)]])
+    [[("设计原则：", 28, INK, True), ("抽象不可观测量，只建模影响交互的部分", 28, RED, True)]])
 cards3 = [("01","🧠","以头显近似重心","头显是 3 点中唯一稳定可得的高位信号；其横向位置可近似反映躯干是否偏离支撑。"),
-          ("02","🦶","以状态表达脚法","不渲染腿部几何，而将脚抽象为「踩在某握点上、提供一个支撑点」的状态。"),
-          ("03","📊","以分级量表达失衡","失衡不是瞬时判定，而是带缓冲与回升的平衡量，使其可预警、可恢复。")]
+          ("02","🦶","以状态表征脚法","不重建腿部几何，而将脚抽象为「位于某握点、提供一个支撑点」的离散状态。"),
+          ("03","📊","以分级量表征失稳","失稳非瞬时判定，而是带缓冲与回升的连续平衡量，使其可预警、可恢复。")]
 cw = Inches(4.0); cx = Inches(0.6); cy = Inches(1.9)
 for n, icon, h, body in cards3:
     card(s, cx, cy, cw, Inches(2.55))
@@ -347,7 +347,7 @@ for n, icon, h, body in cards3:
 mono = card(s, Inches(0.6), Inches(4.7), Inches(12.1), Inches(0.6))
 txt(s, Inches(0.85), Inches(4.8), Inches(11.6), Inches(0.4),
     [[("加法式设计：", 14, REDD, True),
-      ("平衡与脚法是叠加在成熟「抓握—反向位移」基础上的可选层；若移除，系统退化为常规纯手攀岩，基础体验不受影响。", 14, INK, False)]])
+      ("平衡与脚法是叠加于「抓握—反向位移」基础范式之上的可选模块；若移除，系统退化为常规纯手部攀爬，基础交互不受影响。", 14, INK, False)]])
 footer(s, "三 · 方法概述")
 print("method done")
 
@@ -364,7 +364,7 @@ arch = [
  ("    |                                    ^", False),
  ("    |                  FootPlacementSystem --虚拟脚自动吸附到脚点", False),
  ("    v                                    |", False),
- ("ClimbController --反向位移 + 重力 + 坠落/重生--> CharacterController", False),
+ ("ClimbController --反向位移 + 重力 + 坠落/重置--> CharacterController", False),
  ("    ^   | 接触点(手+脚)决定是否留在墙上          |", False),
  ("    |   +----------------> BalanceSystem (头=重心; 横向支撑判定)", True),
  ("    |  失衡脱落(平衡=0) <---------+", False),
@@ -373,7 +373,7 @@ arch = [
 codebox(s, Inches(0.6), Inches(1.8), Inches(12.1), Inches(3.05), arch, size=12)
 txt(s, Inches(0.6), Inches(5.0), Inches(12.1), Inches(0.6),
     [[("实现规模：", 13, REDD, True),
-      ("14 个 C# 脚本，分为 攀爬与平衡核心 / 玩法与线路 / UI 与工具 三部分；对平衡、脚法模块的引用均做空值保护，确保可拆卸。", 13, INK, False)]], line=1.25)
+      ("14 个 C# 脚本，分为 攀爬与平衡核心 / 规则与路径 / 界面与工具 三部分；对平衡、脚法模块的引用均做空值保护，确保模块可拆卸。", 13, INK, False)]], line=1.25)
 footer(s, "三 · 系统架构")
 print("arch done")
 
@@ -432,8 +432,8 @@ txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
 bullets(s, Inches(0.6), Inches(1.9), Inches(6.4), Inches(3.2), [
   [("吸附：", True, REDD), ("在身体下方估计落脚区，左右各选最近的可踩握点；爬过后脱离并吸附下一个（", False, INK), ("foot-gluing", True, RED), ("）。", False, INK)],
   [("作用：", True, REDD), ("每个踩住的脚向平衡判定贡献一个支撑点，从而扩大横向支撑区间。", False, INK)],
-  [("为何不反解腿部？", True, REDD), ("攀岩姿势下 IK / 生成式方法易失真穿模，且与机制无关——机制只需要「脚是否提供支撑」这一信息。", False, INK)],
-  [("化身仅作展示：", True, REDD), ("演示中的人形用阻尼摆 + 两段 IK 表现重量感，不参与玩法计算。", False, MUT)],
+  [("为何不反解腿部？", True, REDD), ("攀爬姿势下 IK / 生成式方法易失真穿模，且与机制无关——机制只需要「脚是否提供支撑」这一信息。", False, INK)],
+  [("化身仅作展示：", True, REDD), ("演示中的人形用阻尼摆 + 两段 IK 表现重量感，不参与交互判定计算。", False, MUT)],
 ], size=14, gap=11)
 # right: before/after stick comparison reused
 c = card(s, Inches(7.1), Inches(1.9), Inches(5.6), Inches(3.4))
@@ -490,28 +490,28 @@ print("params done")
 s = slide(); header_band(s)
 kicker(s, "五 · 运行演示")
 txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
-    [[("演示：失衡 → 踩脚 → 恢复", 28, INK, True)]])
+    [[("运行演示：失稳 → 踩脚 → 恢复", 28, INK, True)]])
 add_video(s, "demo", Inches(0.6), Inches(1.9), Inches(7.1), Inches(4.0))
 txt(s, Inches(0.6), Inches(5.92), Inches(7.1), Inches(0.3),
-    [[("演示视频：同侧伸手 → 平衡量下降变红 → 踩橙色脚点 → 恢复", 11, MUT, False)]], align=PP_ALIGN.CENTER)
-txt(s, Inches(8.0), Inches(1.9), Inches(4.7), Inches(0.4), [[("握点颜色（用途提示）", 14, RED, True)]])
+    [[("演示记录：同侧伸手 → 平衡量下降并变红 → 踩橙色脚点 → 恢复稳定", 11, MUT, False)]], align=PP_ALIGN.CENTER)
+txt(s, Inches(8.0), Inches(1.9), Inches(4.7), Inches(0.4), [[("握点颜色（用途标注）", 14, RED, True)]])
 legend(s, Inches(8.0), Inches(2.45))
 bullets(s, Inches(8.0), Inches(2.9), Inches(4.7), Inches(2.6), [
-  [("颜色为用途建议，非硬性限制；与真实岩壁一致，手脚可用任意点。", False, INK)],
-  [("默认线路设置同侧连续握点：仅靠手会偏出支撑，须踩脚或侧摆才能通过。", False, INK)],
-  [("脱落后重生回检查点；登顶显示完成时间。", False, MUT)],
+  [("颜色为用途标注而非硬性限制；与真实岩壁一致，手脚可使用任意握点。", False, INK)],
+  [("攀爬路径设置同侧连续握点：仅靠手部会使重心偏出支撑，须踩脚或侧摆方可通过。", False, INK)],
+  [("失稳脱落后回到检查点重置；到达顶部记录完成时间。", False, MUT)],
 ], size=13, gap=10)
 footer(s, "五 · 运行演示")
 print("demo done")
 # <<<NEXT>>>
 
-# ============== 12 — 线路设计 ==============
+# ============== 12 — 攀爬路径设计 ==============
 s = slide(); header_band(s)
-kicker(s, "五 · 线路设计")
+kicker(s, "五 · 攀爬路径设计")
 txt(s, Inches(0.55), Inches(0.82), Inches(12.4), Inches(0.6),
-    [[("程序化生成 5 条线路：4 条可完攀 + 1 条用于验证约束", 24, INK, True)]])
-routes = [("V1","Warm-up · 入门，熟悉抓握"),("V2","Balance Test · 同侧连续，须用脚"),
-          ("V3","The Arête · 易碎点，须快速通过"),("V4","Endurance · 体力管理")]
+    [[("程序化生成 5 条路径：4 条可完成 + 1 条用于验证约束", 24, INK, True)]])
+routes = [("V1","路径一 · 基础，熟悉抓握"),("V2","路径二 · 同侧连续，须用脚"),
+          ("V3","路径三 · 易碎握点，须快速通过"),("V4","路径四 · 体力管理")]
 vw = Inches(2.85); vx = Inches(0.6); vy = Inches(1.65)
 for name, cap in routes:
     add_video(s, name, vx, vy, vw, Inches(1.6))
@@ -519,13 +519,13 @@ for name, cap in routes:
     vx = vx + vw + Inches(0.12)
 add_video(s, "impossible", Inches(0.6), Inches(3.95), Inches(3.6), Inches(2.0))
 txt(s, Inches(0.6), Inches(5.97), Inches(3.6), Inches(0.3),
-    [[("The Gap · 中段约 2m 空白（不可完攀）", 10, RED, True)]], align=PP_ALIGN.CENTER)
+    [[("对照路径 · 中段约 2m 空白（不可完成）", 10, RED, True)]], align=PP_ALIGN.CENTER)
 bullets(s, Inches(4.5), Inches(4.0), Inches(8.2), Inches(2.0), [
-  [("The Gap 用于验证臂展约束：", True, REDD), ("中段留约 2m 空白，手臂伸直仍够不到，说明臂展限制确实生效，而非装饰。", False, INK)],
-  [("生成方式：", True, REDD), ("RouteBuilder 由基本几何体程序化构建墙体、彩色握点与登顶触发区，无需美术资源即可运行。", False, INK)],
-  [("难度递增设计使「脚法是否被使用」成为可观测的行为差异，便于后续评测。", False, MUT)],
+  [("对照路径用于验证臂展约束：", True, REDD), ("中段留约 2m 空白，手臂伸直仍不可达，表明臂展限制确实生效而非装饰性设定。", False, INK)],
+  [("生成方式：", True, REDD), ("由基本几何体程序化构建墙体、彩色握点与到顶触发区，无需美术资源即可运行。", False, INK)],
+  [("难度递增的设计使「脚法是否被使用」成为可观测的行为差异，便于后续评测。", False, MUT)],
 ], size=13.5, gap=11)
-footer(s, "五 · 线路设计")
+footer(s, "五 · 攀爬路径设计")
 print("routes done")
 
 # ============== 13 — 开发与验证方法 ==============
@@ -533,9 +533,9 @@ s = slide(); header_band(s)
 kicker(s, "六 · 开发与验证方法")
 txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
     [[("以自动化验证驱动开发", 28, INK, True)]])
-metrics = [("10/10","端到端自检","脚本驱动真实玩法：失衡→脱落→重生→登顶全流程通过"),
+metrics = [("10/10","端到端自检","脚本驱动完整交互流程：失稳→脱落→重置→到顶 全程通过"),
            ("9/9","算法单元测试","平衡与位移核心数学（ClimbMath）逐项通过"),
-           ("2","可玩验证视角","第三人称与第一人称场景，键鼠即可试玩")]
+           ("2","交互验证视角","第三人称与第一人称场景，键鼠即可操作验证")]
 cx = Inches(0.6)
 for big, h, body in metrics:
     card(s, cx, Inches(1.95), Inches(4.0), Inches(2.0))
@@ -546,7 +546,7 @@ for big, h, body in metrics:
 c = card(s, Inches(0.6), Inches(4.2), Inches(12.1), Inches(1.15), red_bg=True)
 txt(s, Inches(0.9), Inches(4.35), Inches(11.5), Inches(0.95),
     [[("方法说明", 15, WHITE, True)],
-     [("先用脚本「虚拟玩家」对真实玩法做端到端自检，再以无头渲染产出演示并逐帧比对打磨；每次改动均回归自检。机制正确性由自动化保证，五名成员得以并行开发，不依赖共享头显。", 13, WHITE, False)]],
+     [("先以脚本化的虚拟受试者对完整交互流程做端到端自检，再以无头渲染产出记录并逐帧比对修正；每次改动均回归自检。机制正确性由自动化保证，五名成员得以并行开发，不依赖共享头显设备。", 13, WHITE, False)]],
     space_after=4, line=1.3)
 footer(s, "六 · 开发与验证方法")
 print("verify done")
@@ -557,22 +557,22 @@ kicker(s, "六 · 评测方案")
 txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
     [[("评测方案已设计，", 28, INK, True), ("待开展真人实验", 28, RED, True)]])
 bullets(s, Inches(0.6), Inches(1.9), Inches(6.4), Inches(2.2), [
-  [("实验设计：", True, REDD), ("被试内对比，A 纯手版 vs B 平衡+脚法版，同线路、顺序平衡。", False, INK)],
-  [("客观指标：", True, REDD), ("登顶时间、按原因分类的跌落次数（松手 / 失衡 / 体力）、平衡余量曲线。", False, INK)],
-  [("主观量表：", True, REDD), ("NASA-TLX 工作负荷、SSQ 模拟器晕动、真实感与偏好量表。", False, INK)],
+  [("实验设计：", True, REDD), ("被试内对比，条件 A（仅手部）vs 条件 B（平衡+脚法），同路径、顺序平衡。", False, INK)],
+  [("客观指标：", True, REDD), ("到顶用时、按成因分类的脱落次数（脱手 / 失稳 / 体力）、平衡余量时间曲线。", False, INK)],
+  [("主观量表：", True, REDD), ("NASA-TLX 任务负荷、SSQ 模拟器晕动、真实感与偏好量表。", False, INK)],
 ], size=13.5, gap=10)
 c = card(s, Inches(0.6), Inches(4.0), Inches(6.4), Inches(1.4), red_bg=True)
 txt(s, Inches(0.85), Inches(4.15), Inches(5.9), Inches(1.1),
     [[("研究假设（待检验）", 14, WHITE, True)],
-     [("相比 A，B 的真实感与挑战感更高，而模拟器晕动不显著上升——难度来自决策判断而非画面运动。", 13, WHITE, False)]],
+     [("相比 A，B 的真实感与挑战度更高，而模拟器晕动无显著上升——其难度来自决策判断而非画面运动。", 13, WHITE, False)]],
     space_after=4, line=1.3)
 txt(s, Inches(7.3), Inches(1.9), Inches(5.4), Inches(0.4), [[("已完成 ✓ / 待完成 ○", 14, RED, True)]])
 bullets(s, Inches(7.3), Inches(2.4), Inches(5.4), Inches(3.0), [
-  [("✓ 平衡机制与脚法建模", False, INK)],
-  [("✓ 5 条线路 + 自动化自检（10/10 · 9/9）", False, INK)],
-  [("✓ HUD、音效、双视角可玩", False, INK)],
-  [("✓ 演示视频、报告初稿、评测协议与采集工具", False, INK)],
-  [("○ 招募 5–8 名被试，开展实验并统计数据", False, RED)],
+  [("✓ 平衡判定机制与脚法建模", False, INK)],
+  [("✓ 5 条攀爬路径 + 自动化自检（10/10 · 9/9）", False, INK)],
+  [("✓ 界面、音频反馈、双视角交互验证", False, INK)],
+  [("✓ 演示记录、报告初稿、评测协议与采集工具", False, INK)],
+  [("○ 招募 5–8 名受试者，开展实验并统计数据", False, RED)],
   [("○ 真机构建与帧率 / 舒适度优化（可选）", False, MUT)],
 ], size=13, gap=8)
 footer(s, "六 · 评测方案")
@@ -586,22 +586,22 @@ grad_band(s, 0, 0, Inches(7.6), Inches(0.16))
 txt(s, Inches(0.6), Inches(1.1), Inches(6.6), Inches(0.4), [[("六 · 总结与展望", 14, RED, True)]])
 txt(s, Inches(0.55), Inches(1.6), Inches(6.8), Inches(1.0), [[("总结", 38, INK, True)]])
 bullets(s, Inches(0.6), Inches(2.7), Inches(6.7), Inches(2.6), [
-  [("提出并实现了一种在三点追踪下的平衡与脚法机制：", True, REDD)],
-  [("• 以头显近似重心、以横向支撑区间判定失衡；", False, INK)],
+  [("提出并实现了一种三点追踪下的平衡与脚法建模方法：", True, REDD)],
+  [("• 以头显近似重心、以横向支撑区间判定失稳；", False, INK)],
   [("• 以自动吸附的虚拟脚提供支撑，使脚法影响成败；", False, INK)],
-  [("• 系统完整可运行，并通过自动化端到端验证。", False, INK)],
-  [("展望：", True, REDD), ("开展真人评测，并向二维支撑、玩家自主选点、真机部署扩展。", False, INK)],
+  [("• 系统完整实现，并通过自动化端到端验证。", False, INK)],
+  [("展望：", True, REDD), ("开展受试者评测，并向二维支撑判定、受试者自主选点、真机部署扩展。", False, INK)],
 ], size=13, gap=8)
 txt(s, Inches(0.6), Inches(6.7), Inches(6.8), Inches(0.4),
-    [[("项目代码：github.com/Icecream0507/ai3618-vr-climbing", 11, MUT, False)]])
+    [[("源码仓库：github.com/Icecream0507/ai3618-vr-climbing", 11, MUT, False)]])
 # right panel
 txt(s, Inches(8.0), Inches(1.5), Inches(4.8), Inches(0.6), [[("核心贡献", 22, WHITE, True)]])
 rect(s, Inches(8.0), Inches(2.15), Inches(4.5), Pt(2), RGBColor(0xFF,0xB0,0xBC))
 txt(s, Inches(8.0), Inches(2.45), Inches(4.8), Inches(2.6),
     [[("在不增加硬件的前提下，", 15, WHITE, False)],
-     [("用头显近似重心、用虚拟脚提供支撑，", 15, RGBColor(0xFF,0xD9,0xDF), True)],
-     [("将真实攀岩的平衡与脚法，", 15, WHITE, False)],
-     [("重建为消费级 VR 上可玩、可验证的机制。", 15, WHITE, False)]],
+     [("以头显近似重心、以虚拟脚提供支撑，", 15, RGBColor(0xFF,0xD9,0xDF), True)],
+     [("将真实攀爬中的平衡与脚法，", 15, WHITE, False)],
+     [("建模为受限追踪条件下可计算、可验证的交互机制。", 15, WHITE, False)]],
     space_after=6, line=1.4)
 txt(s, Inches(8.0), Inches(5.7), Inches(4.8), Inches(0.8), [[("谢谢 · 欢迎提问", 30, WHITE, True)]])
 print("summary done")
