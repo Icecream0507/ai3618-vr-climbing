@@ -94,9 +94,63 @@ def card(s, x, y, w, h, red_bg=False):
     sp.shadow.inherit = False
     return sp
 
+def set_run_font(r, name="Segoe UI Emoji"):
+    r.font.name = name
+
 def speak(s, t):
     # Speaker notes removed from on-slide deck — script lives in the Word doc.
     return
+
+def deco_dots(s):
+    """Subtle decorative dot grid in a corner for visual richness."""
+    import itertools
+    base_x = SW - Inches(1.5); base_y = SH - Inches(1.55)
+    for i, j in itertools.product(range(4), range(3)):
+        d = s.shapes.add_shape(MSO_SHAPE.OVAL,
+            base_x + Inches(0.30*i), base_y + Inches(0.30*j), Inches(0.07), Inches(0.07))
+        fill(d, RGBColor(0xF1, 0xD4, 0xD9)); d.shadow.inherit = False
+
+def chip(s, x, y, text, color=RED, fg=None):
+    w = Inches(0.115*len(text) + 0.5)
+    sp = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, w, Inches(0.36))
+    sp.adjustments[0] = 0.5; sp.shadow.inherit = False
+    fill(sp, color)
+    p = sp.text_frame.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
+    r = p.add_run(); r.text = text; r.font.size = Pt(10); r.font.bold = True
+    r.font.color.rgb = fg or WHITE; r.font.name = "Microsoft YaHei"
+    return x + w + Inches(0.12)
+
+def stick_climber(s, ox, oy, scale, both_right=False, footed=False):
+    """Draw a tiny stick climber on a wall fragment. ox,oy in EMU (top-left)."""
+    U = scale  # one EMU unit per body segment
+    col = INK
+    def line(x1, y1, x2, y2, c=col, wpt=2.2):
+        ln = s.shapes.add_connector(2, ox+x1, oy+y1, ox+x2, oy+y2)
+        ln.line.color.rgb = c; ln.line.width = Pt(wpt); return ln
+    def ball(cx, cy, r, c):
+        b = s.shapes.add_shape(MSO_SHAPE.OVAL, ox+cx-r, oy+cy-r, 2*r, 2*r)
+        fill(b, c); b.shadow.inherit = False; return b
+    # torso
+    head_x = U*1.0
+    line(head_x, U*0.9, U*1.0, U*2.4)            # spine
+    ball(head_x, U*0.6, U*0.32, col)             # head
+    # arms
+    if both_right:
+        line(U*1.0, U*1.2, U*1.9, U*0.7)         # right arm up
+        line(U*1.0, U*1.2, U*1.7, U*1.1)         # left arm also right
+    else:
+        line(U*1.0, U*1.2, U*1.8, U*0.8)         # right arm
+        line(U*1.0, U*1.2, U*0.2, U*0.8)         # left arm
+    # legs
+    line(U*1.0, U*2.4, U*1.5, U*3.2)
+    if footed:
+        line(U*1.0, U*2.4, U*0.2, U*3.0)         # left foot flagged out
+        ball(U*0.2, U*3.0, U*0.18, RGBColor(0xFF,0x7A,0x1A))
+    else:
+        line(U*1.0, U*2.4, U*0.7, U*3.2)
+    return
+
+print("helpers v2 ready")
 
 def bullets(s, x, y, w, h, items, size=15, gap=7):
     tb = s.shapes.add_textbox(x, y, w, h); tf = tb.text_frame
@@ -161,6 +215,9 @@ print("slide 0 (cover) done")
 # ============== SLIDE 1 — TITLE ==============
 s = slide()
 header_band(s)
+# subtle right accent triangle
+tri = s.shapes.add_shape(MSO_SHAPE.RIGHT_TRIANGLE, SW-Inches(3.0), Inches(0.16), Inches(3.0), Inches(2.0))
+fill(tri, REDWASH); tri.shadow.inherit=False; tri.rotation=90
 txt(s, Inches(0.6), Inches(0.5), Inches(11), Inches(0.4),
     [[("🦅 上海交通大学  SHANGHAI JIAO TONG UNIVERSITY   |   课程 AI3618", 13, MUT, True)]])
 txt(s, Inches(0.55), Inches(1.0), Inches(11), Inches(1.2),
@@ -242,20 +299,40 @@ s = slide(); header_band(s)
 kicker(s, "背景与问题")
 txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
     [[("VR 攀岩很火，但", 30, INK, True), ("几乎全是「纯手」", 30, RED, True)]])
-bullets(s, Inches(0.6), Inches(1.95), Inches(6.6), Inches(3.5), [
+bullets(s, Inches(0.6), Inches(1.9), Inches(6.3), Inches(3.0), [
     [("现状：", True, REDD), ("The Climb · Gorilla Tag——舒适、不晕、商业成功。但掉下来只有两种原因：", False, INK),
      ("松手", True, RED), (" 或 ", False, INK), ("够不到", True, RED), ("。", False, INK)],
     [("真实抱石恰恰相反：", True, REDD), ("难点常常不在手有多大力，而在", False, INK),
-     ("重心怎么落在脚上", True, RED), ("、要不要换脚、会不会「开门」(barn-door) 被甩出去。", False, INK)],
+     ("重心怎么落在脚上", True, RED), ("、会不会像一扇门一样「开门」被甩出去。", False, INK)],
     [("2026 新出的平面游戏 New Heights 主打的正是平衡 / 脚法 → 玩家确实想要这一层。", False, MUT)],
-], size=16, gap=12)
-c = card(s, Inches(7.5), Inches(1.95), Inches(5.2), Inches(3.0), red_bg=True)
-txt(s, Inches(7.8), Inches(2.2), Inches(4.6), Inches(2.5),
-    [[("我们要补的缺口", 18, WHITE, True)],
-     [("市面 VR 攀岩把真实攀岩最核心的脚法和身体平衡全砍了。", 15, WHITE, False)],
-     [("Summit VR 把这一层补回来——而且只用消费级硬件。", 15, WHITE, True)]],
-    space_after=12, line=1.3)
-speak(s, "真实抱石的功夫在脚上，不在手上。市面 VR 攀岩把这块全砍了——这就是我们的切入点。")
+], size=15, gap=11)
+# visual comparison panel: hands-only (falls) vs with-feet (balanced)
+panel_y = Inches(2.0)
+# left mini-panel: hands-only
+c1 = card(s, Inches(7.1), panel_y, Inches(2.7), Inches(2.9))
+txt(s, Inches(7.1), panel_y+Inches(0.12), Inches(2.7), Inches(0.35),
+    [[("纯手 → 开门甩出", 12, RED, True)]], align=PP_ALIGN.CENTER)
+rect(s, Inches(7.35), panel_y+Inches(0.6), Inches(2.2), Inches(1.9), RGBColor(0xF3,0xE7,0xE9))
+stick_climber(s, Inches(7.6), panel_y+Inches(0.7), Emu(int(Inches(0.5))), both_right=True, footed=False)
+# arrow showing swing
+ar = s.shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, Inches(8.7), panel_y+Inches(1.3), Inches(0.7), Inches(0.3))
+fill(ar, RED); ar.shadow.inherit=False
+txt(s, Inches(7.1), panel_y+Inches(2.5), Inches(2.7), Inches(0.35),
+    [[("✗ 平衡条耗尽脱落", 11, MUT, False)]], align=PP_ALIGN.CENTER)
+# right mini-panel: with feet
+c2 = card(s, Inches(9.95), panel_y, Inches(2.7), Inches(2.9))
+txt(s, Inches(9.95), panel_y+Inches(0.12), Inches(2.7), Inches(0.35),
+    [[("踩脚 → 稳住", 12, RGBColor(0x1F,0xAA,0x59), True)]], align=PP_ALIGN.CENTER)
+rect(s, Inches(10.2), panel_y+Inches(0.6), Inches(2.2), Inches(1.9), RGBColor(0xE7,0xF3,0xEB))
+stick_climber(s, Inches(10.5), panel_y+Inches(0.7), Emu(int(Inches(0.5))), both_right=True, footed=True)
+txt(s, Inches(9.95), panel_y+Inches(2.5), Inches(2.7), Inches(0.35),
+    [[("✓ 支撑面撑宽，重心回正", 11, RGBColor(0x1F,0xAA,0x59), False)]], align=PP_ALIGN.CENTER)
+# bottom banner
+c = card(s, Inches(0.6), Inches(5.15), Inches(12.1), Inches(0.7), red_bg=True)
+txt(s, Inches(0.9), Inches(5.27), Inches(11.5), Inches(0.5),
+    [[("缺口：", 14, RGBColor(0xFF,0xD9,0xDF), True),
+      ("市面 VR 攀岩把真实攀岩最核心的脚法和身体平衡全砍了。Summit VR 把这一层补回来——只用消费级硬件。", 14, WHITE, False)]], line=1.25)
+speak(s, "")
 footer(s, "背景与问题")
 print("slide 2 done")
 
@@ -265,18 +342,23 @@ kicker(s, "我们的点子")
 txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
     [[("测不到的就", 30, INK, True), ("抽象", 30, RED, True),
       ("，只模拟", 30, INK, True), ("影响玩法", 30, RED, True), ("的部分", 30, INK, True)]])
-cards3 = [("01","头 = 重心代理","只用 3 个追踪点（头+两手柄，无脚部追踪）。看头有没有歪出支撑范围——这就是平衡判定。"),
-          ("02","脚 = 抽象状态","不是 IK 腿。虚拟脚自动吸附到身体下方的脚点，撑宽支撑面，不去渲染会穿模的假腿。"),
-          ("03","平衡 = 渐变条","带迟滞 + 缓冲时间，不是一下子掉。可预警、可救回——是技巧判定，不是掷骰子。")]
+cards3 = [("01","🧠","头 = 重心代理","只用 3 个追踪点（头+两手柄，无脚部追踪）。头往哪歪重心就往哪跑——盯着头就能判平衡。"),
+          ("02","🦶","脚 = 抽象状态","不画会穿模的假腿。让看不见的虚拟脚自动踩到下方脚点，只负责一件事：把你撑得更稳。"),
+          ("03","📊","平衡 = 渐变条","不是「啪」一下摔死，而是一根慢慢掉的条，给你反应时间——可预警、可救回，是技巧不是运气。")]
 cw = Inches(4.0); cx = Inches(0.6); cy = Inches(1.95)
-for n, h, body in cards3:
+for n, icon, h, body in cards3:
     card(s, cx, cy, cw, Inches(2.5))
-    txt(s, cx+Inches(0.25), cy+Inches(0.15), cw-Inches(0.5), Inches(0.5),
-        [[(n, 30, REDL, True)]])
-    txt(s, cx+Inches(0.25), cy+Inches(0.72), cw-Inches(0.5), Inches(0.4),
+    rect(s, cx, cy, cw, Inches(0.10), RED)
+    # icon circle
+    ic = s.shapes.add_shape(MSO_SHAPE.OVAL, cx+Inches(0.25), cy+Inches(0.3), Inches(0.7), Inches(0.7))
+    fill(ic, REDWASH); ic.line.color.rgb = RED; ic.line.width=Pt(1.2); ic.shadow.inherit=False
+    ip = ic.text_frame.paragraphs[0]; ip.alignment = PP_ALIGN.CENTER
+    ir = ip.add_run(); ir.text = icon; ir.font.size = Pt(22); set_run_font(ir)
+    txt(s, cx+Inches(1.1), cy+Inches(0.3), cw-Inches(1.3), Inches(0.4), [[(n, 26, REDL, True)]])
+    txt(s, cx+Inches(0.25), cy+Inches(1.15), cw-Inches(0.5), Inches(0.4),
         [[(h, 16, RED, True)]])
-    txt(s, cx+Inches(0.25), cy+Inches(1.18), cw-Inches(0.5), Inches(1.2),
-        [[(body, 13, INK, False)]], line=1.3)
+    txt(s, cx+Inches(0.25), cy+Inches(1.58), cw-Inches(0.5), Inches(0.85),
+        [[(body, 12.5, INK, False)]], line=1.3)
     cx = cx + cw + Inches(0.33)
 mono = card(s, Inches(0.6), Inches(4.75), Inches(12.1), Inches(0.55))
 txt(s, Inches(0.85), Inches(4.83), Inches(11.6), Inches(0.4),
@@ -393,7 +475,19 @@ txt(s, rxt+Inches(0.2), Inches(4.08), Inches(5.3), Inches(0.4),
     [[("s ∈ [−1,+1] → 平衡条 B → B≤0 则 PeelOff 脱落", 13, RED, True)]])
 txt(s, rxt, Inches(4.7), Inches(5.7), Inches(0.6),
     [[("不是物理仿真——是轻量几何判据：可调、可解释、跑得动。ClimbMath.StabilityScore 纯函数 + 9 条单测。", 11, MUT, False)]], line=1.25)
-speak(s, "踩一只脚为什么管用？因为它撑宽了这个区间，把你的重心重新框进去——这一下就是整个 demo 的高光。")
+# balance-meter strip (full width, bottom)
+mty = Inches(5.45)
+txt(s, Inches(0.6), mty-Inches(0.02), Inches(1.5), Inches(0.3), [[("平衡条 B：", 12, INK, True)]])
+seg_w = Inches(1.7)
+colors = [RGBColor(0x1F,0xAA,0x59), RGBColor(0x8B,0xC3,0x4A), RGBColor(0xF5,0xB3,0x01),
+          RGBColor(0xFF,0x7A,0x1A), RGBColor(0xE2,0x3B,0x3B)]
+mx = Inches(2.0)
+for i, c in enumerate(colors):
+    rect(s, mx+seg_w*i, mty, seg_w, Inches(0.30), c)
+txt(s, mx, mty+Inches(0.32), Inches(2.0), Inches(0.25), [[("满格 = 稳稳贴墙", 10, RGBColor(0x1F,0xAA,0x59), True)]])
+txt(s, mx+seg_w*4-Inches(0.5), mty+Inches(0.32), seg_w+Inches(0.6), Inches(0.25),
+    [[("掉空 = 脱手坠落", 10, RED, True)]], align=PP_ALIGN.RIGHT)
+speak(s, "")
 footer(s, "核心机制 · 平衡")
 print("slide 6 done")
 
