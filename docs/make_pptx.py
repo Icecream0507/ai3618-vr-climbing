@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Generate Summit VR pre-presentation as a .pptx (SJTU red/white theme).
+"""Generate Summit VR coursework presentation as a .pptx (SJTU red/white theme).
 Run: python docs/make_pptx.py  ->  docs/SummitVR_Pre.pptx
+Academic project-report register (AI3618 课程作业汇报).
 """
 import os
 from pptx import Presentation
@@ -25,6 +26,7 @@ PAPER2= RGBColor(0xFB, 0xF7, 0xF8)
 LINE  = RGBColor(0xE7, 0xD6, 0xD9)
 WHITE = RGBColor(0xFF, 0xFF, 0xFF)
 REDWASH = RGBColor(0xFB, 0xE9, 0xEC)
+GREEN = RGBColor(0x1F, 0xAA, 0x59)
 
 prs = Presentation()
 prs.slide_width  = Inches(13.333)
@@ -69,15 +71,14 @@ def txt(s, x, y, w, h, runs, align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.TOP,
 
 def kicker(s, t, y=Inches(0.42)):
     rect(s, Inches(0.55), y+Inches(0.02), Inches(0.06), Inches(0.30), RED)
-    txt(s, Inches(0.72), y, Inches(8), Inches(0.4),
-        [[(t, 14, RED, True)]])
+    txt(s, Inches(0.72), y, Inches(10), Inches(0.4), [[(t, 14, RED, True)]])
 
 def header_band(s):
     grad_band(s, 0, 0, SW, Inches(0.16))
 
-def footer(s, left, right="SJTU · AI3618"):
+def footer(s, left, right="上海交通大学 · AI3618"):
     rect(s, 0, SH-Inches(0.42), SW, Inches(0.42), RED)
-    txt(s, Inches(0.4), SH-Inches(0.40), Inches(7), Inches(0.36),
+    txt(s, Inches(0.4), SH-Inches(0.40), Inches(8), Inches(0.36),
         [[(left, 11, WHITE, True)]], anchor=MSO_ANCHOR.MIDDLE)
     txt(s, SW-Inches(5.4), SH-Inches(0.40), Inches(5), Inches(0.36),
         [[(right, 11, WHITE, False)]], align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
@@ -97,61 +98,6 @@ def card(s, x, y, w, h, red_bg=False):
 def set_run_font(r, name="Segoe UI Emoji"):
     r.font.name = name
 
-def speak(s, t):
-    # Speaker notes removed from on-slide deck — script lives in the Word doc.
-    return
-
-def deco_dots(s):
-    """Subtle decorative dot grid in a corner for visual richness."""
-    import itertools
-    base_x = SW - Inches(1.5); base_y = SH - Inches(1.55)
-    for i, j in itertools.product(range(4), range(3)):
-        d = s.shapes.add_shape(MSO_SHAPE.OVAL,
-            base_x + Inches(0.30*i), base_y + Inches(0.30*j), Inches(0.07), Inches(0.07))
-        fill(d, RGBColor(0xF1, 0xD4, 0xD9)); d.shadow.inherit = False
-
-def chip(s, x, y, text, color=RED, fg=None):
-    w = Inches(0.115*len(text) + 0.5)
-    sp = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, w, Inches(0.36))
-    sp.adjustments[0] = 0.5; sp.shadow.inherit = False
-    fill(sp, color)
-    p = sp.text_frame.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
-    r = p.add_run(); r.text = text; r.font.size = Pt(10); r.font.bold = True
-    r.font.color.rgb = fg or WHITE; r.font.name = "Microsoft YaHei"
-    return x + w + Inches(0.12)
-
-def stick_climber(s, ox, oy, scale, both_right=False, footed=False):
-    """Draw a tiny stick climber on a wall fragment. ox,oy in EMU (top-left)."""
-    U = scale  # one EMU unit per body segment
-    col = INK
-    def line(x1, y1, x2, y2, c=col, wpt=2.2):
-        ln = s.shapes.add_connector(2, ox+x1, oy+y1, ox+x2, oy+y2)
-        ln.line.color.rgb = c; ln.line.width = Pt(wpt); return ln
-    def ball(cx, cy, r, c):
-        b = s.shapes.add_shape(MSO_SHAPE.OVAL, ox+cx-r, oy+cy-r, 2*r, 2*r)
-        fill(b, c); b.shadow.inherit = False; return b
-    # torso
-    head_x = U*1.0
-    line(head_x, U*0.9, U*1.0, U*2.4)            # spine
-    ball(head_x, U*0.6, U*0.32, col)             # head
-    # arms
-    if both_right:
-        line(U*1.0, U*1.2, U*1.9, U*0.7)         # right arm up
-        line(U*1.0, U*1.2, U*1.7, U*1.1)         # left arm also right
-    else:
-        line(U*1.0, U*1.2, U*1.8, U*0.8)         # right arm
-        line(U*1.0, U*1.2, U*0.2, U*0.8)         # left arm
-    # legs
-    line(U*1.0, U*2.4, U*1.5, U*3.2)
-    if footed:
-        line(U*1.0, U*2.4, U*0.2, U*3.0)         # left foot flagged out
-        ball(U*0.2, U*3.0, U*0.18, RGBColor(0xFF,0x7A,0x1A))
-    else:
-        line(U*1.0, U*2.4, U*0.7, U*3.2)
-    return
-
-print("helpers v2 ready")
-
 def bullets(s, x, y, w, h, items, size=15, gap=7):
     tb = s.shapes.add_textbox(x, y, w, h); tf = tb.text_frame
     tf.word_wrap = True
@@ -164,233 +110,15 @@ def bullets(s, x, y, w, h, items, size=15, gap=7):
     return tb
 
 def add_video(s, name, x, y, w, h):
-    """Embed mp4 with thumbnail poster; falls back to image if embed fails."""
     mp4 = os.path.join(DEMO, "SummitVR_%s.mp4" % name)
     thumb = os.path.join(TH, "%s.png" % name)
     poster = thumb if os.path.exists(thumb) else None
     try:
-        mov = s.shapes.add_movie(mp4, x, y, w, h, poster_frame_image=poster,
-                                 mime_type="video/mp4")
-        return mov
+        return s.shapes.add_movie(mp4, x, y, w, h, poster_frame_image=poster,
+                                  mime_type="video/mp4")
     except Exception as e:
         print("  movie embed failed (%s): %s -> image" % (name, e))
-        if poster:
-            return s.shapes.add_picture(poster, x, y, w, h)
-        return None
-
-# ============== SLIDE 0 — COVER ==============
-s = slide()
-# full red right band, white left
-rect(s, 0, 0, SW, SH, WHITE)
-rect(s, Inches(8.4), 0, SW-Inches(8.4), SH, RED)
-grad_band(s, 0, 0, Inches(8.4), Inches(0.18))
-# decorative diagonal accent on red panel
-tri = s.shapes.add_shape(MSO_SHAPE.RIGHT_TRIANGLE, Inches(8.4), Inches(5.4), Inches(2.2), Inches(2.1))
-fill(tri, REDD); tri.shadow.inherit = False; tri.rotation = 180
-txt(s, Inches(0.8), Inches(1.05), Inches(7.4), Inches(0.5),
-    [[("🦅 上海交通大学 · SHANGHAI JIAO TONG UNIVERSITY", 14, MUT, True)]])
-txt(s, Inches(0.75), Inches(2.0), Inches(7.6), Inches(1.6),
-    [[("Summit ", 72, INK, True), ("VR", 72, RED, True)]])
-rect(s, Inches(0.85), Inches(3.5), Inches(2.2), Pt(4), RED)
-txt(s, Inches(0.8), Inches(3.75), Inches(7.4), Inches(1.2),
-    [[("带「平衡 + 脚法」的纯手柄 VR 抱石", 24, INK, True)],
-     [("A Balance-and-Footwork Layer for Controller-Only VR Bouldering", 14, MUT, False)]],
-    space_after=8, line=1.3)
-txt(s, Inches(0.8), Inches(5.3), Inches(7.4), Inches(0.5),
-    [[("课程 AI3618 · 项目汇报 (Pre)", 16, REDD, True)]])
-txt(s, Inches(0.8), Inches(6.5), Inches(7.4), Inches(0.5),
-    [[("Group N · 薛俊智 · 吴一轩 · 邹沛霖 · 陶锐 · 孙艺豪", 13, MUT, False)]])
-# right panel text
-txt(s, Inches(8.8), Inches(2.5), Inches(4.2), Inches(3.0),
-    [[("把真实抱石", 20, WHITE, True)],
-     [("最核心的两件事", 20, WHITE, True)],
-     [("", 8, WHITE, False)],
-     [("身体平衡", 26, RGBColor(0xFF,0xD9,0xDF), True)],
-     [("脚法落点", 26, RGBColor(0xFF,0xD9,0xDF), True)],
-     [("", 8, WHITE, False)],
-     [("带回 VR 攀岩", 20, WHITE, True)]],
-    space_after=2, line=1.2)
-print("slide 0 (cover) done")
-
-# ============== SLIDE 1 — TITLE ==============
-s = slide()
-header_band(s)
-# subtle right accent triangle
-tri = s.shapes.add_shape(MSO_SHAPE.RIGHT_TRIANGLE, SW-Inches(3.0), Inches(0.16), Inches(3.0), Inches(2.0))
-fill(tri, REDWASH); tri.shadow.inherit=False; tri.rotation=90
-txt(s, Inches(0.6), Inches(0.5), Inches(11), Inches(0.4),
-    [[("🦅 上海交通大学  SHANGHAI JIAO TONG UNIVERSITY   |   课程 AI3618", 13, MUT, True)]])
-txt(s, Inches(0.55), Inches(1.0), Inches(11), Inches(1.2),
-    [[("Summit ", 54, INK, True), ("VR", 54, RED, True)]])
-txt(s, Inches(0.6), Inches(2.15), Inches(11.8), Inches(1.0),
-    [[("在只有头 + 两手柄的普通 VR 上，把真实抱石的两件核心——", 18, MUT, False),
-      ("身体平衡", 18, RED, True), (" 与 ", 18, MUT, False),
-      ("脚法落点", 18, RED, True), ("——做成可玩机制。", 18, MUT, False)]], line=1.3)
-pills = [("stock Quest · 3-point", True), ("引擎端到端 10/10 PASS", False),
-         ("数学单测 9/9 PASS", False), ("5 条线路 + 演示视频", False)]
-px = Inches(0.6)
-for label, filled in pills:
-    w = Inches(0.135*len(label)+0.55)
-    sp = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, px, Inches(3.05), w, Inches(0.42))
-    sp.adjustments[0] = 0.5
-    if filled: fill(sp, RED)
-    else:
-        fill(sp, WHITE); sp.line.color.rgb = RED; sp.line.width = Pt(1.5)
-    sp.shadow.inherit = False
-    tf = sp.text_frame
-    p = tf.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
-    r = p.add_run(); r.text = label; r.font.size = Pt(11); r.font.bold = True
-    r.font.color.rgb = WHITE if filled else RED; r.font.name = "Microsoft YaHei"
-    px = px + w + Inches(0.18)
-team = [("P1","薛俊智","攀爬系统","反向位移·平衡·脚法"),
-        ("P2","吴一轩","玩法规则","状态机·体力·线路"),
-        ("P3","陶锐","场景美术","墙·握点·灯光·化身"),
-        ("P4","邹沛霖","XR集成构建","rig·输入·仿真验证"),
-        ("P5","孙艺豪","UX音频报告视频","HUD·音效·主讲")]
-tw = Inches(2.36); gap = Inches(0.13); tx = Inches(0.6); ty = Inches(3.85)
-for code, nm, role, tk in team:
-    card(s, tx, ty, tw, Inches(2.25))
-    rect(s, tx, ty, tw, Inches(0.10), RED)
-    circ = s.shapes.add_shape(MSO_SHAPE.OVAL, tx+tw/2-Inches(0.42), ty+Inches(0.32),
-                              Inches(0.84), Inches(0.84))
-    fill(circ, RED); circ.shadow.inherit = False
-    cp = circ.text_frame.paragraphs[0]; cp.alignment = PP_ALIGN.CENTER
-    cr = cp.add_run(); cr.text = code; cr.font.size = Pt(20); cr.font.bold = True
-    cr.font.color.rgb = WHITE; cr.font.name = "Microsoft YaHei"
-    txt(s, tx, ty+Inches(1.30), tw, Inches(0.85),
-        [[(nm, 18, INK, True)], [(role, 11, RED, True)], [(tk, 9.5, MUT, False)]],
-        align=PP_ALIGN.CENTER, space_after=2, line=1.05)
-    tx = tx + tw + gap
-footer(s, "Summit VR", "github.com/Icecream0507/ai3618-vr-climbing")
-print("slide 1 done")
-
-# ============== AGENDA / MENU ==============
-s = slide(); header_band(s)
-kicker(s, "目录 · AGENDA")
-txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
-    [[("本次汇报", 30, INK, True), ("六个部分", 30, RED, True)]])
-agenda = [
-  ("01","背景与问题","VR 攀岩为何「纯手」、我们补什么缺口"),
-  ("02","我们的点子 + 调研","头当重心 · 脚做抽象 · 文献支撑"),
-  ("03","系统架构与核心机制","加法式设计 · 一维支撑区间平衡模型"),
-  ("04","脚法 · 常量 · Demo","脚法抽象 · 关键参数 · 演示视频"),
-  ("05","线路库与整体思路","5 条线路 · 可验证驱动的开发方法论"),
-  ("06","评测体系与项目总结","已就绪的评测协议 · 已交付清单"),
-]
-# two columns of three
-colx = [Inches(0.6), Inches(6.7)]
-for i, (n, h, body) in enumerate(agenda):
-    cx = colx[i // 3]; cy = Inches(2.0) + Inches(1.55) * (i % 3)
-    card(s, cx, cy, Inches(5.9), Inches(1.35))
-    # number badge
-    badge = s.shapes.add_shape(MSO_SHAPE.OVAL, cx+Inches(0.25), cy+Inches(0.32), Inches(0.7), Inches(0.7))
-    fill(badge, RED); badge.shadow.inherit=False
-    bp = badge.text_frame.paragraphs[0]; bp.alignment = PP_ALIGN.CENTER
-    br = bp.add_run(); br.text = n; br.font.size = Pt(20); br.font.bold = True
-    br.font.color.rgb = WHITE; br.font.name = "Microsoft YaHei"
-    txt(s, cx+Inches(1.2), cy+Inches(0.22), Inches(4.5), Inches(0.45), [[(h, 17, INK, True)]])
-    txt(s, cx+Inches(1.2), cy+Inches(0.72), Inches(4.6), Inches(0.5), [[(body, 12, MUT, False)]], line=1.2)
-speak(s, "整个汇报六块：先讲为什么做、怎么想，再讲系统怎么搭、机制怎么算，然后看 demo 和线路，最后是评测体系和项目总结。")
-footer(s, "目录 · Agenda")
-print("agenda done")
-
-# ============== SLIDE 2 — THE GAP ==============
-s = slide(); header_band(s)
-kicker(s, "背景与问题")
-txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
-    [[("VR 攀岩很火，但", 30, INK, True), ("几乎全是「纯手」", 30, RED, True)]])
-bullets(s, Inches(0.6), Inches(1.9), Inches(6.3), Inches(3.0), [
-    [("现状：", True, REDD), ("The Climb · Gorilla Tag——舒适、不晕、商业成功。但掉下来只有两种原因：", False, INK),
-     ("松手", True, RED), (" 或 ", False, INK), ("够不到", True, RED), ("。", False, INK)],
-    [("真实抱石恰恰相反：", True, REDD), ("难点常常不在手有多大力，而在", False, INK),
-     ("重心怎么落在脚上", True, RED), ("、会不会像一扇门一样「开门」被甩出去。", False, INK)],
-    [("2026 新出的平面游戏 New Heights 主打的正是平衡 / 脚法 → 玩家确实想要这一层。", False, MUT)],
-], size=15, gap=11)
-# visual comparison panel: hands-only (falls) vs with-feet (balanced)
-panel_y = Inches(2.0)
-# left mini-panel: hands-only
-c1 = card(s, Inches(7.1), panel_y, Inches(2.7), Inches(2.9))
-txt(s, Inches(7.1), panel_y+Inches(0.12), Inches(2.7), Inches(0.35),
-    [[("纯手 → 开门甩出", 12, RED, True)]], align=PP_ALIGN.CENTER)
-rect(s, Inches(7.35), panel_y+Inches(0.6), Inches(2.2), Inches(1.9), RGBColor(0xF3,0xE7,0xE9))
-stick_climber(s, Inches(7.6), panel_y+Inches(0.7), Emu(int(Inches(0.5))), both_right=True, footed=False)
-# arrow showing swing
-ar = s.shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, Inches(8.7), panel_y+Inches(1.3), Inches(0.7), Inches(0.3))
-fill(ar, RED); ar.shadow.inherit=False
-txt(s, Inches(7.1), panel_y+Inches(2.5), Inches(2.7), Inches(0.35),
-    [[("✗ 平衡条耗尽脱落", 11, MUT, False)]], align=PP_ALIGN.CENTER)
-# right mini-panel: with feet
-c2 = card(s, Inches(9.95), panel_y, Inches(2.7), Inches(2.9))
-txt(s, Inches(9.95), panel_y+Inches(0.12), Inches(2.7), Inches(0.35),
-    [[("踩脚 → 稳住", 12, RGBColor(0x1F,0xAA,0x59), True)]], align=PP_ALIGN.CENTER)
-rect(s, Inches(10.2), panel_y+Inches(0.6), Inches(2.2), Inches(1.9), RGBColor(0xE7,0xF3,0xEB))
-stick_climber(s, Inches(10.5), panel_y+Inches(0.7), Emu(int(Inches(0.5))), both_right=True, footed=True)
-txt(s, Inches(9.95), panel_y+Inches(2.5), Inches(2.7), Inches(0.35),
-    [[("✓ 支撑面撑宽，重心回正", 11, RGBColor(0x1F,0xAA,0x59), False)]], align=PP_ALIGN.CENTER)
-# bottom banner
-c = card(s, Inches(0.6), Inches(5.15), Inches(12.1), Inches(0.7), red_bg=True)
-txt(s, Inches(0.9), Inches(5.27), Inches(11.5), Inches(0.5),
-    [[("缺口：", 14, RGBColor(0xFF,0xD9,0xDF), True),
-      ("市面 VR 攀岩把真实攀岩最核心的脚法和身体平衡全砍了。Summit VR 把这一层补回来——只用消费级硬件。", 14, WHITE, False)]], line=1.25)
-speak(s, "")
-footer(s, "背景与问题")
-print("slide 2 done")
-
-# ============== SLIDE 3 — OUR IDEA ==============
-s = slide(); header_band(s)
-kicker(s, "我们的点子")
-txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
-    [[("测不到的就", 30, INK, True), ("抽象", 30, RED, True),
-      ("，只模拟", 30, INK, True), ("影响玩法", 30, RED, True), ("的部分", 30, INK, True)]])
-cards3 = [("01","🧠","头 = 重心代理","只用 3 个追踪点（头+两手柄，无脚部追踪）。头往哪歪重心就往哪跑——盯着头就能判平衡。"),
-          ("02","🦶","脚 = 抽象状态","不画会穿模的假腿。让看不见的虚拟脚自动踩到下方脚点，只负责一件事：把你撑得更稳。"),
-          ("03","📊","平衡 = 渐变条","不是「啪」一下摔死，而是一根慢慢掉的条，给你反应时间——可预警、可救回，是技巧不是运气。")]
-cw = Inches(4.0); cx = Inches(0.6); cy = Inches(1.95)
-for n, icon, h, body in cards3:
-    card(s, cx, cy, cw, Inches(2.5))
-    rect(s, cx, cy, cw, Inches(0.10), RED)
-    # icon circle
-    ic = s.shapes.add_shape(MSO_SHAPE.OVAL, cx+Inches(0.25), cy+Inches(0.3), Inches(0.7), Inches(0.7))
-    fill(ic, REDWASH); ic.line.color.rgb = RED; ic.line.width=Pt(1.2); ic.shadow.inherit=False
-    ip = ic.text_frame.paragraphs[0]; ip.alignment = PP_ALIGN.CENTER
-    ir = ip.add_run(); ir.text = icon; ir.font.size = Pt(22); set_run_font(ir)
-    txt(s, cx+Inches(1.1), cy+Inches(0.3), cw-Inches(1.3), Inches(0.4), [[(n, 26, REDL, True)]])
-    txt(s, cx+Inches(0.25), cy+Inches(1.15), cw-Inches(0.5), Inches(0.4),
-        [[(h, 16, RED, True)]])
-    txt(s, cx+Inches(0.25), cy+Inches(1.58), cw-Inches(0.5), Inches(0.85),
-        [[(body, 12.5, INK, False)]], line=1.3)
-    cx = cx + cw + Inches(0.33)
-mono = card(s, Inches(0.6), Inches(4.75), Inches(12.1), Inches(0.55))
-txt(s, Inches(0.85), Inches(4.83), Inches(11.6), Inches(0.4),
-    [[("我们的做法：追踪不到的（脚）就估计出来，只实现真正影响玩法的部分。", 14, REDD, True)]])
-speak(s, "我们不渲染会穿模的假腿，只模拟脚带来的后果：更宽的支撑面。三者都是加法层，关掉就退回普通纯手攀爬。")
-footer(s, "我们的点子")
-print("slide 3 done")
-
-# ============== SLIDE 4 — RESEARCH ==============
-s = slide(); header_band(s)
-kicker(s, "调研支撑")
-txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
-    [[("不是拍脑袋——文献给了 ", 30, INK, True), ("why", 30, RED, True),
-      (" 和 ", 30, INK, True), ("how", 30, RED, True)]])
-research = [("Kosmalla et al. · CHI 2020","真实墙实验：「脚」比「手」更影响动作准确感与攀爬乐趣。","→ 告诉我们为什么值得做脚"),
-            ("Mitsuda & Kimura · Frontiers VR 2026","头当重心、头歪出无支撑脚即判掉落（n=24 已验证）。","→ 告诉我们怎么用头做平衡判定")]
-cx = Inches(0.6)
-for h, body, note in research:
-    card(s, cx, Inches(1.95), Inches(6.0), Inches(2.1))
-    txt(s, cx+Inches(0.3), Inches(2.12), Inches(5.4), Inches(0.4), [[(h, 16, RED, True)]])
-    txt(s, cx+Inches(0.3), Inches(2.62), Inches(5.4), Inches(0.9), [[(body, 14, INK, False)]], line=1.3)
-    txt(s, cx+Inches(0.3), Inches(3.55), Inches(5.4), Inches(0.4), [[(note, 12, MUT, False)]])
-    cx = cx + Inches(6.1)
-c = card(s, Inches(0.6), Inches(4.25), Inches(12.1), Inches(1.0))
-rect(s, Inches(0.6), Inches(4.25), Inches(0.08), Inches(1.0), RED)
-txt(s, Inches(0.9), Inches(4.42), Inches(11.6), Inches(0.7),
-    [[("机器人平衡理论", 14, REDD, True),
-      ("提供形式化词汇：支撑多边形 · ZMP(零力矩点) · capture point——说明可信的平衡", 14, INK, False),
-      ("不需要", 14, RED, True), ("昂贵追踪或全身 IK，几何判据足矣。", 14, INK, False)]], line=1.3)
-speak(s, "一篇论文告诉我们要做脚，一篇告诉我们用头当重心怎么做；机器人学给了我们『支撑面』这个数学语言。")
-footer(s, "调研支撑")
-print("slide 4 done")
+        return s.shapes.add_picture(poster, x, y, w, h) if poster else None
 
 def codebox(s, x, y, w, h, lines, size=11):
     sp = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, w, h)
@@ -405,118 +133,341 @@ def codebox(s, x, y, w, h, lines, size=11):
         r.font.name = "Consolas"; r.font.color.rgb = RED if hot else RGBColor(0x33,0x37,0x3F)
         r.font.bold = hot
 
-# ============== SLIDE 5 — ARCHITECTURE ==============
+def legend(s, x, y):
+    items = [("手","F5B301"),("脚","FF7A1A"),("任意","9B51E0"),("登顶","1FAA59"),("易碎","E23B3B"),("休息","2D8CFF")]
+    cx = x
+    for label, hexc in items:
+        d = s.shapes.add_shape(MSO_SHAPE.OVAL, cx, y, Inches(0.16), Inches(0.16))
+        fill(d, RGBColor.from_string(hexc)); d.shadow.inherit=False
+        txt(s, cx+Inches(0.2), y-Inches(0.05), Inches(0.7), Inches(0.3), [[(label, 11, MUT, False)]])
+        cx = cx + Inches(0.2) + Inches(0.14*len(label)+0.45)
+
+def stick_climber(s, ox, oy, scale, both_right=False, footed=False):
+    U = scale; col = INK
+    def line(x1, y1, x2, y2, c=col, wpt=2.2):
+        ln = s.shapes.add_connector(2, ox+x1, oy+y1, ox+x2, oy+y2)
+        ln.line.color.rgb = c; ln.line.width = Pt(wpt); return ln
+    def ball(cx, cy, r, c):
+        b = s.shapes.add_shape(MSO_SHAPE.OVAL, ox+cx-r, oy+cy-r, 2*r, 2*r)
+        fill(b, c); b.shadow.inherit = False; return b
+    line(U*1.0, U*0.9, U*1.0, U*2.4)
+    ball(U*1.0, U*0.6, U*0.32, col)
+    if both_right:
+        line(U*1.0, U*1.2, U*1.9, U*0.7); line(U*1.0, U*1.2, U*1.7, U*1.1)
+    else:
+        line(U*1.0, U*1.2, U*1.8, U*0.8); line(U*1.0, U*1.2, U*0.2, U*0.8)
+    line(U*1.0, U*2.4, U*1.5, U*3.2)
+    if footed:
+        line(U*1.0, U*2.4, U*0.2, U*3.0); ball(U*0.2, U*3.0, U*0.18, RGBColor(0xFF,0x7A,0x1A))
+    else:
+        line(U*1.0, U*2.4, U*0.7, U*3.2)
+
+print("helpers ready")
+# <<<SLIDES>>>
+
+# ============== 0 — COVER ==============
+s = slide()
+rect(s, 0, 0, SW, SH, WHITE)
+rect(s, Inches(8.4), 0, SW-Inches(8.4), SH, RED)
+grad_band(s, 0, 0, Inches(8.4), Inches(0.18))
+tri = s.shapes.add_shape(MSO_SHAPE.RIGHT_TRIANGLE, Inches(8.4), Inches(5.4), Inches(2.2), Inches(2.1))
+fill(tri, REDD); tri.shadow.inherit = False; tri.rotation = 180
+txt(s, Inches(0.8), Inches(1.0), Inches(7.4), Inches(0.5),
+    [[("上海交通大学 · SHANGHAI JIAO TONG UNIVERSITY", 14, MUT, True)]])
+txt(s, Inches(0.75), Inches(1.9), Inches(7.6), Inches(1.4),
+    [[("Summit ", 70, INK, True), ("VR", 70, RED, True)]])
+rect(s, Inches(0.85), Inches(3.35), Inches(2.2), Pt(4), RED)
+txt(s, Inches(0.8), Inches(3.6), Inches(7.4), Inches(1.2),
+    [[("面向纯手柄 VR 攀岩的平衡与脚法机制", 23, INK, True)],
+     [("课程项目 · 设计、实现与评测方案", 14, MUT, False)]],
+    space_after=8, line=1.3)
+txt(s, Inches(0.8), Inches(5.25), Inches(7.4), Inches(0.5),
+    [[("AI3618《虚拟现实技术》· 课程作业汇报", 15, REDD, True)]])
+txt(s, Inches(0.8), Inches(6.4), Inches(7.4), Inches(0.5),
+    [[("第 N 组　薛俊智 · 吴一轩 · 陶锐 · 邹沛霖 · 孙艺豪", 13, MUT, False)]])
+txt(s, Inches(8.8), Inches(2.6), Inches(4.2), Inches(3.0),
+    [[("研究问题", 16, RGBColor(0xFF,0xD9,0xDF), True)],
+     [("", 6, WHITE, False)],
+     [("如何在仅有头显与两个", 17, WHITE, False)],
+     [("手柄的消费级 VR 上，", 17, WHITE, False)],
+     [("重建真实攀岩中的", 17, WHITE, False)],
+     [("身体平衡与脚法？", 19, WHITE, True)]],
+    space_after=3, line=1.3)
+print("cover done")
+
+# ============== 1 — TEAM / 分工 ==============
 s = slide(); header_band(s)
-kicker(s, "系统架构")
+kicker(s, "团队与分工")
+txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
+    [[("第 N 组 · 五人分工", 30, INK, True)]])
+txt(s, Inches(0.6), Inches(1.65), Inches(12), Inches(0.5),
+    [[("课程要求每人主负责一个模块；平衡与脚法机制为全组共同设计。", 13, MUT, False)]])
+team = [("P1","薛俊智","攀爬系统","反向位移移动 · 抓握 · 平衡与脚法核心算法"),
+        ("P2","吴一轩","玩法规则","状态机 · 计时与跌落 · 体力 · 线路设计"),
+        ("P3","陶锐","场景与美术","墙体 · 握点造型 · 灯光 · 角色化身"),
+        ("P4","邹沛霖","XR 集成与验证","设备接入 · 输入 · 仿真自检 · 构建"),
+        ("P5","孙艺豪","UX·音频·报告","HUD · 音效 · 报告统稿 · 视频与汇报")]
+ty = Inches(2.35)
+for code, nm, role, tk in team:
+    card(s, Inches(0.6), ty, Inches(12.1), Inches(0.82))
+    badge = s.shapes.add_shape(MSO_SHAPE.OVAL, Inches(0.85), ty+Inches(0.16), Inches(0.5), Inches(0.5))
+    fill(badge, RED); badge.shadow.inherit=False
+    bp = badge.text_frame.paragraphs[0]; bp.alignment=PP_ALIGN.CENTER
+    br = bp.add_run(); br.text=code; br.font.size=Pt(15); br.font.bold=True
+    br.font.color.rgb=WHITE; br.font.name="Microsoft YaHei"
+    txt(s, Inches(1.6), ty+Inches(0.18), Inches(1.6), Inches(0.5), [[(nm, 18, INK, True)]], anchor=MSO_ANCHOR.MIDDLE)
+    txt(s, Inches(3.2), ty+Inches(0.18), Inches(2.4), Inches(0.5), [[(role, 14, RED, True)]], anchor=MSO_ANCHOR.MIDDLE)
+    txt(s, Inches(5.7), ty+Inches(0.18), Inches(6.8), Inches(0.5), [[(tk, 12.5, MUT, False)]], anchor=MSO_ANCHOR.MIDDLE)
+    ty = ty + Inches(0.92)
+footer(s, "团队与分工")
+print("team done")
+
+# ============== 2 — AGENDA ==============
+s = slide(); header_band(s)
+kicker(s, "汇报提纲")
+txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
+    [[("汇报提纲", 30, INK, True)]])
+agenda = [
+  ("01","研究背景与问题","VR 攀岩的现状与所缺失的能力"),
+  ("02","相关工作","脚法、重心与平衡模型的已有研究"),
+  ("03","方法与系统设计","三点追踪下的平衡与脚法建模"),
+  ("04","核心算法","支撑区间平衡判定 · 脚法抽象"),
+  ("05","实现与演示","系统实现 · 线路设计 · 运行演示"),
+  ("06","验证、评测与总结","开发验证方法 · 评测方案 · 结论"),
+]
+colx = [Inches(0.6), Inches(6.7)]
+for i, (n, h, body) in enumerate(agenda):
+    cx = colx[i // 3]; cy = Inches(2.0) + Inches(1.55) * (i % 3)
+    card(s, cx, cy, Inches(5.9), Inches(1.35))
+    badge = s.shapes.add_shape(MSO_SHAPE.OVAL, cx+Inches(0.25), cy+Inches(0.32), Inches(0.7), Inches(0.7))
+    fill(badge, RED); badge.shadow.inherit=False
+    bp = badge.text_frame.paragraphs[0]; bp.alignment = PP_ALIGN.CENTER
+    br = bp.add_run(); br.text = n; br.font.size = Pt(20); br.font.bold = True
+    br.font.color.rgb = WHITE; br.font.name = "Microsoft YaHei"
+    txt(s, cx+Inches(1.2), cy+Inches(0.22), Inches(4.5), Inches(0.45), [[(h, 17, INK, True)]])
+    txt(s, cx+Inches(1.2), cy+Inches(0.72), Inches(4.6), Inches(0.5), [[(body, 12, MUT, False)]], line=1.2)
+footer(s, "汇报提纲")
+print("agenda done")
+# <<<NEXT>>>
+
+# ============== 3 — 研究背景 ==============
+s = slide(); header_band(s)
+kicker(s, "一 · 研究背景")
+txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
+    [[("VR 攀岩的交互，长期停留在「纯手」", 28, INK, True)]])
+bullets(s, Inches(0.6), Inches(1.85), Inches(6.3), Inches(3.2), [
+    [("现有成熟作品（如 The Climb、Gorilla Tag）以「抓握—反向位移」为核心：", False, INK)],
+    [("• 玩家用双手抓点并将身体拉起，体验舒适、晕动较低；", False, INK)],
+    [("• 失败仅来自两种情形——", False, INK), ("松手", True, RED), (" 或 ", False, INK), ("臂展不足够不到", True, RED), ("。", False, INK)],
+    [("而真实抱石中，决定成败的往往是", False, INK), ("重心与脚的配合", True, RED),
+     ("：身体若偏离支撑范围，会绕支点旋出（俗称「开门 / barn-door」）。", False, INK)],
+    [("近年平面作品（New Heights, 2026）将平衡与脚法作为核心卖点，反映出此类需求。", False, MUT)],
+], size=14, gap=10)
+# right illustration: barn-door
+c = card(s, Inches(7.1), Inches(1.85), Inches(5.6), Inches(3.6))
+txt(s, Inches(7.1), Inches(2.0), Inches(5.6), Inches(0.35),
+    [[("「开门」效应示意", 13, RED, True)]], align=PP_ALIGN.CENTER)
+rect(s, Inches(7.5), Inches(2.5), Inches(4.8), Inches(2.6), RGBColor(0xF3,0xE7,0xE9))
+stick_climber(s, Inches(8.1), Inches(2.7), Emu(int(Inches(0.62))), both_right=True, footed=False)
+ar = s.shapes.add_shape(MSO_SHAPE.CURVED_RIGHT_ARROW, Inches(10.4), Inches(3.0), Inches(0.9), Inches(1.4))
+fill(ar, RED); ar.shadow.inherit=False
+txt(s, Inches(7.5), Inches(4.78), Inches(4.8), Inches(0.3),
+    [[("双手同侧 → 重心偏出支撑 → 身体旋出脱落", 11, MUT, False)]], align=PP_ALIGN.CENTER)
+footer(s, "一 · 研究背景")
+print("bg done")
+
+# ============== 4 — 问题分析 ==============
+s = slide(); header_band(s)
+kicker(s, "一 · 问题分析")
+txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
+    [[("难点：消费级 VR ", 28, INK, True), ("看不到脚", 28, RED, True)]])
+left = card(s, Inches(0.6), Inches(1.85), Inches(6.0), Inches(3.6))
+txt(s, Inches(0.85), Inches(2.0), Inches(5.5), Inches(0.4), [[("硬件约束", 15, RED, True)]])
+bullets(s, Inches(0.85), Inches(2.5), Inches(5.5), Inches(2.8), [
+    [("消费级头显仅提供 3 个追踪点：", False, INK), ("头显 + 两手柄", True, REDD), ("；", False, INK)],
+    [("无脚部 / 躯干追踪，下半身姿态不可观测；", False, INK)],
+    [("用 IK 或生成式方法反解腿部，在攀岩这类极端姿势下易失真、穿模。", False, INK)],
+], size=13.5, gap=9)
+right = card(s, Inches(6.8), Inches(1.85), Inches(5.9), Inches(3.6))
+txt(s, Inches(7.05), Inches(2.0), Inches(5.4), Inches(0.4), [[("我们要回答的问题", 15, RED, True)]])
+bullets(s, Inches(7.05), Inches(2.5), Inches(5.4), Inches(2.8), [
+    [("能否在不增加任何硬件的前提下，", False, INK)],
+    [("用现有的 3 个追踪点，", False, INK), ("近似", True, REDD), ("出「重心是否落在支撑范围内」？", False, INK)],
+    [("并把脚法表达为「是否提供了有效支撑」，", False, INK)],
+    [("从而让平衡与脚法成为", False, INK), ("真正影响成败的玩法", True, RED), ("。", False, INK)],
+], size=13.5, gap=9)
+footer(s, "一 · 问题分析")
+print("problem done")
+
+# ============== 5 — 相关工作 ==============
+s = slide(); header_band(s)
+kicker(s, "二 · 相关工作")
+txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
+    [[("已有研究为方法提供了依据", 28, INK, True)]])
+works = [
+  ("脚的重要性","Kosmalla et al.\nCHI 2020","真实攀岩墙上的实验表明：呈现「脚」比呈现「手」更能提升动作准确感与体验。"),
+  ("头作为重心","Mitsuda & Kimura\nFrontiers in VR 2026","以头显近似重心，当重心越过无支撑的脚即判定跌落；n=24 实验验证可行。"),
+  ("平衡的形式化","机器人学\n(ZMP / 支撑多边形)","支撑多边形、零力矩点、capture point 给出了「重心是否在支撑区内」的理论语言。"),
+]
+cx = Inches(0.6)
+for tag, src, body in works:
+    card(s, cx, Inches(1.9), Inches(3.95), Inches(3.5))
+    rect(s, cx, Inches(1.9), Inches(3.95), Inches(0.10), RED)
+    txt(s, cx+Inches(0.28), Inches(2.15), Inches(3.4), Inches(0.4), [[(tag, 16, RED, True)]])
+    txt(s, cx+Inches(0.28), Inches(2.7), Inches(3.4), Inches(0.7), [[(src, 12, REDD, True)]], line=1.15)
+    txt(s, cx+Inches(0.28), Inches(3.55), Inches(3.45), Inches(1.7), [[(body, 12.5, INK, False)]], line=1.3)
+    cx = cx + Inches(4.05)
+txt(s, Inches(0.6), Inches(5.55), Inches(12.1), Inches(0.4),
+    [[("本工作定位：", 13, REDD, True),
+      ("把上述「为什么做脚」「如何用头判平衡」的结论，落实到无脚追踪的消费级硬件与可玩机制中。", 13, INK, False)]])
+footer(s, "二 · 相关工作")
+print("related done")
+# <<<NEXT>>>
+
+# ============== 6 — 方法概述 ==============
+s = slide(); header_band(s)
+kicker(s, "三 · 方法概述")
 txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
-    [[("加法式设计：拿掉平衡 / 脚法，", 28, INK, True), ("退回普通纯手攀爬", 28, RED, True)]])
+    [[("设计原则：", 28, INK, True), ("抽象不可观测量，只建模影响玩法的部分", 28, RED, True)]])
+cards3 = [("01","🧠","以头显近似重心","头显是 3 点中唯一稳定可得的高位信号；其横向位置可近似反映躯干是否偏离支撑。"),
+          ("02","🦶","以状态表达脚法","不渲染腿部几何，而将脚抽象为「踩在某握点上、提供一个支撑点」的状态。"),
+          ("03","📊","以分级量表达失衡","失衡不是瞬时判定，而是带缓冲与回升的平衡量，使其可预警、可恢复。")]
+cw = Inches(4.0); cx = Inches(0.6); cy = Inches(1.9)
+for n, icon, h, body in cards3:
+    card(s, cx, cy, cw, Inches(2.55))
+    rect(s, cx, cy, cw, Inches(0.10), RED)
+    ic = s.shapes.add_shape(MSO_SHAPE.OVAL, cx+Inches(0.25), cy+Inches(0.3), Inches(0.7), Inches(0.7))
+    fill(ic, REDWASH); ic.line.color.rgb = RED; ic.line.width=Pt(1.2); ic.shadow.inherit=False
+    ip = ic.text_frame.paragraphs[0]; ip.alignment = PP_ALIGN.CENTER
+    ir = ip.add_run(); ir.text = icon; ir.font.size = Pt(22); set_run_font(ir)
+    txt(s, cx+Inches(1.1), cy+Inches(0.3), cw-Inches(1.3), Inches(0.4), [[(n, 26, REDL, True)]])
+    txt(s, cx+Inches(0.25), cy+Inches(1.15), cw-Inches(0.5), Inches(0.4), [[(h, 16, RED, True)]])
+    txt(s, cx+Inches(0.25), cy+Inches(1.6), cw-Inches(0.5), Inches(0.9), [[(body, 12.5, INK, False)]], line=1.3)
+    cx = cx + cw + Inches(0.33)
+mono = card(s, Inches(0.6), Inches(4.7), Inches(12.1), Inches(0.6))
+txt(s, Inches(0.85), Inches(4.8), Inches(11.6), Inches(0.4),
+    [[("加法式设计：", 14, REDD, True),
+      ("平衡与脚法是叠加在成熟「抓握—反向位移」基础上的可选层；若移除，系统退化为常规纯手攀岩，基础体验不受影响。", 14, INK, False)]])
+footer(s, "三 · 方法概述")
+print("method done")
+
+# ============== 7 — 系统架构 ==============
+s = slide(); header_band(s)
+kicker(s, "三 · 系统架构")
+txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
+    [[("模块组成与数据流", 28, INK, True)]])
 arch = [
- ("Input(grip)                      Physics overlap (Hold layer)", False),
+ ("输入(grip 握力)                     物理重叠检测 (Hold 层)", False),
  ("    |                                    |", False),
  ("    v                                    v", False),
- ("ClimbingHand x2 --grab/release--> ClimbHold {role, type}  (臂展约束 ~0.88m)", False),
+ ("ClimbingHand ×2 --抓/放--> ClimbHold {角色, 类型}   (臂展约束 ~0.88m)", False),
  ("    |                                    ^", False),
- ("    |                  FootPlacementSystem --auto-snap 虚拟脚→脚点", False),
+ ("    |                  FootPlacementSystem --虚拟脚自动吸附到脚点", False),
  ("    v                                    |", False),
- ("ClimbController --反向位移+重力+坠落/重生--> CharacterController (XR Origin)", False),
- ("    ^   | contacts(手+脚) 把你留在墙上          |", False),
+ ("ClimbController --反向位移 + 重力 + 坠落/重生--> CharacterController", False),
+ ("    ^   | 接触点(手+脚)决定是否留在墙上          |", False),
  ("    |   +----------------> BalanceSystem (头=重心; 横向支撑判定)", True),
- ("    |  PeelOff(balance==0) <---------+  探出支撑就扣血", False),
- ("GameManager(状态/计时/跌落) --events--> GameHUD(计时/体力条/平衡条)", False),
+ ("    |  失衡脱落(平衡=0) <---------+", False),
+ ("GameManager(状态/计时/跌落) --事件--> GameHUD(计时 / 体力条 / 平衡条)", False),
 ]
-codebox(s, Inches(0.6), Inches(1.85), Inches(12.1), Inches(3.05), arch, size=12)
-txt(s, Inches(0.6), Inches(5.05), Inches(12.1), Inches(0.5),
-    [[("14 个 C# 脚本，三命名空间：Climbing(攀爬+平衡核心) · Gameplay(规则+线路) · UI/Util(HUD+触觉)。所有对 BalanceSystem / FootPlacementSystem 的引用都做了 null 检查。", 12, MUT, False)]], line=1.25)
-speak(s, "核心是反向位移攀爬这个成熟基座；平衡和脚法是叠在上面的可选层，永远不会把稳的部分搞坏。（P1 补技术细节）")
-footer(s, "系统架构")
-print("slide 5 done")
+codebox(s, Inches(0.6), Inches(1.8), Inches(12.1), Inches(3.05), arch, size=12)
+txt(s, Inches(0.6), Inches(5.0), Inches(12.1), Inches(0.6),
+    [[("实现规模：", 13, REDD, True),
+      ("14 个 C# 脚本，分为 攀爬与平衡核心 / 玩法与线路 / UI 与工具 三部分；对平衡、脚法模块的引用均做空值保护，确保可拆卸。", 13, INK, False)]], line=1.25)
+footer(s, "三 · 系统架构")
+print("arch done")
 
-# ============== SLIDE 6 — BALANCE MECHANIC ==============
+# ============== 8 — 平衡算法 ==============
 s = slide(); header_band(s)
-kicker(s, "核心机制 · 平衡判定")
+kicker(s, "四 · 核心算法 · 平衡判定")
 txt(s, Inches(0.55), Inches(0.85), Inches(12), Inches(0.7),
-    [[("把支撑面压成", 30, INK, True), ("一维左右区间", 30, RED, True)]])
-# left: diagram drawn from shapes
+    [[("将支撑面简化为", 28, INK, True), ("一维横向区间", 28, RED, True)]])
 dx, dy, dw, dh = Inches(0.6), Inches(1.9), Inches(6.0), Inches(3.0)
-diag = card(s, dx, dy, dw, dh)
-# support interval bar
+card(s, dx, dy, dw, dh)
 barY = dy + Inches(2.05)
 rect(s, dx+Inches(1.2), barY, Inches(3.6), Inches(0.04), LINE)
 sup = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, dx+Inches(1.9), barY-Inches(0.16), Inches(2.0), Inches(0.34))
-sf = sup.fill; sf.solid(); sf.fore_color.rgb = REDWASH; sup.line.color.rgb = RED; sup.line.width=Pt(1.2); sup.line.dash_style=None; sup.shadow.inherit=False
+sf = sup.fill; sf.solid(); sf.fore_color.rgb = REDWASH; sup.line.color.rgb = RED; sup.line.width=Pt(1.2); sup.shadow.inherit=False
 txt(s, dx+Inches(1.5), barY+Inches(0.30), Inches(3.0), Inches(0.3),
     [[("[low, high] 支撑区间", 12, RED, True)]], align=PP_ALIGN.CENTER)
-# contacts
 def dot(cx_in, color, label, lcol):
     d = s.shapes.add_shape(MSO_SHAPE.OVAL, dx+cx_in-Inches(0.10), barY-Inches(0.10), Inches(0.20), Inches(0.20))
     fill(d, color); d.shadow.inherit=False
-    txt(s, dx+cx_in-Inches(0.4), barY-Inches(0.50), Inches(0.8), Inches(0.3),
-        [[(label, 11, lcol, True)]], align=PP_ALIGN.CENTER)
+    txt(s, dx+cx_in-Inches(0.4), barY-Inches(0.50), Inches(0.8), Inches(0.3), [[(label, 11, lcol, True)]], align=PP_ALIGN.CENTER)
 dot(Inches(2.1), RGBColor(0xF5,0xB3,0x01), "手", RGBColor(0xB5,0x86,0x0A))
 dot(Inches(3.7), RGBColor(0xF5,0xB3,0x01), "手", RGBColor(0xB5,0x86,0x0A))
 dot(Inches(1.9), RGBColor(0xFF,0x7A,0x1A), "脚", RGBColor(0xD8,0x59,0x0A))
-# head/CoM
 head = s.shapes.add_shape(MSO_SHAPE.OVAL, dx+Inches(2.9)-Inches(0.18), dy+Inches(0.35), Inches(0.36), Inches(0.36))
 fill(head, INK); head.shadow.inherit=False
 rect(s, dx+Inches(2.9)-Inches(0.01), dy+Inches(0.71), Inches(0.03), Inches(1.18), INK)
 txt(s, dx+Inches(2.4), dy+Inches(0.05), Inches(1.0), Inches(0.3), [[("头 = 重心", 11, INK, True)]], align=PP_ALIGN.CENTER)
 txt(s, dx+Inches(0.5), dy+Inches(2.62), dw-Inches(1.0), Inches(0.3),
-    [[("重心横向坐标 = 0（落在区间内 → 稳）", 11, MUT, False)]], align=PP_ALIGN.CENTER)
-# right text
+    [[("重心横向坐标落入区间 → 稳定", 11, MUT, False)]], align=PP_ALIGN.CENTER)
 rxt = Inches(7.0)
-bullets(s, rxt, Inches(1.95), Inches(5.7), Inches(2.8), [
-  [("所有接触点（手点 + 脚点）投影到墙横轴，得到跨度 [low, high]。", False, INK)],
-  [("头的横向位置在区间内 → ", False, INK), ("稳", True, RED), ("（条回升）；歪出去 → ", False, INK),
-   ("不稳", True, RED), ("（缓冲 0.35s 后条下掉）。", False, INK)],
-  [("救法：", True, REDD), ("踩一只脚 / 抓对侧点 → 撑宽区间 → 重心回到里面。", False, INK)],
-], size=15, gap=10)
-mono2 = card(s, rxt, Inches(4.0), Inches(5.7), Inches(0.55))
-txt(s, rxt+Inches(0.2), Inches(4.08), Inches(5.3), Inches(0.4),
-    [[("s ∈ [−1,+1] → 平衡条 B → B≤0 则 PeelOff 脱落", 13, RED, True)]])
-txt(s, rxt, Inches(4.7), Inches(5.7), Inches(0.6),
-    [[("不是物理仿真——是轻量几何判据：可调、可解释、跑得动。ClimbMath.StabilityScore 纯函数 + 9 条单测。", 11, MUT, False)]], line=1.25)
-# balance-meter strip (full width, bottom)
-mty = Inches(5.45)
-txt(s, Inches(0.6), mty-Inches(0.02), Inches(1.5), Inches(0.3), [[("平衡条 B：", 12, INK, True)]])
+bullets(s, rxt, Inches(1.9), Inches(5.7), Inches(2.5), [
+  [("①", True, RED), (" 取所有接触点（抓握的手、踩住的脚）在墙面横轴上的投影，构成区间 [low, high]。", False, INK)],
+  [("②", True, RED), (" 计算重心横向坐标到区间的有符号余量 s ∈ [−1, +1]：在内为正、在外为负。", False, INK)],
+  [("③", True, RED), (" 失衡持续超过缓冲时间后，平衡量按 s 衰减；回到区间内则回升。", False, INK)],
+  [("④", True, RED), (" 平衡量降至 0 触发脱落。踩脚或抓对侧点会扩大区间，使重心重新落入。", False, INK)],
+], size=13, gap=8)
+mty = Inches(5.5)
+txt(s, Inches(0.6), mty-Inches(0.02), Inches(1.5), Inches(0.3), [[("平衡量：", 12, INK, True)]])
 seg_w = Inches(1.7)
-colors = [RGBColor(0x1F,0xAA,0x59), RGBColor(0x8B,0xC3,0x4A), RGBColor(0xF5,0xB3,0x01),
-          RGBColor(0xFF,0x7A,0x1A), RGBColor(0xE2,0x3B,0x3B)]
-mx = Inches(2.0)
+colors = [GREEN, RGBColor(0x8B,0xC3,0x4A), RGBColor(0xF5,0xB3,0x01), RGBColor(0xFF,0x7A,0x1A), RGBColor(0xE2,0x3B,0x3B)]
+mx = Inches(1.9)
 for i, c in enumerate(colors):
-    rect(s, mx+seg_w*i, mty, seg_w, Inches(0.30), c)
-txt(s, mx, mty+Inches(0.32), Inches(2.0), Inches(0.25), [[("满格 = 稳稳贴墙", 10, RGBColor(0x1F,0xAA,0x59), True)]])
-txt(s, mx+seg_w*4-Inches(0.5), mty+Inches(0.32), seg_w+Inches(0.6), Inches(0.25),
-    [[("掉空 = 脱手坠落", 10, RED, True)]], align=PP_ALIGN.RIGHT)
-speak(s, "")
-footer(s, "核心机制 · 平衡")
-print("slide 6 done")
+    rect(s, mx+seg_w*i, mty, seg_w, Inches(0.3), c)
+txt(s, mx, mty+Inches(0.32), Inches(2.2), Inches(0.25), [[("满 = 稳定", 10, GREEN, True)]])
+txt(s, mx+seg_w*4-Inches(0.6), mty+Inches(0.32), seg_w+Inches(0.7), Inches(0.25),
+    [[("空 = 脱落坠落", 10, RED, True)]], align=PP_ALIGN.RIGHT)
+footer(s, "四 · 平衡判定算法")
+print("balance done")
+# <<<NEXT>>>
 
-# ============== SLIDE 7 — FOOTWORK + CONSTANTS ==============
+# ============== 9 — 脚法建模 ==============
 s = slide(); header_band(s)
-kicker(s, "脚法抽象 · 关键常量")
+kicker(s, "四 · 核心算法 · 脚法建模")
 txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
-    [[("脚是", 28, INK, True), ("从握点派生的状态", 28, RED, True), ("，不是 IK 腿", 28, INK, True)]])
+    [[("脚 = ", 28, INK, True), ("由握点派生的支撑状态", 28, RED, True), ("，而非腿部几何", 28, INK, True)]])
 bullets(s, Inches(0.6), Inches(1.9), Inches(6.4), Inches(3.2), [
-  [("从头往下估一个「落脚区」，左右各找最近脚点吸住；爬过去后脱离再吸下一个（", False, INK), ("foot-gluing", True, RED), ("）。", False, INK)],
-  [("为什么不用 IK / 生成式腿？", True, REDD), ("贴墙、高抬腿、侧身时会崩、会穿模，且与机制无关——我们只要『脚在哪、撑不撑得住』这个信息。", False, INK)],
-  [("演示里的人形是阻尼弹簧摆 + 两段 IK 的「有重量感」运动学表现（纯演示、不进游戏逻辑），对标物理攀岩游戏 Klifur 逐帧打磨。", False, MUT)],
+  [("吸附：", True, REDD), ("在身体下方估计落脚区，左右各选最近的可踩握点；爬过后脱离并吸附下一个（", False, INK), ("foot-gluing", True, RED), ("）。", False, INK)],
+  [("作用：", True, REDD), ("每个踩住的脚向平衡判定贡献一个支撑点，从而扩大横向支撑区间。", False, INK)],
+  [("为何不反解腿部？", True, REDD), ("攀岩姿势下 IK / 生成式方法易失真穿模，且与机制无关——机制只需要「脚是否提供支撑」这一信息。", False, INK)],
+  [("化身仅作展示：", True, REDD), ("演示中的人形用阻尼摆 + 两段 IK 表现重量感，不参与玩法计算。", False, MUT)],
 ], size=14, gap=11)
-# constants table
-rows = [("系统","常量","值"),
-        ("BalanceSystem","supportMargin","0.06 m"),
-        ("BalanceSystem","maxOvershoot","0.30 m"),
-        ("BalanceSystem","drain / regen","0.6 / 0.7 /s"),
-        ("BalanceSystem","graceTime","0.35 s"),
-        ("FootPlacement","footReach","0.45 m"),
-        ("ClimbingHand","ArmReach 臂展","~0.88 m"),
-        ("ClimbController","gravity","−9.81 m/s²")]
-tx, ty, tw_ = Inches(7.2), Inches(1.9), Inches(5.5)
-tbl = s.shapes.add_table(len(rows), 3, tx, ty, tw_, Inches(3.2)).table
-tbl.columns[0].width = Inches(2.1); tbl.columns[1].width = Inches(2.1); tbl.columns[2].width = Inches(1.3)
+# right: before/after stick comparison reused
+c = card(s, Inches(7.1), Inches(1.9), Inches(5.6), Inches(3.4))
+txt(s, Inches(7.1), Inches(2.05), Inches(5.6), Inches(0.35), [[("脚扩大支撑区间 → 重心回正", 13, RED, True)]], align=PP_ALIGN.CENTER)
+rect(s, Inches(7.4), Inches(2.55), Inches(2.35), Inches(2.4), RGBColor(0xF3,0xE7,0xE9))
+stick_climber(s, Inches(7.7), Inches(2.7), Emu(int(Inches(0.55))), both_right=True, footed=False)
+txt(s, Inches(7.4), Inches(4.62), Inches(2.35), Inches(0.3), [[("无脚：偏出", 11, MUT, False)]], align=PP_ALIGN.CENTER)
+rect(s, Inches(10.05), Inches(2.55), Inches(2.35), Inches(2.4), RGBColor(0xE7,0xF3,0xEB))
+stick_climber(s, Inches(10.35), Inches(2.7), Emu(int(Inches(0.55))), both_right=True, footed=True)
+txt(s, Inches(10.05), Inches(4.62), Inches(2.35), Inches(0.3), [[("踩脚：回正", 11, GREEN, True)]], align=PP_ALIGN.CENTER)
+footer(s, "四 · 脚法建模")
+print("foot done")
+
+# ============== 10 — 关键参数 ==============
+s = slide(); header_band(s)
+kicker(s, "四 · 关键参数")
+txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
+    [[("可调参数：经验取值，编辑器内可调", 28, INK, True)]])
+rows = [("模块","参数","取值","含义"),
+        ("BalanceSystem","supportMargin","0.06 m","支撑区间两侧的容差"),
+        ("BalanceSystem","maxOvershoot","0.30 m","映射为完全失衡的偏出量"),
+        ("BalanceSystem","drain / regen","0.6 / 0.7 /s","平衡量衰减 / 回升速率"),
+        ("BalanceSystem","graceTime","0.35 s","开始衰减前的缓冲（抗抖动）"),
+        ("FootPlacement","footReach","0.45 m","脚的吸附 / 保持半径"),
+        ("ClimbingHand","ArmReach","~0.88 m","最大臂展，超出则抓不到"),
+        ("ClimbController","gravity","−9.81 m/s²","自由下落加速度")]
+tx, ty, tw_ = Inches(0.6), Inches(1.85), Inches(8.6)
+tbl = s.shapes.add_table(len(rows), 4, tx, ty, tw_, Inches(3.5)).table
+for w_, cw_ in zip(range(4), [Inches(2.4), Inches(2.4), Inches(1.6), Inches(2.2)]):
+    tbl.columns[w_].width = cw_
 for ri, row in enumerate(rows):
     for ci, val in enumerate(row):
         cell = tbl.cell(ri, ci); cell.text = val
-        para = cell.text_frame.paragraphs[0]; para.runs[0].font.size = Pt(11)
+        para = cell.text_frame.paragraphs[0]; para.runs[0].font.size = Pt(11.5)
         para.runs[0].font.name = "Microsoft YaHei"
         if ri == 0:
             cell.fill.solid(); cell.fill.fore_color.rgb = RED
@@ -524,161 +475,139 @@ for ri, row in enumerate(rows):
         else:
             cell.fill.solid(); cell.fill.fore_color.rgb = WHITE if ri % 2 else PAPER2
             para.runs[0].font.color.rgb = INK
-speak(s, "都是经验初值、Inspector 可调，文档里如实标注 by feel。drain<regen 让扶正就回血；臂展约 0.88m 是真约束。")
-footer(s, "脚法 · 常量")
-print("slide 7 done")
+card(s, Inches(9.4), Inches(1.85), Inches(3.3), Inches(3.5), red_bg=True)
+txt(s, Inches(9.65), Inches(2.05), Inches(2.85), Inches(3.2),
+    [[("设计取舍", 15, WHITE, True)],
+     [("", 6, WHITE, False)],
+     [("• 参数按手感设定，非物理推导，已在文档中如实标注；", 12.5, WHITE, False)],
+     [("• drain < regen：扶正后能较快回血；", 12.5, WHITE, False)],
+     [("• 臂展是真实约束：远处握点须先移动身体才能够到。", 12.5, WHITE, False)]],
+    space_after=8, line=1.3)
+footer(s, "四 · 关键参数")
+print("params done")
 
-def legend(s, x, y):
-    items = [("手","F5B301"),("脚","FF7A1A"),("任意","9B51E0"),("登顶","1FAA59"),("易碎","E23B3B"),("休息","2D8CFF")]
-    cx = x
-    for label, hexc in items:
-        col = RGBColor.from_string(hexc)
-        d = s.shapes.add_shape(MSO_SHAPE.OVAL, cx, y, Inches(0.16), Inches(0.16))
-        fill(d, col); d.shadow.inherit=False
-        txt(s, cx+Inches(0.2), y-Inches(0.05), Inches(0.7), Inches(0.3), [[(label, 11, MUT, False)]])
-        cx = cx + Inches(0.2) + Inches(0.14*len(label)+0.45)
-
-# ============== SLIDE 8 — DEMO MONEY SHOT ==============
+# ============== 11 — DEMO ==============
 s = slide(); header_band(s)
-kicker(s, "Demo · 重点")
+kicker(s, "五 · 运行演示")
 txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
-    [[("失衡变红 → 踩脚回正：", 28, INK, True), ("脚法如何撑住平衡", 28, RED, True)]])
-add_video(s, "demo", Inches(0.6), Inches(1.95), Inches(7.1), Inches(4.0))
-txt(s, Inches(0.6), Inches(5.95), Inches(7.1), Inches(0.3),
-    [[("Demo/SummitVR_demo.mp4 · 同侧硬够 → 平衡条变红 → 踩橙色脚点 → 回正", 11, MUT, False)]], align=PP_ALIGN.CENTER)
-txt(s, Inches(8.0), Inches(1.95), Inches(4.7), Inches(0.4), [[("颜色图例（建议用途）", 14, RED, True)]])
-legend(s, Inches(8.0), Inches(2.5))
-bullets(s, Inches(8.0), Inches(2.95), Inches(4.7), Inches(2.5), [
-  [("颜色现在只是建议、不再硬限制——和真实岩壁一样，手脚都能用任意点。", False, INK)],
-  [("默认线路故意不可纯手通过：两手都在右边 → 重心出界 → 必须踩左脚或 flag。", False, INK)],
-  [("脱落 → 重生回检查点 → 顶部 “Summit!” + 计时。", False, MUT)],
+    [[("演示：失衡 → 踩脚 → 恢复", 28, INK, True)]])
+add_video(s, "demo", Inches(0.6), Inches(1.9), Inches(7.1), Inches(4.0))
+txt(s, Inches(0.6), Inches(5.92), Inches(7.1), Inches(0.3),
+    [[("演示视频：同侧伸手 → 平衡量下降变红 → 踩橙色脚点 → 恢复", 11, MUT, False)]], align=PP_ALIGN.CENTER)
+txt(s, Inches(8.0), Inches(1.9), Inches(4.7), Inches(0.4), [[("握点颜色（用途提示）", 14, RED, True)]])
+legend(s, Inches(8.0), Inches(2.45))
+bullets(s, Inches(8.0), Inches(2.9), Inches(4.7), Inches(2.6), [
+  [("颜色为用途建议，非硬性限制；与真实岩壁一致，手脚可用任意点。", False, INK)],
+  [("默认线路设置同侧连续握点：仅靠手会偏出支撑，须踩脚或侧摆才能通过。", False, INK)],
+  [("脱落后重生回检查点；登顶显示完成时间。", False, MUT)],
 ], size=13, gap=10)
-speak(s, "两只手都在右边，平衡条开始变红、闪……现在踩上左边这只脚……条回来了。这一下是市面所有 VR 攀岩都没有的。")
-footer(s, "Demo · 平衡演示")
-print("slide 8 done")
+footer(s, "五 · 运行演示")
+print("demo done")
+# <<<NEXT>>>
 
-# ============== SLIDE 9 — ROUTES ==============
+# ============== 12 — 线路设计 ==============
 s = slide(); header_band(s)
-kicker(s, "线路库 · 程序化生成")
+kicker(s, "五 · 线路设计")
 txt(s, Inches(0.55), Inches(0.82), Inches(12.4), Inches(0.6),
-    [[("4 条可完攀 + 1 条", 26, INK, True), ("故意不可完攀", 26, RED, True)]])
-routes = [("V1","Warm-up · 入门"),("V2","Balance Test · 同侧逼用脚"),
-          ("V3","The Arête · 易碎逼快走"),("V4","Endurance · 体力管理")]
-vw = Inches(2.85); vx = Inches(0.6); vy = Inches(1.7)
+    [[("程序化生成 5 条线路：4 条可完攀 + 1 条用于验证约束", 24, INK, True)]])
+routes = [("V1","Warm-up · 入门，熟悉抓握"),("V2","Balance Test · 同侧连续，须用脚"),
+          ("V3","The Arête · 易碎点，须快速通过"),("V4","Endurance · 体力管理")]
+vw = Inches(2.85); vx = Inches(0.6); vy = Inches(1.65)
 for name, cap in routes:
     add_video(s, name, vx, vy, vw, Inches(1.6))
-    txt(s, vx, vy+Inches(1.62), vw, Inches(0.3), [[(cap, 10.5, MUT, True)]], align=PP_ALIGN.CENTER)
+    txt(s, vx, vy+Inches(1.62), vw, Inches(0.35), [[(cap, 10, MUT, True)]], align=PP_ALIGN.CENTER)
     vx = vx + vw + Inches(0.12)
 add_video(s, "impossible", Inches(0.6), Inches(3.95), Inches(3.6), Inches(2.0))
 txt(s, Inches(0.6), Inches(5.97), Inches(3.6), Inches(0.3),
-    [[("The Gap · 中段 2m 空白", 10.5, RED, True)]], align=PP_ALIGN.CENTER)
+    [[("The Gap · 中段约 2m 空白（不可完攀）", 10, RED, True)]], align=PP_ALIGN.CENTER)
 bullets(s, Inches(4.5), Inches(4.0), Inches(8.2), Inches(2.0), [
-  [("The Gap 演示「臂展是真约束」：", True, REDD), ("中段留 2m 空白，无论怎么伸都够不到——手臂会伸直但够不着，验证了 ~0.88m 臂展限制不是摆设。", False, INK)],
-  [("线路用 RouteBuilder 从基本几何体程序化搭建——墙 + 彩色握点 + 登顶触发器，无需美术也能跑。", False, MUT)],
-], size=14, gap=12)
-speak(s, "4 条难度递增的线路各录了干净完攀，再加一条故意够不到的 The Gap——它存在的意义就是证明『够不够得着』是真机制。（P2 补线路设计）")
-footer(s, "线路库 · 5 条")
-print("slide 9 done")
+  [("The Gap 用于验证臂展约束：", True, REDD), ("中段留约 2m 空白，手臂伸直仍够不到，说明臂展限制确实生效，而非装饰。", False, INK)],
+  [("生成方式：", True, REDD), ("RouteBuilder 由基本几何体程序化构建墙体、彩色握点与登顶触发区，无需美术资源即可运行。", False, INK)],
+  [("难度递增设计使「脚法是否被使用」成为可观测的行为差异，便于后续评测。", False, MUT)],
+], size=13.5, gap=11)
+footer(s, "五 · 线路设计")
+print("routes done")
 
-# ============== SLIDE 10 — OVERALL APPROACH ==============
+# ============== 13 — 开发与验证方法 ==============
 s = slide(); header_band(s)
-kicker(s, "整体任务思路 · 工程方法论")
+kicker(s, "六 · 开发与验证方法")
 txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
-    [[("先把「能不能验证」做扎实，再谈手感与美术", 28, INK, True)]])
-metrics = [("10/10","引擎端到端","SimulatedClimber 驱动真实 gameplay：失衡→脱落→重生→登顶"),
-           ("9/9","平衡 / 位移数学","ClimbMath 纯函数单测"),
-           ("2","真人可玩视角","第三人称 Play.unity / 第一视角 VR.unity，键鼠即玩")]
+    [[("以自动化验证驱动开发", 28, INK, True)]])
+metrics = [("10/10","端到端自检","脚本驱动真实玩法：失衡→脱落→重生→登顶全流程通过"),
+           ("9/9","算法单元测试","平衡与位移核心数学（ClimbMath）逐项通过"),
+           ("2","可玩验证视角","第三人称与第一人称场景，键鼠即可试玩")]
 cx = Inches(0.6)
 for big, h, body in metrics:
     card(s, cx, Inches(1.95), Inches(4.0), Inches(2.0))
-    txt(s, cx, Inches(2.1), Inches(4.0), Inches(0.7), [[(big, 40, RED, True)]], align=PP_ALIGN.CENTER)
-    txt(s, cx, Inches(2.95), Inches(4.0), Inches(0.35), [[(h, 14, INK, True)]], align=PP_ALIGN.CENTER)
-    txt(s, cx+Inches(0.25), Inches(3.35), Inches(3.5), Inches(0.6), [[(body, 10.5, MUT, False)]], align=PP_ALIGN.CENTER, line=1.2)
+    txt(s, cx, Inches(2.1), Inches(4.0), Inches(0.7), [[(big, 38, RED, True)]], align=PP_ALIGN.CENTER)
+    txt(s, cx, Inches(2.9), Inches(4.0), Inches(0.35), [[(h, 14, INK, True)]], align=PP_ALIGN.CENTER)
+    txt(s, cx+Inches(0.25), Inches(3.3), Inches(3.5), Inches(0.65), [[(body, 10.5, MUT, False)]], align=PP_ALIGN.CENTER, line=1.2)
     cx = cx + Inches(4.05)
 c = card(s, Inches(0.6), Inches(4.2), Inches(12.1), Inches(1.15), red_bg=True)
 txt(s, Inches(0.9), Inches(4.35), Inches(11.5), Inches(0.95),
-    [[("整体任务思路：可验证驱动的迭代闭环", 15, WHITE, True)],
-     [("先写脚本机器人驱动真实游戏逻辑做端到端自检 → 无头批渲染产出视频 → 与参考逐帧比对打磨 → 每次改动都回归自检。机制正确性靠自动化保证，团队五人可并行、无需共享头显即可推进。", 13, WHITE, False)]],
+    [[("方法说明", 15, WHITE, True)],
+     [("先用脚本「虚拟玩家」对真实玩法做端到端自检，再以无头渲染产出演示并逐帧比对打磨；每次改动均回归自检。机制正确性由自动化保证，五名成员得以并行开发，不依赖共享头显。", 13, WHITE, False)]],
     space_after=4, line=1.3)
-speak(s, "我们的整体思路是『可验证优先』：用机器人把核心闭环锁死，再叠美术、调手感。这样五个人能并行推进，每次改动都自动回归，不会把稳的部分改坏。（P4 补 XR 接线）")
-footer(s, "整体任务思路")
-print("slide 10 done")
+footer(s, "六 · 开发与验证方法")
+print("verify done")
 
-# ============== SLIDE 11 — AVATAR EVOLUTION ==============
+# ============== 14 — 评测方案 ==============
 s = slide(); header_band(s)
-kicker(s, "演示打磨 · 化身演进")
+kicker(s, "六 · 评测方案")
 txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
-    [[("从「直挺挺的假人」到", 28, INK, True), ("像真人在爬", 28, RED, True)]])
-img = os.path.join(HERE, "avatar-evolution.png")
-if os.path.exists(img):
-    s.shapes.add_picture(img, Inches(0.6), Inches(1.95), Inches(7.4))
-txt(s, Inches(0.6), Inches(6.05), Inches(7.4), Inches(0.3),
-    [[("docs/avatar-evolution.png · 对标物理攀岩游戏 Klifur 逐帧打磨", 11, MUT, False)]], align=PP_ALIGN.CENTER)
-bullets(s, Inches(8.3), Inches(1.95), Inches(4.4), Inches(3.5), [
-  [("身体挂在手上", True, REDD), ("而非顶在头上：单手悬挂时整个躯干倒向那只手（对角张力）。", False, INK)],
-  [("头朝岩壁", True, REDD), ("、被钳制在脖子活动锥内；脊柱转髋贴墙（带约束）；肘膝不反关节，够不到的握点手臂伸直但差一截。", False, INK)],
-  [("工作流：无头渲染逐帧 → ffmpeg 合成 → 与 climbing.gif 逐帧比对 → 改 → 再渲染。每轮都跑端到端自检，始终 10/10。", False, MUT)],
-], size=13, gap=11)
-speak(s, "这些全部只在演示里，不进游戏逻辑——端到端自检走原来的快速运动，10/10 不受影响。（P3 补美术）")
-footer(s, "化身演进")
-print("slide 11 done")
-
-# ============== SLIDE 12 — EVAL FRAMEWORK + DELIVERED ==============
-s = slide(); header_band(s)
-kicker(s, "评测体系 · 项目总结")
-txt(s, Inches(0.55), Inches(0.85), Inches(12.4), Inches(0.7),
-    [[("评测体系", 28, INK, True), ("已就绪可执行", 28, RED, True), ("，系统全部交付", 28, INK, True)]])
-bullets(s, Inches(0.6), Inches(1.95), Inches(6.4), Inches(2.0), [
-  [("被试内对比", True, REDD), ("（同线路、顺序平衡）：A 纯手 vs B 平衡+脚法，协议已写定。", False, INK)],
-  [("指标已仪器化：", True, REDD), ("登顶时间 · 跌落按原因分（松手/失衡/体力）· 平衡余量曲线 · NASA-TLX · SSQ · 真实感量表——采集脚本就绪。", False, INK)],
-], size=14, gap=11)
-c = card(s, Inches(0.6), Inches(3.85), Inches(6.4), Inches(1.5), red_bg=True)
-txt(s, Inches(0.85), Inches(4.0), Inches(5.9), Inches(1.2),
-    [[("核心假设 H（待真人实验检验）", 14, WHITE, True)],
-     [("B 的 真实感↑ · 挑战↑，但 晕动 SSQ 不升——我们的设想是：难度来自决策判断，而非画面晃动带来的不适。", 13, WHITE, False)]],
+    [[("评测方案已设计，", 28, INK, True), ("待开展真人实验", 28, RED, True)]])
+bullets(s, Inches(0.6), Inches(1.9), Inches(6.4), Inches(2.2), [
+  [("实验设计：", True, REDD), ("被试内对比，A 纯手版 vs B 平衡+脚法版，同线路、顺序平衡。", False, INK)],
+  [("客观指标：", True, REDD), ("登顶时间、按原因分类的跌落次数（松手 / 失衡 / 体力）、平衡余量曲线。", False, INK)],
+  [("主观量表：", True, REDD), ("NASA-TLX 工作负荷、SSQ 模拟器晕动、真实感与偏好量表。", False, INK)],
+], size=13.5, gap=10)
+c = card(s, Inches(0.6), Inches(4.0), Inches(6.4), Inches(1.4), red_bg=True)
+txt(s, Inches(0.85), Inches(4.15), Inches(5.9), Inches(1.1),
+    [[("研究假设（待检验）", 14, WHITE, True)],
+     [("相比 A，B 的真实感与挑战感更高，而模拟器晕动不显著上升——难度来自决策判断而非画面运动。", 13, WHITE, False)]],
     space_after=4, line=1.3)
-txt(s, Inches(7.3), Inches(1.95), Inches(5.4), Inches(0.4), [[("已交付清单 ✓", 14, RED, True)]])
-bullets(s, Inches(7.3), Inches(2.45), Inches(5.4), Inches(3.0), [
-  [("✓ 平衡机制（头=重心、横向支撑判定）", False, INK)],
-  [("✓ 脚法抽象（自动吸附、foot-gluing）", False, INK)],
-  [("✓ 5 条程序化线路（4 可完攀 + The Gap）", False, INK)],
-  [("✓ 引擎端到端 10/10 + 数学 9/9 自检", False, INK)],
-  [("✓ HUD + 音效接线、双视角真人可玩", False, INK)],
-  [("✓ 演示视频、报告初稿、答辩问答", False, INK)],
-  [("✓ 评测协议 + 采集仪器（待执行实验）", False, MUT)],
-], size=13, gap=7)
-speak(s, "系统、仪器、协议全部交付；机制正确性已用仿真闭环验证。唯一留待执行的是真人实验本身——我们把『能不能测』这件事先做扎实了。")
-footer(s, "评测体系 · 项目总结")
-print("slide 12 done")
+txt(s, Inches(7.3), Inches(1.9), Inches(5.4), Inches(0.4), [[("已完成 ✓ / 待完成 ○", 14, RED, True)]])
+bullets(s, Inches(7.3), Inches(2.4), Inches(5.4), Inches(3.0), [
+  [("✓ 平衡机制与脚法建模", False, INK)],
+  [("✓ 5 条线路 + 自动化自检（10/10 · 9/9）", False, INK)],
+  [("✓ HUD、音效、双视角可玩", False, INK)],
+  [("✓ 演示视频、报告初稿、评测协议与采集工具", False, INK)],
+  [("○ 招募 5–8 名被试，开展实验并统计数据", False, RED)],
+  [("○ 真机构建与帧率 / 舒适度优化（可选）", False, MUT)],
+], size=13, gap=8)
+footer(s, "六 · 评测方案")
+print("eval done")
 
-# ============== SLIDE 13 — CLOSING ==============
+# ============== 15 — 总结 ==============
 s = slide()
 rect(s, 0, 0, Inches(7.6), SH, WHITE)
 rect(s, Inches(7.6), 0, SW-Inches(7.6), SH, RED)
 grad_band(s, 0, 0, Inches(7.6), Inches(0.16))
-txt(s, Inches(0.6), Inches(1.2), Inches(6.6), Inches(0.4), [[("总结", 14, RED, True)]])
-txt(s, Inches(0.55), Inches(1.7), Inches(6.8), Inches(1.4),
-    [[("我们做了什么", 40, INK, True)]], line=1.1)
-txt(s, Inches(0.6), Inches(3.3), Inches(6.6), Inches(1.6),
-    [[("在只有头和两个手柄的普通 VR 上，把", 17, MUT, False), ("平衡和脚法", 17, REDD, True),
-      ("做成了可玩机制。系统已经能完整跑通，下一步是找同学做真人实验来检验效果。", 17, MUT, False)]], line=1.35)
-mono3 = card(s, Inches(0.6), Inches(5.0), Inches(6.5), Inches(0.55))
-txt(s, Inches(0.8), Inches(5.08), Inches(6.1), Inches(0.4),
-    [[("项目代码：github.com/Icecream0507/ai3618-vr-climbing", 13, RED, True)]])
-txt(s, Inches(0.6), Inches(5.75), Inches(6.6), Inches(0.4),
-    [[("薛俊智 · 吴一轩 · 陶锐 · 邹沛霖 · 孙艺豪   |   答辩问答见 docs/DEFENSE_QA.md", 11, MUT, False)]])
+txt(s, Inches(0.6), Inches(1.1), Inches(6.6), Inches(0.4), [[("六 · 总结与展望", 14, RED, True)]])
+txt(s, Inches(0.55), Inches(1.6), Inches(6.8), Inches(1.0), [[("总结", 38, INK, True)]])
+bullets(s, Inches(0.6), Inches(2.7), Inches(6.7), Inches(2.6), [
+  [("提出并实现了一种在三点追踪下的平衡与脚法机制：", True, REDD)],
+  [("• 以头显近似重心、以横向支撑区间判定失衡；", False, INK)],
+  [("• 以自动吸附的虚拟脚提供支撑，使脚法影响成败；", False, INK)],
+  [("• 系统完整可运行，并通过自动化端到端验证。", False, INK)],
+  [("展望：", True, REDD), ("开展真人评测，并向二维支撑、玩家自主选点、真机部署扩展。", False, INK)],
+], size=13, gap=8)
+txt(s, Inches(0.6), Inches(6.7), Inches(6.8), Inches(0.4),
+    [[("项目代码：github.com/Icecream0507/ai3618-vr-climbing", 11, MUT, False)]])
 # right panel
-txt(s, Inches(8.0), Inches(1.5), Inches(4.8), Inches(0.6), [[("核心思路回顾", 22, WHITE, True)]])
+txt(s, Inches(8.0), Inches(1.5), Inches(4.8), Inches(0.6), [[("核心贡献", 22, WHITE, True)]])
 rect(s, Inches(8.0), Inches(2.15), Inches(4.5), Pt(2), RGBColor(0xFF,0xB0,0xBC))
-txt(s, Inches(8.0), Inches(2.4), Inches(4.8), Inches(2.2),
-    [[("用", 15, WHITE, False), ("头当重心", 15, RGBColor(0xFF,0xD9,0xDF), True),
-      ("、用", 15, WHITE, False), ("自动吸附的虚拟脚", 15, RGBColor(0xFF,0xD9,0xDF), True),
-      ("，判断重心有没有落在支撑范围内，落出去就失衡脱落。", 15, WHITE, False)]], line=1.5)
-txt(s, Inches(8.0), Inches(4.7), Inches(4.8), Inches(0.8),
-    [[("两只手都在同侧时不踩脚就会被甩下墙，踩对脚就能稳住。", 15, WHITE, False)]], line=1.4)
+txt(s, Inches(8.0), Inches(2.45), Inches(4.8), Inches(2.6),
+    [[("在不增加硬件的前提下，", 15, WHITE, False)],
+     [("用头显近似重心、用虚拟脚提供支撑，", 15, RGBColor(0xFF,0xD9,0xDF), True)],
+     [("将真实攀岩的平衡与脚法，", 15, WHITE, False)],
+     [("重建为消费级 VR 上可玩、可验证的机制。", 15, WHITE, False)]],
+    space_after=6, line=1.4)
 txt(s, Inches(8.0), Inches(5.7), Inches(4.8), Inches(0.8), [[("谢谢 · 欢迎提问", 30, WHITE, True)]])
-print("slide 13 done")
+print("summary done")
 
 out = os.path.join(HERE, "SummitVR_Pre.pptx")
 prs.save(out)
 print("SAVED ->", out)
+
+
